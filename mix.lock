@@ -1,0 +1,5 @@
+%{"erlsom": {:git, "git://github.com/willemdj/erlsom.git", "5dba7819ef99ba84eeb43c946dbe7f16792e6086", []},
+  "hackney": {:hex, :hackney, "0.14.3"},
+  "httpoison": {:hex, :httpoison, "0.5.0"},
+  "idna": {:hex, :idna, "1.0.1"},
+  "pipe": {:git, "git://github.com/batate/elixir-pipes.git", "fbbe0997f761b02fe5b6e809b5ee4e3fba9c819d", []}}
