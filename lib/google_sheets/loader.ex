@@ -79,7 +79,7 @@ defmodule GoogleSheets.Loader do
   defp load_content([], result), do: {:ok, result}
   defp load_content([key | rest], result) do
     case load_csv_content result[key] do
-      {:ok, content} -> load_content(rest, Dict.put(result, key, %{title: key, content: content, sha: :crypto.hash(:sha, content)}))
+      {:ok, content} -> load_content(rest, Dict.put(result, key, %{title: key, content: content, sha: :base64.encode(:crypto.hash(:sha, content))}))
       {:error, msg} -> {:error, msg}
     end
   end
