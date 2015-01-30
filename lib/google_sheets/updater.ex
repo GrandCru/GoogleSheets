@@ -10,23 +10,24 @@ defmodule GoogleSheets.Updater do
   def init(:ok) do
     key = Application.get_env :google_sheets, :key, nil
     interval = Application.get_env :google_sheets, :update_interval_ms, 0
+    sheets = Application.get_env :google_sheets, :sheets, []
 
     case key do
       nil -> Logger.info "#{__MODULE__} not starting polling updates, because key was not set in :google_sheets configuration"
       _ -> Process.send_after self(), :update, 0
     end
 
-    {:ok, {key, interval}}
+    {:ok, {key, interval, sheets}}
   end
 
-  def handle_info(:update, {key, poll_interval}) do
-    handle_update key, poll_interval
+  def handle_info(:update, {key, poll_interval, sheets}) do
+    handle_update key, poll_interval, sheets
     {:noreply, {key, poll_interval}}
   end
 
   # Internal implemantation
-  def handle_update(key, poll_interval) do
-    case GoogleSheets.Loader.load key do
+  def handle_update(key, poll_interval, sheets) do
+    case GoogleSheets.Loader.load key, sheets do
       {:ok, data} ->
         Logger.debug "Loaded new configuration from google"
         :ets.insert :google_sheets, {:data, data}

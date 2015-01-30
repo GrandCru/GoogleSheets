@@ -15,11 +15,12 @@ defmodule GoogleSheets.Loader do
   See the module README.md for information about how to publish Google Spreadsheets
   and how to get the access key.
   """
-  def load(key) do
+  def load(key, sheets \\ []) do
     pipe_matching {:ok, _},
       load_feed(key)
       |> parse_response
       |> parse_feed
+      |> filter_entries(sheets)
       |> load_content
   end
 
@@ -74,6 +75,13 @@ defmodule GoogleSheets.Loader do
   defp load_content({:ok, result}) do
     load_content(Dict.keys(result), result)
   end
+
+  # Filter spreadsheet sheets and leave only those specified in the sheets list, if no list is given, don't do any filtering
+  defp filter_entries({:ok, result}, [_h|_t] = sheets) do
+    {filtered, _rest} = Dict.split(result, sheets)
+    {:ok, filtered}
+  end
+  defp filter_entries({:ok, result}, _), do: {:ok, result}
 
   # Recursively loop throug all keys found from the feed
   defp load_content([], result), do: {:ok, result}
