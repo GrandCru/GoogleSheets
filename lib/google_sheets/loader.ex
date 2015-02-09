@@ -27,9 +27,12 @@ defmodule GoogleSheets.Loader do
   defp load_feed(key) do
     url = "https://spreadsheets.google.com/feeds/worksheets/#{key}/public/basic"
     case HTTPoison.get url do
-      {:ok, %HTTPoison.Response{status_code: 200} = response} -> {:ok, response}
-      {:ok, _} -> {:error, "Request failed to url #{inspect url}"}
-      _ -> {:error, "Internal error in HTTPoison requesting url #{inspect url}"}
+      {:ok, %HTTPoison.Response{status_code: 200} = response} ->
+        {:ok, response}
+      {:ok, _} ->
+        {:error, "Request failed to url #{inspect url}"}
+      _ ->
+        {:error, "Internal error in HTTPoison requesting url #{inspect url}"}
     end
   end
 
@@ -87,8 +90,10 @@ defmodule GoogleSheets.Loader do
   defp load_content([], result), do: {:ok, result}
   defp load_content([key | rest], result) do
     case load_csv_content result[key] do
-      {:ok, content} -> load_content(rest, Dict.put(result, key, %{title: key, content: content, sha: :base64.encode(:crypto.hash(:sha, content))}))
-      {:error, msg} -> {:error, msg}
+      {:ok, content} ->
+        load_content(rest, Dict.put(result, key, %{title: key, content: content, hash: hash(content)}))
+      {:error, msg} ->
+        {:error, msg}
     end
   end
 
@@ -99,5 +104,15 @@ defmodule GoogleSheets.Loader do
       {:ok, response} -> {:error, "Error loading CSV content from url #{url} status: #{inspect response.status_code}"}
       {_} -> {:error, "Error loading CSV content from url #{url}"}
     end
+  end
+
+  # Calculate hash for CSV content
+  defp hash(content) do
+    GoogleSheets.Utils.hexstring :crypto.hash(hash_func, content)
+  end
+
+  defp hash_func do
+    {:ok, func} = Application.fetch_env(:google_sheets, :hash_func)
+    func
   end
 end

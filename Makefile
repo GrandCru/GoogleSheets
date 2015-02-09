@@ -6,13 +6,13 @@ deps:
 	mix deps.get
 	mix deps.compile
 
-compile: deps
+compile:
 	mix compile
 
-run: compile
+run:
 	iex -S mix run
 
-test: compile
+test:
 	mix test
 
 clean:
