@@ -9,24 +9,30 @@ defmodule GoogleSheets.Updater do
 
   def init(:ok) do
     {:ok, key} = Application.fetch_env :google_sheets, :key
-    {:ok, delay} = Application.fetch_env :google_sheets, :delay
     {:ok, sheets} = Application.fetch_env :google_sheets, :sheets
+    {:ok, delay} = Application.fetch_env :google_sheets, :delay
+    {:ok, ets_table} = Application.fetch_env :google_sheets, :ets_table
+    {:ok, ets_key} = Application.fetch_env :google_sheets, :ets_key
+    state = %{key: key, sheets: sheets, delay: delay, ets_table: ets_table, ets_key: ets_key}
+
+    # Send the first poll request immediately
     Process.send_after self(), :update, 0
-    {:ok, {key, delay, sheets}}
+
+    {:ok, state}
   end
 
-  def handle_info(:update, {key, poll_interval, sheets}) do
-    handle_update key, poll_interval, sheets
-    {:noreply, {key, poll_interval}}
+  def handle_info(:update, state) do
+    handle_update state
+    {:noreply, state}
   end
 
-  # Internal implemantation
-  defp handle_update(key, delay, sheets) do
-    case GoogleSheets.Loader.load key, sheets do
+  # Internal implementation
+  defp handle_update(state) do
+    case GoogleSheets.Loader.load state.key, state.sheets do
       {:ok, data} ->
         Logger.debug "Loaded new configuration from google"
-        :ets.insert :google_sheets, {:data, data}
-        schedule_update delay * 1000
+        :ets.insert state.ets_table, {state.ets_key, data}
+        schedule_update state.delay * 1000
       {:error, msg} ->
         # Schedule an update again immediately if the request failed.
         # Note: This means we will keep trying to fetch data at least once, even if dealy is 0
@@ -35,7 +41,8 @@ defmodule GoogleSheets.Updater do
     end
   end
 
-  # When to poll next time, if delay has been configured to 0, the update will be done only once.
+  # If delay has been configured to 0, the update will be done only once.
   defp schedule_update(0), do: nil
   defp schedule_update(delay), do: Process.send_after(self(), :update, delay * 1000)
+
 end
