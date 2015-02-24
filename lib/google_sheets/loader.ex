@@ -112,7 +112,7 @@ defmodule GoogleSheets.Loader do
   end
 
   defp hash_func do
-    {:ok, func} = Application.fetch_env(:google_sheets, :hash_func)
+    {:ok, func} = Application.fetch_env :google_sheets, :hash_func
     func
   end
 end
