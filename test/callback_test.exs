@@ -6,15 +6,20 @@ defmodule CallbackTest do
 
   @behaviour GoogleSheets.Callback
   def on_loaded(data) do
+    data
   end
 
   def on_saved() do
   end
 
   test "Test updater process" do
-    @test_pid
-    config = GoogleSheets.Updater.Config.from_env
-    config = %{config | callback: MockCallback, delay: 0}
+    cfg = [
+      id: :callback_test,
+      key: "1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs",
+      worksheets: ["KeyValue", "KeyTable", "KeyIndexTable"],
+      delay: 10,
+      callback: CallbackTest
+    ]
   end
 
 end

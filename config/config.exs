@@ -20,10 +20,21 @@ use Mix.Config
 # notify      Module impelmenting GoogleSheets.Notify behaviour.
 
 config :google_sheets,
-  key:          "1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs",
-  sheets:       ["KeyValue", "KeyTable", "KeyIndexTable"],
-  delay:        10,
-  hash_func:    :md5,
-  ets_table:    :google_sheets,
-  ets_key:      :data,
-  callback:     nil
+  spreadsheets: [
+    [
+      id: :worksheet_multiple,
+      key: "1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs",
+      worksheets: ["KeyValue", "KeyTable", "KeyIndexTable"],
+      delay: 10,
+      callback: nil
+    ],
+    [
+      id: :worksheet_single,
+      key: "1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs",
+      worksheets: ["KeyValue"],
+      delay: 10,
+      callback: nil
+    ]
+  ],
+  hash_func: :md5,
+  ets_table: :google_sheets

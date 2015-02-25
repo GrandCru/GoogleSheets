@@ -3,11 +3,11 @@ defmodule GoogleSheets.Updater do
   use GenServer
   require Logger
 
-  def start_link(%GoogleSheets.Updater.Config{} = config, options \\ []) do
+  def start_link(config, options \\ []) do
     GenServer.start_link(__MODULE__, config, options)
   end
 
-  def init(%GoogleSheets.Updater.Config{} = config) do
+  def init(config) do
     # Send the first poll request immediately
     Process.send_after self(), :update, 0
     {:ok, config}
@@ -20,18 +20,21 @@ defmodule GoogleSheets.Updater do
 
   # Internal implementation
   defp handle_update(config) do
-    case GoogleSheets.Loader.load config.key, config.sheets do
-      {:ok, data} ->
-        data = on_loaded config, data
-        :ets.insert config.ets_table, {config.ets_key, data}
-        on_saved config
-        schedule_update config.delay
-      {:error, msg} ->
-        # Schedule an update again immediately if the request failed.
-        # Note: This means we will keep trying to fetch data at least once, even if delay is 0
-        Logger.debug "Failed to load data from google sheets, scheduling update immediately. Reason: #{inspect msg}"
-        schedule_update 1
-    end
+    Logger.debug "Requesting CSV data for spreadsheet #{config[:id]}"
+    handle_load(config, GoogleSheets.Loader.load(config[:key], config[:worksheets]))
+  end
+
+  defp handle_load(config, {:ok, data}) do
+    data = on_loaded config, data
+    :ets.insert ets_table, {config[:id], data}
+    on_saved config
+    schedule_update config[:delay]
+  end
+  defp handle_load(_config, {:error, msg}) do
+    # Schedule an update again immediately if the request failed.
+    # Note: This means we will keep trying to fetch data at least once, even if delay is 0
+    Logger.debug "Failed to load data from google sheets, scheduling update immediately. Reason: #{inspect msg}"
+    schedule_update 1
   end
 
   # If delay has been configured to 0, the update will be done only once.
@@ -43,10 +46,24 @@ defmodule GoogleSheets.Updater do
     Process.send_after self(), :update, delay * 1000
   end
 
-  def on_loaded(%GoogleSheets.Updater.Config{:callback => nil}, data), do: data
-  def on_loaded(%GoogleSheets.Updater.Config{} = config, data), do: config.callback.on_loaded data
+  # Let the host application do what ever they want with the data
+  defp on_loaded(config, data) do
+    if config[:callback] != nil do
+      data = config[:callback].on_loaded config[:id], data
+    end
+    data
+  end
 
-  def on_saved(%GoogleSheets.Updater.Config{:callback => nil}), do: nil
-  def on_saved(%GoogleSheets.Updater.Config{} = config), do: config.callback.on_saved
+  # Notify that there is new data available
+  defp on_saved(config) do
+    if config[:callback] != nil do
+      config[:callback].on_saved config[:id]
+    end
+  end
+
+  defp ets_table do
+    {:ok, ets_table} = Application.fetch_env :google_sheets, :ets_table
+    ets_table
+  end
 
 end
