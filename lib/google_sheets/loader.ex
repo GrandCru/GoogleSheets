@@ -3,14 +3,13 @@ defmodule GoogleSheets.Loader do
   use Pipe
   require Logger
 
+  alias GoogleSheets.SpreadSheetData
+  alias GoogleSheets.WorkSheetData
+
   @doc """
   Loads all sheets in the spreadsheet published with the given access key.
 
-  Returns a map with sheet names as keys and a value as a map with contents:
-  %{
-    "Sheet 1" => %{title: "Sheet 1", content: "....", sha: "sha1 hash of content"},
-    "Sheet 2" => %{title: "Sheet 2", content: "....", sha: "sha1 hash of content"}
-  }
+  Returns a GoogleSheets.SpreadSheetData structure.
 
   See the module README.md for information about how to publish Google Spreadsheets
   and how to get the access key.
@@ -22,6 +21,7 @@ defmodule GoogleSheets.Loader do
       |> parse_feed
       |> filter_entries(sheets)
       |> load_content
+      |> concatenated_hash
   end
 
   defp load_feed(key) do
@@ -50,18 +50,18 @@ defmodule GoogleSheets.Loader do
 
   # Parse spreadsheet feed content
   defp parse_feed({:ok, feed}) do
-    {:ok, parse_feed(feed, %{})}
+    {:ok, parse_feed(feed, [])}
   end
 
-  defp parse_feed([], result), do: result
-  defp parse_feed([{'{http://www.w3.org/2005/Atom}entry', _, entry} | rest], result), do: parse_feed(rest, parse_entry(entry, result))
-  defp parse_feed([_node | rest], result), do: parse_feed(rest, result)
+  defp parse_feed([], worksheets), do: worksheets
+  defp parse_feed([{'{http://www.w3.org/2005/Atom}entry', _, entry} | rest], worksheets), do: parse_feed(rest, parse_entry(entry, worksheets))
+  defp parse_feed([_node | rest], worksheets), do: parse_feed(rest, worksheets)
 
   # Parse individual worskheet entry nodes in feed
-  defp parse_entry(entry, result) do
+  defp parse_entry(entry, worksheets) do
     title = find_entry_title entry
     url = find_entry_url entry
-    Dict.put(result, title, url)
+    [%WorkSheetData{name: title, url: url} | worksheets]
   end
 
   # Find the title of of the worksheet
@@ -74,24 +74,24 @@ defmodule GoogleSheets.Loader do
   defp find_entry_url([{'{http://www.w3.org/2005/Atom}link', [{'href', url}, {'type', 'text/csv'}, _], []} | _t]), do: List.to_string url
   defp find_entry_url([_h | t]), do: find_entry_url t
 
-  # Load the csv content
-  defp load_content({:ok, result}) do
-    load_content(Dict.keys(result), result)
-  end
-
   # Filter spreadsheet sheets and leave only those specified in the sheets list, if no list is given, don't do any filtering
-  defp filter_entries({:ok, result}, [_h|_t] = sheets) do
-    {filtered, _rest} = Dict.split(result, sheets)
+  defp filter_entries({:ok, worksheets}, []), do: {:ok, worksheets}
+  defp filter_entries({:ok, worksheets}, sheets) do
+    filtered = Enum.filter(worksheets, fn(ws) -> ws.name in sheets end)
     {:ok, filtered}
   end
-  defp filter_entries({:ok, result}, _), do: {:ok, result}
+
+  # Load the csv content
+  defp load_content({:ok, worksheets}) do
+    load_content(worksheets, %SpreadSheetData{})
+  end
 
   # Recursively loop throug all keys found from the feed
-  defp load_content([], result), do: {:ok, result}
-  defp load_content([key | rest], result) do
-    case load_csv_content result[key] do
-      {:ok, content} ->
-        load_content(rest, Dict.put(result, key, %{title: key, content: content, hash: hash(content)}))
+  defp load_content([], data), do: {:ok, data}
+  defp load_content([%WorkSheetData{} = worksheet | rest], data) do
+    case load_csv_content worksheet.url do
+      {:ok, content, hash} ->
+        load_content rest, %SpreadSheetData{data | sheets: [ %WorkSheetData{worksheet | csv: content, hash: hash} | data.sheets]}
       {:error, msg} ->
         {:error, msg}
     end
@@ -100,10 +100,16 @@ defmodule GoogleSheets.Loader do
   # Fetch and parse the actual CSV content
   defp load_csv_content(url) do
     case HTTPoison.get url do
-      {:ok, %HTTPoison.Response{status_code: 200} = response} -> {:ok, response.body}
+      {:ok, %HTTPoison.Response{status_code: 200} = response} -> {:ok, response.body, hash(response.body)}
       {:ok, response} -> {:error, "Error loading CSV content from url #{url} status: #{inspect response.status_code}"}
       {_} -> {:error, "Error loading CSV content from url #{url}"}
     end
+  end
+
+  # Calculate combined hash
+  defp concatenated_hash({:ok, %SpreadSheetData{} = spreadsheet}) do
+    concatenated = Enum.reduce(spreadsheet.sheets, "", fn(ws, acc) -> ws.hash <> acc end)
+    {:ok, %SpreadSheetData{spreadsheet | hash: hash(concatenated)}}
   end
 
   # Calculate hash for CSV content
