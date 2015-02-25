@@ -22,9 +22,8 @@ use Mix.Config
 config :google_sheets,
   key:          "1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs",
   sheets:       ["KeyValue", "KeyTable", "KeyIndexTable"],
-  delay:        -1,
+  delay:        10,
   hash_func:    :md5,
   ets_table:    :google_sheets,
   ets_key:      :data,
-  transform:    nil,
-  notify:       nil
+  callback:     nil
