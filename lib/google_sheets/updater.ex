@@ -25,9 +25,9 @@ defmodule GoogleSheets.Updater do
   end
 
   defp handle_load(config, {:ok, data}) do
-    data = on_loaded config, data
+    data = loaded_callback config, data
     :ets.insert ets_table, {config[:id], data}
-    on_saved config
+    saved_callback config
     schedule_update config[:delay]
   end
   defp handle_load(_config, {:error, msg}) do
@@ -47,17 +47,17 @@ defmodule GoogleSheets.Updater do
   end
 
   # Let the host application do what ever they want with the data
-  defp on_loaded(config, data) do
+  defp loaded_callback(config, data) do
     if config[:callback] != nil do
-      data = config[:callback].on_loaded config[:id], data
+      data = config[:callback].on_data_loaded config[:id], data
     end
     data
   end
 
   # Notify that there is new data available
-  defp on_saved(config) do
+  defp saved_callback(config) do
     if config[:callback] != nil do
-      config[:callback].on_saved config[:id]
+      config[:callback].on_data_saved config[:id]
     end
   end
 
