@@ -5,11 +5,11 @@ defmodule CallbackTest do
   @test_pid nil
 
   @behaviour GoogleSheets.Callback
-  def on_data_loaded(data) do
+  def on_data_loaded(id, data) do
     data
   end
 
-  def on_data_saved() do
+  def on_data_saved(id) do
   end
 
   test "Test updater process" do
