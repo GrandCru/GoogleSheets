@@ -30,7 +30,7 @@ defmodule GoogleSheets.Updater do
       try do
         data = loaded_callback config, data
         :ets.insert ets_table, {config[:id], data}
-        saved_callback config
+        saved_callback config, data
       rescue
         e ->
           stacktrace = System.stacktrace
@@ -63,9 +63,9 @@ defmodule GoogleSheets.Updater do
   end
 
   # Notify that there is new data available
-  defp saved_callback(config) do
+  defp saved_callback(config, data) do
     if config[:callback] != nil do
-      config[:callback].on_data_saved config[:id]
+      config[:callback].on_data_saved config[:id], data
     end
   end
 

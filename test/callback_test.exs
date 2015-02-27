@@ -13,7 +13,7 @@ defmodule MockCallback do
     data
   end
 
-  def on_data_saved(id) do
+  def on_data_saved(id, data) do
     GenServer.cast :mock_callback, {:saved, id}
   end
 
