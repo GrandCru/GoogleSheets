@@ -32,7 +32,9 @@ defmodule GoogleSheets.Updater do
         :ets.insert ets_table, {config[:id], data}
         saved_callback config
       rescue
-        e -> Logger.error "Failed to load config, reason: #{inspect e}"
+        e ->
+          stacktrace = System.stacktrace
+          Logger.error "Failed to parse and/or store config, reason: #{inspect e} #{inspect stacktrace}"
       end
       schedule_update config[:delay]
   end
