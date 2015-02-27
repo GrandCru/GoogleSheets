@@ -24,11 +24,17 @@ defmodule GoogleSheets.Updater do
     handle_load(config, GoogleSheets.Loader.load(config[:key], config[:worksheets]))
   end
 
+  # Use try rescue pattern here so that we won't be flooding because supervisor starts immediately
+  # a new process after a crash.
   defp handle_load(config, {:ok, data}) do
-    data = loaded_callback config, data
-    :ets.insert ets_table, {config[:id], data}
-    saved_callback config
-    schedule_update config[:delay]
+      try do
+        data = loaded_callback config, data
+        :ets.insert ets_table, {config[:id], data}
+        saved_callback config
+      rescue
+        e -> Logger.error "Failed to load config, reason: #{inspect e}"
+      end
+      schedule_update config[:delay]
   end
   defp handle_load(_config, {:error, msg}) do
     # Schedule an update again immediately if the request failed.
