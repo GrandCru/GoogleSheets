@@ -24,14 +24,14 @@ config :google_sheets,
     [
       id: :worksheet_multiple,
       key: "1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs",
-      worksheets: ["KeyValue", "KeyTable", "KeyIndexTable"],
+      included_sheets: ["KeyValue", "KeyTable", "KeyIndexTable"],
       delay: 10,
       callback: nil
     ],
     [
       id: :worksheet_single,
       key: "1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs",
-      worksheets: ["KeyValue"],
+      included_sheets: ["KeyValue"],
       delay: 10,
       callback: nil
     ]
