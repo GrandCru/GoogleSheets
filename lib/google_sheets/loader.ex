@@ -17,7 +17,6 @@ defmodule GoogleSheets.Loader do
   and how to get the access key.
   """
   def load(%LoaderData{} = data) do
-    Logger.debug "Loading data #{inspect data}"
     data
       |> load_feed
       |> parse_response
@@ -106,7 +105,7 @@ defmodule GoogleSheets.Loader do
   defp filter_entries(%LoaderData{:status => :ok, included_sheets: nil} = data), do: data
   defp filter_entries(%LoaderData{:status => :ok} = data) do
     filtered = Enum.filter(data.data, fn(ws) -> ws.name in data.included_sheets end)
-    %{data | data: filtered}
+    %LoaderData{data | data: filtered}
   end
   defp filter_entries(%LoaderData{} = data), do: data
 

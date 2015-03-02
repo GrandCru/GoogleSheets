@@ -22,13 +22,12 @@ defmodule GoogleSheets.Updater do
 
   # Internal implementation
   defp handle_update(config) do
-    Logger.debug "Requesting CSV data for spreadsheet #{config[:id]}"
     data = %LoaderData{key: config[:key], included_sheets: config[:worksheets], last_updated: last_updated(:ets.lookup(ets_table, config[:id])) }
     handle_load config, GoogleSheets.Loader.load data
   end
 
   defp last_updated([]), do: nil
-  defp last_updated([{id, last_updated, _}]), do: last_updated
+  defp last_updated([{_id, last_updated, _}]), do: last_updated
 
   defp handle_load(config, %LoaderData{:status => :ok} = data) do
     try do
@@ -40,11 +39,9 @@ defmodule GoogleSheets.Updater do
         stacktrace = System.stacktrace
         Logger.error "Failed to parse and/or store config, reason: #{inspect e} #{inspect stacktrace}"
     end
-    Logger.debug "Loaded data for #{config[:id]} last_updated: #{data.last_updated}"
     schedule_update config[:delay]
   end
   defp handle_load(config, %LoaderData{:status => :up_to_date} = data) do
-    Logger.debug "Spreadsheet #{config[:id]} not updated since #{data.last_updated}, scheduling new update in #{config[:delay]}"
     on_up_to_date config
     schedule_update config[:delay]
   end
