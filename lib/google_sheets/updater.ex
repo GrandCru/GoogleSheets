@@ -22,7 +22,7 @@ defmodule GoogleSheets.Updater do
 
   # Internal implementation
   defp handle_update(config) do
-    data = %LoaderData{key: config[:key], included_sheets: config[:worksheets], last_updated: last_updated(:ets.lookup(ets_table, config[:id])) }
+    data = %LoaderData{key: config[:key], included_sheets: config[:included_sheets], last_updated: last_updated(:ets.lookup(ets_table, config[:id])) }
     handle_load config, GoogleSheets.Loader.load data
   end
 
@@ -41,7 +41,7 @@ defmodule GoogleSheets.Updater do
     end
     schedule_update config[:delay]
   end
-  defp handle_load(config, %LoaderData{:status => :up_to_date} = data) do
+  defp handle_load(config, %LoaderData{:status => :up_to_date} = _data) do
     on_up_to_date config
     schedule_update config[:delay]
   end
