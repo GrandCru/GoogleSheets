@@ -3,7 +3,8 @@ defmodule GoogleSheets.Updater do
   use GenServer
   require Logger
 
-  alias GoogleSheets.LoaderData
+  alias GoogleSheets.LoaderConfig
+  alias GoogleSheets.SpreadSheetData
 
   def start_link(config, options \\ []) do
     GenServer.start_link(__MODULE__, config, options)
@@ -22,18 +23,24 @@ defmodule GoogleSheets.Updater do
 
   # Internal implementation
   defp handle_update(config) do
-    data = %LoaderData{key: config[:key], included_sheets: config[:included_sheets], last_updated: last_updated(:ets.lookup(ets_table, config[:id])) }
-    handle_load config, GoogleSheets.Loader.load data
+    settings = %LoaderConfig{key: config[:key], last_updated: last_updated(config), included: config[:included], excluded: config[:excluded] }
+    handle_load config, GoogleSheets.Loader.load settings
   end
 
-  defp last_updated([]), do: nil
-  defp last_updated([{_id, last_updated, _}]), do: last_updated
+  defp last_updated(config) do
+    case :ets.lookup ets_table, config[:id] do
+      [{_id, last_updated, _}] ->
+        last_updated
+      _ ->
+        nil
+    end
+  end
 
-  defp handle_load(config, %LoaderData{:status => :ok} = data) do
+  defp handle_load(config, {updated, %SpreadSheetData{} = spreadsheet}) do
     try do
-      persisted = loaded_callback config, data.spreadsheet
-      :ets.insert ets_table, {config[:id], data.last_updated, persisted}
-      saved_callback config, persisted
+      data = loaded_callback config, spreadsheet
+      :ets.insert ets_table, {config[:id], updated, data}
+      saved_callback config, data
     rescue
       e ->
         stacktrace = System.stacktrace
@@ -41,8 +48,11 @@ defmodule GoogleSheets.Updater do
     end
     schedule_update config[:delay]
   end
-  defp handle_load(config, %LoaderData{:status => :up_to_date} = _data) do
-    on_up_to_date config
+  defp handle_load(config, :unchanged) do
+    on_unchanged config
+    schedule_update config[:delay]
+  end
+  defp handle_load(config, :error) do
     schedule_update config[:delay]
   end
 
@@ -57,7 +67,7 @@ defmodule GoogleSheets.Updater do
   # Let the host application do what ever they want with the data
   defp loaded_callback(config, data) do
     if config[:callback] != nil do
-      data = config[:callback].on_data_loaded config[:id], data
+      data = config[:callback].on_loaded config[:id], data
     end
     data
   end
@@ -65,14 +75,14 @@ defmodule GoogleSheets.Updater do
   # Notify that there is new data available
   defp saved_callback(config, data) do
     if config[:callback] != nil do
-      config[:callback].on_data_saved config[:id], data
+      config[:callback].on_saved config[:id], data
     end
   end
 
-  # Notify that update
-  defp on_up_to_date(config) do
+  # Notify that the data was unchanged
+  defp on_unchanged(config) do
     if config[:callback] != nil do
-      config[:callback].on_up_to_date config[:id]
+      config[:callback].on_unchanged config[:id]
     end
   end
 

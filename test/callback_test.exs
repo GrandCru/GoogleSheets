@@ -8,20 +8,20 @@ defmodule MockCallback do
     GenServer.start_link __MODULE__, parent_pid, name: :mock_callback
   end
 
-  def on_data_loaded(id, data) do
-    Logger.debug "on_data_loaded #{id}"
+  def on_loaded(id, data) do
+    Logger.debug "on_loaded #{id}"
     GenServer.cast :mock_callback, {:loaded, id}
     data
   end
 
-  def on_data_saved(id, data) do
-    Logger.debug "on_data_saved #{id}"
+  def on_saved(id, _data) do
+    Logger.debug "on_saved #{id}"
     GenServer.cast :mock_callback, {:saved, id}
   end
 
-  def on_up_to_date(id) do
-    Logger.debug "on_up_to_date #{id}"
-    GenServer.cast :mock_callback, {:up_to_date, id}
+  def on_unchanged(id) do
+    Logger.debug "on_unchanged #{id}"
+    GenServer.cast :mock_callback, {:unchanged, id}
   end
 
   def handle_cast(msg, parent_pid) do
@@ -42,16 +42,18 @@ defmodule CallbackTest do
     cfg = [
       id: :callback_test,
       key: "1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs",
-      worksheets: ["KeyValue", "KeyTable", "KeyIndexTable"],
-      delay: 10,
+      included: ["KeyValue"],
+      excluded: [],
+      delay: 1,
       callback: MockCallback
     ]
+
     {:ok, _mock_pid} = MockCallback.start_link self
     {:ok, _updater_pid} = GoogleSheets.Updater.start_link(cfg, [])
 
     assert_receive {:loaded, :callback_test}, 50_000
     assert_receive {:saved, :callback_test}, 50_000
-    assert_receive {:up_to_date, :callback_test}, 50_000
+    assert_receive {:unchanged, :callback_test}, 50_000
   end
 end
 

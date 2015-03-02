@@ -1,12 +1,12 @@
 
 defmodule GoogleSheets.Loader do
 
-  use Pipe
   require Logger
 
+  alias GoogleSheets.LoaderConfig
   alias GoogleSheets.SpreadSheetData
   alias GoogleSheets.WorkSheetData
-  alias GoogleSheets.LoaderData
+  alias GoogleSheets.Utils
 
   @doc """
   Loads all sheets in the spreadsheet published with the given access key.
@@ -16,77 +16,86 @@ defmodule GoogleSheets.Loader do
   See the module README.md for information about how to publish Google Spreadsheets
   and how to get the access key.
   """
-  def load(%LoaderData{} = data) do
-    data
+  def load(%LoaderConfig{} = config) do
+    result =
+      config
       |> load_feed
       |> parse_response
       |> parse_feed
       |> filter_entries
       |> load_content
       |> calculate_hash
+      |> create_response
   end
 
   #
   # Load atom feed content describing spreadsheet
   #
-  defp load_feed(%LoaderData{} = data) do
-    url = "https://spreadsheets.google.com/feeds/worksheets/#{data.key}/public/basic"
+  defp load_feed(%LoaderConfig{} = config) do
+    url = "https://spreadsheets.google.com/feeds/worksheets/#{config.key}/public/basic"
     case HTTPoison.get url do
       {:ok, %HTTPoison.Response{status_code: 200} = response} ->
-        %LoaderData{data | :data => response.body}
+        {config, response.body}
       {:ok, _} ->
         Logger.error "Error loading feed from url #{url}"
-        %LoaderData{data | :status => :error}
+        :error
       _ ->
         Logger.error "Internal error in HTTPoison requesting feed url #{url}"
-        %LoaderData{data | :status => :error}
+        :error
     end
   end
 
   #
   # Parses the atom feed and validate that the response we received is an actual feed for the document
   #
-  defp parse_response(%LoaderData{:status => :ok} = data) do
+  defp parse_response({%LoaderConfig{} = config, response_body}) do
     try do
-      {:ok, {'{http://www.w3.org/2005/Atom}feed', _, feed}, _} = :erlsom.simple_form data.data
-      %{data | :data => feed}
+      {:ok, {'{http://www.w3.org/2005/Atom}feed', _, feed}, _} = :erlsom.simple_form response_body
+      {config, feed}
     catch
       _ ->
         Logger.error "Invalid XML document, unable to parse it."
-        %LoaderData{data | :status => :error}
+        :error
     rescue
       _ ->
         Logger.error "Document not matching expected format."
-        %LoaderData{data | :status => :error}
+        :error
     end
   end
-  defp parse_response(%LoaderData{} = data), do: data
+  defp parse_response(result), do: result
 
   #
   # Parse last updated and CSV content URLs from the atom feed
   #
-  defp parse_feed(%LoaderData{:status => :ok} = data) do
-    {last_updated, worksheets} = parse_feed data.data, nil, []
+  defp parse_feed({%LoaderConfig{} = config, feed}) do
+    {last_updated, sheets} = parse_feed feed, nil, []
 
-    case data.last_updated != nil and last_updated != nil and data.last_updated == last_updated do
+    case config.last_updated != nil and last_updated != nil and config.last_updated == last_updated do
       true ->
-        %LoaderData{data | :status => :up_to_date, :data => nil}
+        :unchanged
       false ->
-        %LoaderData{data | :last_updated => last_updated, :data => worksheets}
+        {config, last_updated, sheets}
     end
   end
-  defp parse_feed(%LoaderData{:status => :error} = data), do: data
+  defp parse_feed(result), do: result
 
-  defp parse_feed([], updated, worksheets), do: {updated, worksheets}
-  defp parse_feed([{'{http://www.w3.org/2005/Atom}updated', [], [last_updated]} | rest], _updated, worksheets), do: parse_feed(rest, last_updated, worksheets)
-  defp parse_feed([{'{http://www.w3.org/2005/Atom}entry', _, entry} | rest], updated, worksheets), do: parse_feed(rest, updated, parse_feed_entry(entry, worksheets))
-  defp parse_feed([_node | rest], updated, worksheets), do: parse_feed(rest, updated, worksheets)
+  # Parse feed entries
+  defp parse_feed([], updated, sheets) do
+    {updated, sheets}
+  end
+  defp parse_feed([{'{http://www.w3.org/2005/Atom}updated', [], [last_updated]} | rest], _updated, sheets) do
+    parse_feed rest, last_updated, sheets
+  end
+  defp parse_feed([{'{http://www.w3.org/2005/Atom}entry', _, entry} | rest], updated, sheets) do
+    parse_feed rest, updated, [parse_feed_entry(entry) | sheets]
+  end
+  defp parse_feed([_node | rest], updated, sheets) do
+    parse_feed rest, updated, sheets
+  end
 
-  # Parse individual worskheet entry nodes in feed
-  defp parse_feed_entry(entry, worksheets) do
-    title = find_entry_title entry
-    url = find_entry_url entry
-    [%WorkSheetData{name: title, url: url} | worksheets]
+  # Parse individual worksheet entry node in feed
+  defp parse_feed_entry(entry) do
+    %WorkSheetData{name: find_entry_title(entry), url: find_entry_url(entry)}
   end
 
   # Find the title of of the worksheet
@@ -102,34 +111,41 @@ defmodule GoogleSheets.Loader do
   #
   # Filter spreadsheet sheets and leave only those specified in the sheets list, if no list is given, don't do any filtering
   #
-  defp filter_entries(%LoaderData{:status => :ok, included_sheets: nil} = data), do: data
-  defp filter_entries(%LoaderData{:status => :ok} = data) do
-    filtered = Enum.filter(data.data, fn(ws) -> ws.name in data.included_sheets end)
-    %LoaderData{data | data: filtered}
-  end
-  defp filter_entries(%LoaderData{} = data), do: data
+  defp filter_entries({%LoaderConfig{} = config, updated, sheets}) do
+    filtered = sheets
+      |> filter_included(config.included)
+      |> filter_excluded(config.excluded)
 
+    {config, updated, filtered}
+  end
+  defp filter_entries(result), do: result
+
+  defp filter_included(sheets, nil), do: sheets
+  defp filter_included(sheets, included), do: Enum.filter(sheets, fn(sheet) -> sheet.name in included end)
+
+  defp filter_excluded(sheets, nil), do: sheets
+  defp filter_excluded(sheets, excluded), do: Enum.filter(sheets, fn(sheet) -> not sheet.name in excluded end)
   #
   # Load the csv content
   #
-  defp load_content(%LoaderData{:status => :ok} = data) do
-    case load_content data.data, %SpreadSheetData{} do
-      :error ->
-        %LoaderData{data | :status => :error}
-      spreadsheet ->
-        %LoaderData{data | :data => nil, :spreadsheet => spreadsheet}
-    end
-  end
-  defp load_content(%LoaderData{} = data), do: data
-
-  # Recursively loop throug all keys found from the feed
-  defp load_content([], spreadsheet), do: spreadsheet
-  defp load_content([%WorkSheetData{} = worksheet | rest], spreadsheet) do
-    case load_csv_content worksheet.url do
+  defp load_content({%LoaderConfig{} = config, updated, sheets}) do
+    case load_content sheets, [] do
+      sheets when is_list(sheets) ->
+        {config, updated, sheets}
       :error ->
         :error
-      {content, hash} ->
-        load_content rest, %SpreadSheetData{spreadsheet | sheets: [ %WorkSheetData{worksheet | data: content, hash: hash} | spreadsheet.sheets]}
+    end
+  end
+  defp load_content(result), do: result
+
+  # Recursively loop throug all keys found from the feed
+  defp load_content([], sheets), do: sheets
+  defp load_content([%WorkSheetData{} = sheet | rest], sheets) do
+    case load_csv_content sheet.url do
+      {csv, hash} ->
+        load_content rest, [%WorkSheetData{sheet | csv: csv, hash: hash} | sheets]
+      :error ->
+        :error
     end
   end
 
@@ -137,7 +153,7 @@ defmodule GoogleSheets.Loader do
   defp load_csv_content(url) do
     case HTTPoison.get url do
       {:ok, %HTTPoison.Response{status_code: 200} = response} ->
-        {response.body, hash(response.body)}
+        {response.body, Utils.hexstring(:crypto.hash(:md5, response.body))}
       {:ok, response} ->
         Logger.error "Error loading CSV content from url #{url} status: #{inspect response.status_code}"
         :error
@@ -150,20 +166,17 @@ defmodule GoogleSheets.Loader do
   #
   # Calculate concatenated hash for all worksheets
   #
-  defp calculate_hash(%LoaderData{:status => :ok} = data) do
-    concatenated = Enum.reduce(data.spreadsheet.sheets, "", fn(ws, acc) -> ws.hash <> acc end) |> hash
-    spreadsheet = %SpreadSheetData{data.spreadsheet | :hash => concatenated}
-    %LoaderData{data | :spreadsheet => spreadsheet}
+  defp calculate_hash({%LoaderConfig{} = config, updated, sheets}) do
+    hash =  Utils.hexstring(:crypto.hash(:md5, Enum.reduce(sheets, "", fn(sheet, acc) -> sheet.hash <> acc end)))
+    {config, updated, sheets, hash}
   end
-  defp calculate_hash(%LoaderData{} = data), do: data
+  defp calculate_hash(result), do: result
 
-  # Calculate hash for CSV content
-  defp hash(content) do
-    GoogleSheets.Utils.hexstring :crypto.hash(hash_func, content)
+  #
+  # Construct response
+  #
+  defp create_response({%LoaderConfig{} = config, updated, sheets, hash}) do
+    {updated, %SpreadSheetData{sheets: sheets, hash: hash}}
   end
-
-  defp hash_func do
-    {:ok, func} = Application.fetch_env :google_sheets, :hash_func
-    func
-  end
+  defp create_response(result), do: result
 end
