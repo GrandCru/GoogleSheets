@@ -27,19 +27,19 @@ defmodule GoogleSheets.Updater do
   end
 
   defp handle_load(config, %LoaderData{:status => :ok} = data) do
-    data = loaded_callback config, data
-    :ets.insert ets_table, {config[:id], data}
-    saved_callback config
+    try do
+      data = loaded_callback config, data
+      :ets.insert ets_table, {config[:id], data}
+      saved_callback config, data
+    rescue
+      e ->
+        stacktrace = System.stacktrace
+        Logger.error "Failed to parse and/or store config, reason: #{inspect e} #{inspect stacktrace}"
+    end
     schedule_update config[:delay]
   end
   defp handle_load(config, %LoaderData{:status => :up_to_date} = data) do
     schedule_update config[:delay]
-  end
-  defp handle_load(_config, {:error, msg}) do
-    # Schedule an update again immediately if the request failed.
-    # Note: This means we will keep trying to fetch data at least once, even if delay is 0
-    Logger.debug "Failed to load data from google sheets, scheduling update immediately. Reason: #{inspect msg}"
-    schedule_update 1
   end
 
   # If delay has been configured to 0, the update will be done only once.
@@ -60,9 +60,9 @@ defmodule GoogleSheets.Updater do
   end
 
   # Notify that there is new data available
-  defp saved_callback(config) do
+  defp saved_callback(config, data) do
     if config[:callback] != nil do
-      config[:callback].on_data_saved config[:id]
+      config[:callback].on_data_saved config[:id], data
     end
   end
 

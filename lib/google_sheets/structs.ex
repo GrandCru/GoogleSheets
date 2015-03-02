@@ -1,5 +1,5 @@
 defmodule GoogleSheets.SpreadSheetData do
-  defstruct hash: nil, sheets: []
+  defstruct hash: nil, sheets: [], data: nil
   @type t :: %GoogleSheets.SpreadSheetData{hash: String.t, sheets: [GoogleSheets.WorkSheetData.t]}
 end
 
