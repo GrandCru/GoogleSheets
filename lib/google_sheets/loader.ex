@@ -17,28 +17,29 @@ defmodule GoogleSheets.Loader do
   and how to get the access key.
   """
   def load(%LoaderData{} = data) do
+    Logger.debug "Loading data #{inspect data}"
     data
       |> load_feed
       |> parse_response
       |> parse_feed
       |> filter_entries
       |> load_content
-      |> concatenated_hash
+      |> calculate_hash
   end
 
   #
   # Load atom feed content describing spreadsheet
   #
   defp load_feed(%LoaderData{} = data) do
-    data = %LoaderData{data | :feed_url => "https://spreadsheets.google.com/feeds/worksheets/#{data.key}/public/basic"}
-    case HTTPoison.get data.feed_url do
+    url = "https://spreadsheets.google.com/feeds/worksheets/#{data.key}/public/basic"
+    case HTTPoison.get url do
       {:ok, %HTTPoison.Response{status_code: 200} = response} ->
-        %LoaderData{data | :response => response}
+        %LoaderData{data | :data => response.body}
       {:ok, _} ->
-        Logger.debug "Error loading feed from url #{inspect data.feed_url}"
+        Logger.error "Error loading feed from url #{url}"
         %LoaderData{data | :status => :error}
       _ ->
-        Logger.error "Internal error in HTTPoison requesting feed url #{inspect data.feed_url}"
+        Logger.error "Internal error in HTTPoison requesting feed url #{url}"
         %LoaderData{data | :status => :error}
     end
   end
@@ -48,8 +49,8 @@ defmodule GoogleSheets.Loader do
   #
   defp parse_response(%LoaderData{:status => :ok} = data) do
     try do
-      {:ok, {'{http://www.w3.org/2005/Atom}feed', _, feed}, _} = :erlsom.simple_form data.response.body
-      %{data | :feed => feed, :response => nil}
+      {:ok, {'{http://www.w3.org/2005/Atom}feed', _, feed}, _} = :erlsom.simple_form data.data
+      %{data | :data => feed}
     catch
       _ ->
         Logger.error "Invalid XML document, unable to parse it."
@@ -66,13 +67,13 @@ defmodule GoogleSheets.Loader do
   # Parse last updated and CSV content URLs from the atom feed
   #
   defp parse_feed(%LoaderData{:status => :ok} = data) do
-    {last_updated, worksheets} = parse_feed data.feed, nil, []
+    {last_updated, worksheets} = parse_feed data.data, nil, []
 
     case data.last_updated != nil and last_updated != nil and data.last_updated == last_updated do
       true ->
-        %LoaderData{data | :status => :up_to_date, :feed => nil}
+        %LoaderData{data | :status => :up_to_date, :data => nil}
       false ->
-        %LoaderData{data | :last_updated => last_updated, :worksheets => worksheets, :feed => nil}
+        %LoaderData{data | :last_updated => last_updated, :data => worksheets}
     end
   end
   defp parse_feed(%LoaderData{:status => :error} = data), do: data
@@ -102,10 +103,10 @@ defmodule GoogleSheets.Loader do
   #
   # Filter spreadsheet sheets and leave only those specified in the sheets list, if no list is given, don't do any filtering
   #
-  defp filter_entries(%LoaderData{:status => :ok, sheets: nil} = data), do: data
+  defp filter_entries(%LoaderData{:status => :ok, included_sheets: nil} = data), do: data
   defp filter_entries(%LoaderData{:status => :ok} = data) do
-    filtered = Enum.filter(data.worksheets, fn(ws) -> ws.name in data.sheets end)
-    %{data | worksheets: filtered}
+    filtered = Enum.filter(data.data, fn(ws) -> ws.name in data.included_sheets end)
+    %{data | data: filtered}
   end
   defp filter_entries(%LoaderData{} = data), do: data
 
@@ -113,11 +114,11 @@ defmodule GoogleSheets.Loader do
   # Load the csv content
   #
   defp load_content(%LoaderData{:status => :ok} = data) do
-    case load_content data.worksheets, %SpreadSheetData{} do
+    case load_content data.data, %SpreadSheetData{} do
       :error ->
         %LoaderData{data | :status => :error}
       spreadsheet ->
-        %LoaderData{data | :spreadsheet => spreadsheet}
+        %LoaderData{data | :data => nil, :spreadsheet => spreadsheet}
     end
   end
   defp load_content(%LoaderData{} = data), do: data
@@ -129,7 +130,7 @@ defmodule GoogleSheets.Loader do
       :error ->
         :error
       {content, hash} ->
-        load_content rest, %SpreadSheetData{spreadsheet | sheets: [ %WorkSheetData{worksheet | csv: content, hash: hash} | spreadsheet.sheets]}
+        load_content rest, %SpreadSheetData{spreadsheet | sheets: [ %WorkSheetData{worksheet | data: content, hash: hash} | spreadsheet.sheets]}
     end
   end
 
@@ -150,12 +151,12 @@ defmodule GoogleSheets.Loader do
   #
   # Calculate concatenated hash for all worksheets
   #
-  defp concatenated_hash(%LoaderData{:status => :ok} = data) do
-    concatenated = Enum.reduce(data.spreadsheet.sheets, "", fn(ws, acc) -> ws.hash <> acc end)
-    spreadsheet = %SpreadSheetData{data.spreadsheet | :hash => hash(concatenated)}
+  defp calculate_hash(%LoaderData{:status => :ok} = data) do
+    concatenated = Enum.reduce(data.spreadsheet.sheets, "", fn(ws, acc) -> ws.hash <> acc end) |> hash
+    spreadsheet = %SpreadSheetData{data.spreadsheet | :hash => concatenated}
     %LoaderData{data | :spreadsheet => spreadsheet}
   end
-  defp concatenated_hash(%LoaderData{} = data), do: data
+  defp calculate_hash(%LoaderData{} = data), do: data
 
   # Calculate hash for CSV content
   defp hash(content) do

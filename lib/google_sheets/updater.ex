@@ -23,22 +23,29 @@ defmodule GoogleSheets.Updater do
   # Internal implementation
   defp handle_update(config) do
     Logger.debug "Requesting CSV data for spreadsheet #{config[:id]}"
-    handle_load config, %LoaderData{key: config[:key], sheets: config[:worksheets]}
+    data = %LoaderData{key: config[:key], included_sheets: config[:worksheets], last_updated: last_updated(:ets.lookup(ets_table, config[:id])) }
+    handle_load config, GoogleSheets.Loader.load data
   end
+
+  defp last_updated([]), do: nil
+  defp last_updated([{id, last_updated, _}]), do: last_updated
 
   defp handle_load(config, %LoaderData{:status => :ok} = data) do
     try do
-      data = loaded_callback config, data
-      :ets.insert ets_table, {config[:id], data}
-      saved_callback config, data
+      persisted = loaded_callback config, data.spreadsheet
+      :ets.insert ets_table, {config[:id], data.last_updated, persisted}
+      saved_callback config, persisted
     rescue
       e ->
         stacktrace = System.stacktrace
         Logger.error "Failed to parse and/or store config, reason: #{inspect e} #{inspect stacktrace}"
     end
+    Logger.debug "Loaded data for #{config[:id]} last_updated: #{data.last_updated}"
     schedule_update config[:delay]
   end
   defp handle_load(config, %LoaderData{:status => :up_to_date} = data) do
+    Logger.debug "Spreadsheet #{config[:id]} not updated since #{data.last_updated}, scheduling new update in #{config[:delay]}"
+    on_up_to_date config
     schedule_update config[:delay]
   end
 
@@ -47,7 +54,6 @@ defmodule GoogleSheets.Updater do
     Logger.debug "Stopping scheduled updates"
   end
   defp schedule_update(delay) do
-    Logger.debug "Next update in #{delay} seconds"
     Process.send_after self(), :update, delay * 1000
   end
 
@@ -63,6 +69,13 @@ defmodule GoogleSheets.Updater do
   defp saved_callback(config, data) do
     if config[:callback] != nil do
       config[:callback].on_data_saved config[:id], data
+    end
+  end
+
+  # Notify that update
+  defp on_up_to_date(config) do
+    if config[:callback] != nil do
+      config[:callback].on_up_to_date config[:id]
     end
   end
 

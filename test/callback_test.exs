@@ -9,12 +9,19 @@ defmodule MockCallback do
   end
 
   def on_data_loaded(id, data) do
+    Logger.debug "on_data_loaded #{id}"
     GenServer.cast :mock_callback, {:loaded, id}
     data
   end
 
   def on_data_saved(id, data) do
+    Logger.debug "on_data_saved #{id}"
     GenServer.cast :mock_callback, {:saved, id}
+  end
+
+  def on_up_to_date(id) do
+    Logger.debug "on_up_to_date #{id}"
+    GenServer.cast :mock_callback, {:up_to_date, id}
   end
 
   def handle_cast(msg, parent_pid) do
@@ -44,6 +51,7 @@ defmodule CallbackTest do
 
     assert_receive {:loaded, :callback_test}, 50_000
     assert_receive {:saved, :callback_test}, 50_000
+    assert_receive {:up_to_date, :callback_test}, 50_000
   end
 end
 

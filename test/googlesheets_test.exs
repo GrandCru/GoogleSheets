@@ -11,17 +11,20 @@ defmodule GooglesheetsTest do
     response = GoogleSheets.Loader.load %LoaderData{key: @document_key}
 
     assert response.status == :ok
+    assert response.last_updated != nil
     assert response.spreadsheet.hash == "0c55fcbcb0f6480df230bf6e7cedd7ce"
     assert length(response.spreadsheet.sheets) == 4
     assert Enum.any?(response.spreadsheet.sheets, fn(x) -> x.name == "KeyValue" end)
     assert Enum.any?(response.spreadsheet.sheets, fn(x) -> x.name == "KeyTable" end)
     assert Enum.any?(response.spreadsheet.sheets, fn(x) -> x.name == "KeyIndexTable" end)
     assert Enum.any?(response.spreadsheet.sheets, fn(x) -> x.name == "Ignored" end)
+
   end
 
   test "Fetch sheets with filtering" do
-    response = GoogleSheets.Loader.load %LoaderData{key: @document_key, sheets: ["KeyValue", "KeyTable", "KeyIndexTable"]}
+    response = GoogleSheets.Loader.load %LoaderData{key: @document_key, included_sheets: ["KeyValue", "KeyTable", "KeyIndexTable"]}
     assert response.status == :ok
+    assert response.last_updated != nil
     assert response.spreadsheet.hash == "a1cab0e42272d106576bdf6782b02334"
     assert length(response.spreadsheet.sheets) == 3
     assert Enum.any?(response.spreadsheet.sheets, fn(x) -> x.name == "KeyValue" end)
