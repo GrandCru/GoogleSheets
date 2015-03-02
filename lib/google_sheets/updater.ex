@@ -3,6 +3,8 @@ defmodule GoogleSheets.Updater do
   use GenServer
   require Logger
 
+  alias GoogleSheets.LoaderData
+
   def start_link(config, options \\ []) do
     GenServer.start_link(__MODULE__, config, options)
   end
@@ -21,13 +23,16 @@ defmodule GoogleSheets.Updater do
   # Internal implementation
   defp handle_update(config) do
     Logger.debug "Requesting CSV data for spreadsheet #{config[:id]}"
-    handle_load(config, GoogleSheets.Loader.load(config[:key], config[:worksheets]))
+    handle_load config, %LoaderData{key: config[:key], sheets: config[:worksheets]}
   end
 
-  defp handle_load(config, {:ok, data}) do
+  defp handle_load(config, %LoaderData{:status => :ok} = data) do
     data = loaded_callback config, data
     :ets.insert ets_table, {config[:id], data}
     saved_callback config
+    schedule_update config[:delay]
+  end
+  defp handle_load(config, %LoaderData{:status => :up_to_date} = data) do
     schedule_update config[:delay]
   end
   defp handle_load(_config, {:error, msg}) do
