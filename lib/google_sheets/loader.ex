@@ -23,7 +23,7 @@ defmodule GoogleSheets.Loader do
         |> create_response
     catch
       :unchanged ->
-        Logger.debug "Document #{inspect config.key} not changed since #{inspect config.last_updated}"
+        Logger.info "Document #{inspect config.key} not changed since #{inspect config.last_updated}"
         :unchanged
     end
   end

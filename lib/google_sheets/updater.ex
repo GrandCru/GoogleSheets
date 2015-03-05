@@ -16,10 +16,10 @@ defmodule GoogleSheets.Updater do
       Process.send_after self(), :update, 0
     else
       if config[:delay] <= 0 do
-        Logger.debug "Subsequent restart for #{config[:id]}, configured delay #{config[:delay]} less or equal to 0, waiting still at least 30 seconds before polling again"
+        Logger.info "Subsequent restart for #{config[:id]}, configured delay #{config[:delay]} less or equal to 0, waiting still at least 30 seconds before polling again"
         schedule_update config, 30
       else
-        Logger.debug "Subsequent restart for #{config[:id]}, waiting configured delay before polling again #{config[:delay]}"
+        Logger.info "Subsequent restart for #{config[:id]}, waiting configured delay before polling again #{config[:delay]}"
         schedule_update config, config[:delay]
       end
     end
