@@ -38,7 +38,7 @@ defmodule GoogleSheets.Loader do
   @doc """
   Load atom feed content describing spreadsheet
   """
-  defp load_feed(%LoaderConfig{} = config) do
+  def load_feed(%LoaderConfig{} = config) do
     url = "https://spreadsheets.google.com/feeds/worksheets/#{config.key}/public/basic"
     {:ok, %HTTPoison.Response{status_code: 200} = response} = HTTPoison.get url
     {config, response.body}
@@ -47,7 +47,7 @@ defmodule GoogleSheets.Loader do
   @doc """
   Parses the atom feed and validate that the response we received is an actual feed for the document
   """
-  defp parse_response({%LoaderConfig{} = config, response_body}) do
+  def parse_response({%LoaderConfig{} = config, response_body}) do
     {:ok, {'{http://www.w3.org/2005/Atom}feed', _, feed}, _} = :erlsom.simple_form response_body
     {config, feed}
   end
@@ -55,7 +55,7 @@ defmodule GoogleSheets.Loader do
   @doc """
   Parse last updated and CSV content URLs from the atom feeds
   """
-  defp parse_feed({%LoaderConfig{} = config, feed}) do
+  def parse_feed({%LoaderConfig{} = config, feed}) do
     {last_updated, sheets} = parse_feed feed, nil, []
 
     case config.last_updated != nil and last_updated != nil and config.last_updated == last_updated do
@@ -99,7 +99,7 @@ defmodule GoogleSheets.Loader do
   @doc """
   Filter spreadsheet sheets and leave only those specified in the sheets list, if no list is given, don't do any filtering
   """
-  defp filter_entries({%LoaderConfig{} = config, updated, sheets}) do
+  def filter_entries({%LoaderConfig{} = config, updated, sheets}) do
     filtered = sheets
       |> filter_included(config.included)
       |> filter_excluded(config.excluded)
@@ -116,7 +116,7 @@ defmodule GoogleSheets.Loader do
   @doc """
   Load the csv content
   """
-  defp load_content({%LoaderConfig{} = config, updated, sheets}) do
+  def load_content({%LoaderConfig{} = config, updated, sheets}) do
     {config, updated, load_content(sheets, [])}
   end
 
@@ -137,7 +137,7 @@ defmodule GoogleSheets.Loader do
   @doc """
   Calculate concatenated hash for all worksheets
   """
-  defp calculate_hash({%LoaderConfig{} = config, updated, sheets}) do
+  def calculate_hash({%LoaderConfig{} = config, updated, sheets}) do
     hash = Utils.hexstring(:crypto.hash(:md5, Enum.reduce(sheets, "", fn(sheet, acc) -> sheet.hash <> acc end)))
     {config, updated, sheets, hash}
   end
@@ -145,7 +145,7 @@ defmodule GoogleSheets.Loader do
   @doc """
   Construct response
   """
-  defp create_response({%LoaderConfig{} = config, updated, sheets, hash}) do
+  def create_response({%LoaderConfig{}, updated, sheets, hash}) do
     {updated, %SpreadSheetData{sheets: sheets, hash: hash}}
   end
 end
