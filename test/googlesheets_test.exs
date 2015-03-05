@@ -36,7 +36,7 @@ defmodule GooglesheetsTest do
 
   test "fetch invalid url" do
     config = %LoaderConfig{key: "invalid_key", included: nil, excluded: nil}
-    assert :error == GoogleSheets.Loader.load config
+    assert_raise MatchError, fn -> GoogleSheets.Loader.load config end
   end
 
 end

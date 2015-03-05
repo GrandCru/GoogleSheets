@@ -25,13 +25,6 @@ defmodule GoogleSheets.Loader do
       :unchanged ->
         Logger.debug "Document #{inspect config.key} not changed since #{inspect config.last_updated}"
         :unchanged
-      e ->
-        Logger.error "Error loading #{inspect config.key} #{inspect e} #{inspect System.stacktrace}"
-        :error
-    rescue
-      e ->
-        Logger.error "Error loading #{inspect config.key} #{inspect e} #{inspect System.stacktrace}"
-        :error
     end
   end
 
