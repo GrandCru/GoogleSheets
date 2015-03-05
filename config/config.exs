@@ -5,6 +5,9 @@ use Mix.Config
 # Example configuration options, see README.md for more information
 
 config :google_sheets,
+  ets_table: :google_sheets,
+  max_restarts: 3,
+  max_seconds: 5,
   spreadsheets: [
     [
       id: :worksheet_multiple,
@@ -22,8 +25,7 @@ config :google_sheets,
       delay: 10,
       callback: nil
     ]
-  ],
-  ets_table: :google_sheets
+  ]
 
 if Mix.env == :test do
   config :google_sheets,

@@ -11,12 +11,23 @@ defmodule GoogleSheets.Updater do
   end
 
   def init(config) do
-    # Send the first poll request immediately
-    Process.send_after self(), :update, 0
+    # Just so that we don't restart quite as often in case google server is down or we have network problems
+    if first_launch do
+      Process.send_after self(), :update, 0
+    else
+      if config[:delay] <= 0 do
+        Logger.debug "Subsequent restart for #{config[:id]}, configured delay #{config[:delay]} less or equal to 0, waiting still at least 30 seconds before polling again"
+        schedule_update config, 30
+      else
+        Logger.debug "Subsequent restart for #{config[:id]}, waiting configured delay before polling again #{config[:delay]}"
+        schedule_update config, config[:delay]
+      end
+    end
     {:ok, config}
   end
 
   def handle_info(:update, config) do
+    Logger.info "Start polling #{config[:id]}"
     handle_update config
     {:noreply, config}
   end
@@ -40,21 +51,21 @@ defmodule GoogleSheets.Updater do
     data = loaded_callback config, spreadsheet
     :ets.insert ets_table, {config[:id], updated, data}
     saved_callback config, data
-    schedule_update config[:delay]
+    schedule_update config, config[:delay]
   end
   defp handle_load(config, :unchanged) do
     on_unchanged config
-    schedule_update config[:delay]
+    schedule_update config, config[:delay]
   end
   defp handle_load(config, :error) do
-    schedule_update config[:delay]
+    schedule_update config, config[:delay]
   end
 
   # If delay has been configured to 0, the update will be done only once.
-  defp schedule_update(0) do
-    Logger.debug "Stopping scheduled updates"
+  defp schedule_update(config, 0) do
+    Logger.info "Stopping scheduled updates for #{config[:id]}"
   end
-  defp schedule_update(delay) do
+  defp schedule_update(config, delay) do
     Process.send_after self(), :update, delay * 1000
   end
 
@@ -77,6 +88,16 @@ defmodule GoogleSheets.Updater do
   defp on_unchanged(config) do
     if config[:callback] != nil do
       config[:callback].on_unchanged config[:id]
+    end
+  end
+
+  defp first_launch do
+    case :ets.lookup ets_table, :first_launch do
+      {:first_launch, false} ->
+        false
+      _ ->
+        :ets.insert ets_table, {:first_launch, false}
+        true
     end
   end
 
