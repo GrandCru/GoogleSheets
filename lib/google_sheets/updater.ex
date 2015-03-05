@@ -37,14 +37,14 @@ defmodule GoogleSheets.Updater do
   end
 
   defp handle_load(config, {updated, %SpreadSheetData{} = spreadsheet}) do
+    # Use rescue so that the update is called after configured delay if callbacks fail
     try do
       data = loaded_callback config, spreadsheet
       :ets.insert ets_table, {config[:id], updated, data}
       saved_callback config, data
     rescue
       e ->
-        stacktrace = System.stacktrace
-        Logger.error "Failed to parse and/or store config, reason: #{inspect e} #{inspect stacktrace}"
+        Logger.error "Error processing loaded document #{config.key}, reason: #{inspect e} stacktracke: #{inspect System.stacktrace}"
     end
     schedule_update config[:delay]
   end
