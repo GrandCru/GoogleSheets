@@ -65,7 +65,7 @@ defmodule GoogleSheets.Updater do
   defp schedule_update(config, 0) do
     Logger.info "Stopping scheduled updates for #{config[:id]}"
   end
-  defp schedule_update(config, delay) do
+  defp schedule_update(_config, delay) do
     Process.send_after self(), :update, delay * 1000
   end
 
