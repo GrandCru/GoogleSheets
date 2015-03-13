@@ -1,4 +1,3 @@
-
 defmodule MockCallback do
   use GenServer
   require Logger
@@ -41,11 +40,11 @@ defmodule CallbackTest do
     Logger.debug "#{inspect self}"
     cfg = [
       id: :callback_test,
-      key: "1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs",
-      folder: "none",
       sheets: ["KeyValue"],
-      delay: 1,
-      callback: MockCallback
+      poll_delay_seconds: 5,
+      callback_module: MockCallback,
+      loader_init: [module: GoogleSheets.Loader.FileSystem, folder: "priv/data"],
+      loader_poll: [module: GoogleSheets.Loader.Docs, key: "1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs"]
     ]
 
     {:ok, _mock_pid} = MockCallback.start_link self
@@ -56,4 +55,3 @@ defmodule CallbackTest do
     assert_receive {:unchanged, :callback_test}, 50_000
   end
 end
-

@@ -4,7 +4,6 @@ defmodule GoogleSheets.Loader.Docs do
 
   @behaviour GoogleSheets.Loader
 
-  alias GoogleSheets.LoaderConfig
   alias GoogleSheets.SpreadSheetData
   alias GoogleSheets.WorkSheetData
   alias GoogleSheets.Utils
@@ -12,9 +11,10 @@ defmodule GoogleSheets.Loader.Docs do
   @doc """
   Loads all sheets in the spreadsheet published with the given access key.
   """
-  def load(%LoaderConfig{} = config) do
+  def load(sheets, last_updated, config) when is_list(sheets) and is_list(config) do
     try do
-      {config, updated, sheets} = config
+      {config, updated, sheets} =
+        %{sheets: sheets, key: Keyword.fetch!(config, :key), last_updated: last_updated}
         |> request_feed
         |> parse_feed_response
         |> parse_feed
@@ -24,7 +24,7 @@ defmodule GoogleSheets.Loader.Docs do
       {updated, %SpreadSheetData{sheets: sheets, hash: Utils.calculate_combined_hash(sheets)} }
     catch
       :unchanged ->
-        Logger.info "Document #{inspect config.key} not changed since #{inspect config.last_updated}"
+        Logger.info "Document #{inspect config[:key]} not changed since #{inspect config[:last_updated]}"
         :unchanged
     end
   end
@@ -32,8 +32,8 @@ defmodule GoogleSheets.Loader.Docs do
   #
   # Load atom feed content describing spreadsheet
   #
-  defp request_feed(%LoaderConfig{} = config) do
-    url = "https://spreadsheets.google.com/feeds/worksheets/#{config.key}/public/basic"
+  defp request_feed(%{} = config) do
+    url = "https://spreadsheets.google.com/feeds/worksheets/#{config[:key]}/public/basic"
     {:ok, %HTTPoison.Response{status_code: 200} = response} = HTTPoison.get url
     {config, response.body}
   end
@@ -41,7 +41,7 @@ defmodule GoogleSheets.Loader.Docs do
   #
   # Parses the atom feed and validate that the response we received is an actual feed for the document
   #
-  defp parse_feed_response({%LoaderConfig{} = config, response_body}) do
+  defp parse_feed_response({%{} = config, response_body}) do
     {:ok, {'{http://www.w3.org/2005/Atom}feed', _, feed}, _} = :erlsom.simple_form response_body
     {config, feed}
   end
@@ -49,10 +49,10 @@ defmodule GoogleSheets.Loader.Docs do
   #
   # Parse last updated and CSV content URLs from the atom feeds
   #
-  defp parse_feed({%LoaderConfig{} = config, feed}) do
+  defp parse_feed({%{} = config, feed}) do
     {last_updated, sheets} = parse_feed feed, nil, []
 
-    case config.last_updated != nil and last_updated != nil and config.last_updated == last_updated do
+    case config[:last_updated] != nil and last_updated != nil and config[:last_updated] == last_updated do
       true ->
         throw :unchanged
       false ->
@@ -93,15 +93,15 @@ defmodule GoogleSheets.Loader.Docs do
   #
   # Filter spreadsheet sheets and leave only those specified in the sheets list, if no list is given, don't do any filtering
   #
-  defp filter_sheets({%LoaderConfig{} = config, updated, sheets}) do
-    filtered = sheets |> Enum.filter(fn(sheet) -> sheet.name in config.sheets end)
+  defp filter_sheets({%{} = config, updated, sheets}) do
+    filtered = sheets |> Enum.filter(fn(sheet) -> sheet.name in config[:sheets] end)
     {config, updated, filtered}
   end
 
   #
   # Load the csv content using parsed individual worksheet CSV content URLs.
   #
-  def load_csv_content({%LoaderConfig{} = config, updated, sheets}) do
+  defp load_csv_content({%{} = config, updated, sheets}) do
     {config, updated, load_csv_content(sheets, [])}
   end
 

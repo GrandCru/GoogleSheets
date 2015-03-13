@@ -10,74 +10,69 @@ defmodule GoogleSheets.Updater do
     GenServer.start_link(__MODULE__, config, options)
   end
 
+  # Initial update
   def init(config) do
-    # TODO: Try to load initially from filesystem
-    # handle_load config, GoogleSheets.Loader.FileSystem.load %LoaderConfig{key: config[:key], sheets: config[:sheets], last_updated: last_updated(config)}
-    schedule_update config, config[:delay]
+    result = load_spreadsheet config, Keyword.fetch!(config, :loader_init)
+    update_ets_entry config, result
+    schedule_next_update config, Keyword.fetch!(config, :poll_delay_seconds)
     {:ok, config}
   end
 
+  # Polling update
   def handle_info(:update, config) do
-    Logger.info "Start polling #{config[:id]}"
-    handle_update config
+    result = load_spreadsheet config, Keyword.fetch!(config, :loader_poll)
+    update_ets_entry config, result
+    schedule_next_update config, Keyword.fetch!(config, :poll_delay_seconds)
     {:noreply, config}
   end
 
-  # Internal implementation
-  defp handle_update(config) do
-    handle_load config, GoogleSheets.Loader.Docs.load %LoaderConfig{key: config[:key], sheets: config[:sheets], last_updated: last_updated(config)}
+  # Load spreadsheet data with a configured loader
+  defp load_spreadsheet(config, loader_config) do
+    sheets = Keyword.fetch! config, :sheets
+    module = Keyword.fetch! loader_config, :module
+    module.load sheets, last_updated(config), loader_config
   end
+
+  # Update ets table or notify that the data loaded was unchanged
+  defp update_ets_entry(_config, :error), do: :error
+  defp update_ets_entry(config, :unchanged), do: on_unchanged(Keyword.fetch!(config, :callback_module), Keyword.fetch!(config, :id))
+  defp update_ets_entry(config, {updated, spreadsheet}) do
+    id = Keyword.fetch! config, :id
+    callback_module = Keyword.fetch! config, :callback_module
+    data = on_loaded callback_module, id, spreadsheet
+    :ets.insert ets_table, {id, updated, data}
+    on_saved callback_module, id, data
+  end
+
+  # If update_delay has been configured to 0, no updates will be done
+  defp schedule_next_update(config, 0) do
+    Logger.info "Stopping scheduled updates for #{config[:id]}"
+  end
+  defp schedule_next_update(_config, delay_seconds) do
+    Process.send_after self, :update, delay_seconds * 1000
+  end
+
+  #
+  # Callbacks if defined on configuration
+  #
+
+  defp on_loaded(nil, _id, spreadsheet), do: spreadsheet
+  defp on_loaded(module, id, spreadsheet), do: module.on_loaded(id, spreadsheet)
+
+  defp on_saved(nil, _id, data), do: data
+  defp on_saved(module, id, data), do: module.on_saved(id, data)
+
+  defp on_unchanged(nil, _id), do: nil
+  defp on_unchanged(module, id), do: module.on_unchanged id
+
+  #
+  # Helpers
+  #
 
   defp last_updated(config) do
     case :ets.lookup ets_table, config[:id] do
-      [{_id, last_updated, _}] ->
-        last_updated
-      _ ->
-        nil
-    end
-  end
-
-  defp handle_load(config, {updated, %SpreadSheetData{} = spreadsheet}) do
-    data = loaded_callback config, spreadsheet
-    :ets.insert ets_table, {config[:id], updated, data}
-    saved_callback config, data
-    schedule_update config, config[:delay]
-  end
-  defp handle_load(config, :unchanged) do
-    on_unchanged config
-    schedule_update config, config[:delay]
-  end
-  defp handle_load(config, :error) do
-    schedule_update config, config[:delay]
-  end
-
-  # If delay has been configured to 0, the update will be done only once.
-  defp schedule_update(config, 0) do
-    Logger.info "Stopping scheduled updates for #{config[:id]}"
-  end
-  defp schedule_update(_config, delay) do
-    Process.send_after self(), :update, delay * 1000
-  end
-
-  # Let the host application do what ever they want with the data
-  defp loaded_callback(config, data) do
-    if config[:callback] != nil do
-      data = config[:callback].on_loaded config[:id], data
-    end
-    data
-  end
-
-  # Notify that there is new data available
-  defp saved_callback(config, data) do
-    if config[:callback] != nil do
-      config[:callback].on_saved config[:id], data
-    end
-  end
-
-  # Notify that the data was unchanged
-  defp on_unchanged(config) do
-    if config[:callback] != nil do
-      config[:callback].on_unchanged config[:id]
+      [{_id, last_updated, _data}] -> last_updated
+      _ -> nil
     end
   end
 

@@ -4,12 +4,12 @@ defmodule GoogleSheets.Loader.FileSystem do
 
   @behaviour GoogleSheets.Loader
 
-  alias GoogleSheets.LoaderConfig
   alias GoogleSheets.SpreadSheetData
   alias GoogleSheets.WorkSheetData
   alias GoogleSheets.Utils
 
-  def load(%LoaderConfig{} = config) do
+  def load(sheets, last_updated, config) when is_list(sheets) and is_list(config) do
+    :unchanged
   end
 
 end

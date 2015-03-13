@@ -4,15 +4,7 @@ defmodule GoogleSheets.Loader do
   a SpreadSheetData structure containing CSV and associated metadata.
   """
   use Behaviour
-  defcallback load(cfg :: GoogleSheets.LoaderConfig.t) :: GoogleSheets.SpreadSheetData.t | :unchanged
-end
-
-defmodule GoogleSheets.LoaderConfig do
-  @moduledoc """
-  Defines required information for loading spreadsheet data.
-  """
-  defstruct key: nil, sheets: nil, last_updated: nil
-  @type t :: %GoogleSheets.LoaderConfig{key: String.t, sheets: [String.t], last_updated: String.t}
+  defcallback load(sheets :: [binary], last_updated :: binary | nil, config :: Keyword.t) :: GoogleSheets.SpreadSheetData.t | :unchanged | :error
 end
 
 defmodule GoogleSheets.SpreadSheetData do

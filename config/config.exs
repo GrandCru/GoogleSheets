@@ -3,30 +3,25 @@
 use Mix.Config
 
 # Example configuration options, see README.md for more information
-
 config :google_sheets,
   ets_table: :google_sheets,
-  max_restarts: 3,
-  max_seconds: 5,
+  supervisor_max_restarts: 3,
+  supervisor_max_seconds: 5,
   spreadsheets: [
     [
       id: :multiple_worksheets,
-      key: "1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs",
       sheets: ["KeyValue", "KeyTable", "KeyIndexTable"],
-      delay: 10,
-      callback: nil
+      poll_delay_seconds: 10,
+      callback_module: nil,
+      loader_init: [module: GoogleSheets.Loader.FileSystem, folder: "priv/data"],
+      loader_poll: [module: GoogleSheets.Loader.Docs, key: "1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs"]
     ],
     [
       id: :single_worksheet,
-      key: "1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs",
       sheets: ["KeyValue"],
-      delay: 10,
-      callback: nil
+      poll_delay_seconds: 10,
+      callback_module: nil,
+      loader_init: [module: GoogleSheets.Loader.FileSystem, folder: "priv/data"],
+      loader_poll: [module: GoogleSheets.Loader.Docs, key: "1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs"]
     ]
   ]
-
-if Mix.env == :test do
-  config :google_sheets,
-    spreadsheets: [],
-    ets_table: :google_sheets
-end
