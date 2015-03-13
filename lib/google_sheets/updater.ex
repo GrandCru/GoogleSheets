@@ -34,8 +34,7 @@ defmodule GoogleSheets.Updater do
 
   # Internal implementation
   defp handle_update(config) do
-    settings = %LoaderConfig{key: config[:key], last_updated: last_updated(config), included: config[:included], excluded: config[:excluded] }
-    handle_load config, GoogleSheets.Loader.load settings
+    handle_load config, GoogleSheets.Loader.load %LoaderConfig{key: config[:key], last_updated: last_updated(config), included_sheets: config[:sheets] }
   end
 
   defp last_updated(config) do

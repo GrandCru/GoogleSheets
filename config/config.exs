@@ -10,18 +10,18 @@ config :google_sheets,
   max_seconds: 5,
   spreadsheets: [
     [
-      id: :worksheet_multiple,
+      id: :multiple_worksheets,
       key: "1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs",
-      included: ["KeyValue", "KeyTable", "KeyIndexTable"],
-      excluded: [],
+      folder: "priv/multiple_worksheets",
+      sheets: ["KeyValue", "KeyTable", "KeyIndexTable"],
       delay: 10,
       callback: nil
     ],
     [
-      id: :worksheet_single,
+      id: :single_worksheet,
       key: "1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs",
-      included: ["KeyValue"],
-      excluded: [],
+      folder: "priv/single_worksheet",
+      sheets: ["KeyValue"],
       delay: 10,
       callback: nil
     ]

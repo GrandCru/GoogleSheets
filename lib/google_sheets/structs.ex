@@ -1,6 +1,6 @@
 defmodule GoogleSheets.LoaderConfig do
-  defstruct key: nil, last_updated: nil, included: nil, excluded: nil
-  @type t :: %GoogleSheets.LoaderConfig{key: String.t, last_updated: String.t, included: [String.t], excluded: [String.t]}
+  defstruct key: nil, last_updated: nil, included_sheets: nil
+  @type t :: %GoogleSheets.LoaderConfig{key: String.t, last_updated: String.t, included_sheets: [String.t]}
 end
 
 defmodule GoogleSheets.SpreadSheetData do

@@ -13,6 +13,7 @@ defmodule GoogleSheets.Supervisor do
     {:ok, spreadsheets} = Application.fetch_env :google_sheets, :spreadsheets
     {:ok, max_restarts} = Application.fetch_env :google_sheets, :max_restarts
     {:ok, max_seconds} = Application.fetch_env :google_sheets, :max_seconds
+
     # ETS table is created here, so that if the updater process dies, the table is not lost.
     # Must set the permission to public, so that the GoogleSheets.Updater can write,
     # to the table, even if it's not the owning process.
@@ -34,13 +35,12 @@ defmodule GoogleSheets.Supervisor do
     true = is_atom(spreadsheet[:id])
 
     true = Keyword.has_key?(spreadsheet, :key)
-    true = is_binary(spreadsheet[:key])
+    true = String.length(String.strip(spreadsheet[:key])) > 0
 
-    true = Keyword.has_key?(spreadsheet, :included)
-    true = is_list(spreadsheet[:included]) or is_nil(spreadsheet[:included])
+    true = Keyword.has_key?(spreadsheet, :folder)
+    true = String.length(String.strip(spreadsheet[:folder])) > 0
 
-    true = Keyword.has_key?(spreadsheet, :excluded)
-    true = is_list(spreadsheet[:excluded]) or is_nil(spreadsheet[:excluded])
+    [_h | _t] = spreadsheet[:sheets]
 
     true = Keyword.has_key?(spreadsheet, :delay)
     true = is_integer(spreadsheet[:delay])

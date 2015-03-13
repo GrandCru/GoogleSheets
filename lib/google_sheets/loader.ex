@@ -93,18 +93,9 @@ defmodule GoogleSheets.Loader do
   Filter spreadsheet sheets and leave only those specified in the sheets list, if no list is given, don't do any filtering
   """
   def filter_entries({%LoaderConfig{} = config, updated, sheets}) do
-    filtered = sheets
-      |> filter_included(config.included)
-      |> filter_excluded(config.excluded)
-
+    filtered = sheets |> Enum.filter(fn(sheet) -> sheet.name in config.included_sheets end)
     {config, updated, filtered}
   end
-
-  defp filter_included(sheets, nil), do: sheets
-  defp filter_included(sheets, included), do: Enum.filter(sheets, fn(sheet) -> sheet.name in included end)
-
-  defp filter_excluded(sheets, nil), do: sheets
-  defp filter_excluded(sheets, excluded), do: Enum.filter(sheets, fn(sheet) -> not sheet.name in excluded end)
 
   @doc """
   Load the csv content

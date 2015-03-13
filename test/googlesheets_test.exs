@@ -9,7 +9,7 @@ defmodule GooglesheetsTest do
   @document_key "1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs"
 
   test "Fetch all sheets" do
-    config = %LoaderConfig{key: @document_key, included: nil, excluded: nil}
+    config = %LoaderConfig{key: @document_key, included_sheets: ["KeyValue", "KeyTable", "KeyIndexTable", "Ignored"]}
     assert {updated, %SpreadSheetData{} = spreadsheet} = GoogleSheets.Loader.load config
 
     assert updated != nil
@@ -22,7 +22,7 @@ defmodule GooglesheetsTest do
   end
 
   test "Fetch sheets with filtering" do
-    config = %LoaderConfig{key: @document_key, included: ["KeyValue", "KeyTable", "KeyIndexTable"], excluded: ["KeyIndexTable"]}
+    config = %LoaderConfig{key: @document_key, included_sheets: ["KeyValue", "KeyTable", "KeyIndexTable"]}
     assert {updated, %SpreadSheetData{} = spreadsheet} =  GoogleSheets.Loader.load config
 
     assert updated != nil
@@ -35,7 +35,7 @@ defmodule GooglesheetsTest do
   end
 
   test "fetch invalid url" do
-    config = %LoaderConfig{key: "invalid_key", included: nil, excluded: nil}
+    config = %LoaderConfig{key: "invalid_key", included_sheets: []}
     assert_raise MatchError, fn -> GoogleSheets.Loader.load config end
   end
 
