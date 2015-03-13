@@ -42,8 +42,8 @@ defmodule CallbackTest do
     cfg = [
       id: :callback_test,
       key: "1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs",
-      included: ["KeyValue"],
-      excluded: [],
+      folder: "none",
+      sheets: ["KeyValue"],
       delay: 1,
       callback: MockCallback
     ]

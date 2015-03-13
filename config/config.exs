@@ -12,7 +12,6 @@ config :google_sheets,
     [
       id: :multiple_worksheets,
       key: "1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs",
-      folder: "priv/multiple_worksheets",
       sheets: ["KeyValue", "KeyTable", "KeyIndexTable"],
       delay: 10,
       callback: nil
@@ -20,7 +19,6 @@ config :google_sheets,
     [
       id: :single_worksheet,
       key: "1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs",
-      folder: "priv/single_worksheet",
       sheets: ["KeyValue"],
       delay: 10,
       callback: nil

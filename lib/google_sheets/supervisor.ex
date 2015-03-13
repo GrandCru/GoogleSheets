@@ -37,9 +37,6 @@ defmodule GoogleSheets.Supervisor do
     true = Keyword.has_key?(spreadsheet, :key)
     true = String.length(String.strip(spreadsheet[:key])) > 0
 
-    true = Keyword.has_key?(spreadsheet, :folder)
-    true = String.length(String.strip(spreadsheet[:folder])) > 0
-
     [_h | _t] = spreadsheet[:sheets]
 
     true = Keyword.has_key?(spreadsheet, :delay)

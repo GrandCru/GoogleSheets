@@ -9,8 +9,8 @@ defmodule GooglesheetsTest do
   @document_key "1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs"
 
   test "Fetch all sheets" do
-    config = %LoaderConfig{key: @document_key, included_sheets: ["KeyValue", "KeyTable", "KeyIndexTable", "Ignored"]}
-    assert {updated, %SpreadSheetData{} = spreadsheet} = GoogleSheets.Loader.load config
+    config = %LoaderConfig{key: @document_key, sheets: ["KeyValue", "KeyTable", "KeyIndexTable", "Ignored"]}
+    assert {updated, %SpreadSheetData{} = spreadsheet} = GoogleSheets.Loader.Docs.load config
 
     assert updated != nil
     assert spreadsheet.hash == "0c55fcbcb0f6480df230bf6e7cedd7ce"
@@ -22,8 +22,8 @@ defmodule GooglesheetsTest do
   end
 
   test "Fetch sheets with filtering" do
-    config = %LoaderConfig{key: @document_key, included_sheets: ["KeyValue", "KeyTable", "KeyIndexTable"]}
-    assert {updated, %SpreadSheetData{} = spreadsheet} =  GoogleSheets.Loader.load config
+    config = %LoaderConfig{key: @document_key, sheets: ["KeyValue", "KeyTable"]}
+    assert {updated, %SpreadSheetData{} = spreadsheet} =  GoogleSheets.Loader.Docs.load config
 
     assert updated != nil
     assert spreadsheet.hash == "42e023ea61cc1131fc79b94084aac247"
@@ -35,8 +35,8 @@ defmodule GooglesheetsTest do
   end
 
   test "fetch invalid url" do
-    config = %LoaderConfig{key: "invalid_key", included_sheets: []}
-    assert_raise MatchError, fn -> GoogleSheets.Loader.load config end
+    config = %LoaderConfig{key: "invalid_key", sheets: []}
+    assert_raise MatchError, fn -> GoogleSheets.Loader.Docs.load config end
   end
 
 end

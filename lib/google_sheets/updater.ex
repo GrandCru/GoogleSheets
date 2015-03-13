@@ -11,18 +11,9 @@ defmodule GoogleSheets.Updater do
   end
 
   def init(config) do
-    # Just so that we don't restart quite as often in case google server is down or we have network problems
-    if first_launch do
-      Process.send_after self(), :update, 0
-    else
-      if config[:delay] <= 0 do
-        Logger.info "Subsequent restart for #{config[:id]}, configured delay #{config[:delay]} less or equal to 0, waiting still at least 30 seconds before polling again"
-        schedule_update config, 30
-      else
-        Logger.info "Subsequent restart for #{config[:id]}, waiting configured delay before polling again #{config[:delay]}"
-        schedule_update config, config[:delay]
-      end
-    end
+    # TODO: Try to load initially from filesystem
+    # handle_load config, GoogleSheets.Loader.FileSystem.load %LoaderConfig{key: config[:key], sheets: config[:sheets], last_updated: last_updated(config)}
+    schedule_update config, config[:delay]
     {:ok, config}
   end
 
@@ -34,7 +25,7 @@ defmodule GoogleSheets.Updater do
 
   # Internal implementation
   defp handle_update(config) do
-    handle_load config, GoogleSheets.Loader.load %LoaderConfig{key: config[:key], last_updated: last_updated(config), included_sheets: config[:sheets] }
+    handle_load config, GoogleSheets.Loader.Docs.load %LoaderConfig{key: config[:key], sheets: config[:sheets], last_updated: last_updated(config)}
   end
 
   defp last_updated(config) do
@@ -87,16 +78,6 @@ defmodule GoogleSheets.Updater do
   defp on_unchanged(config) do
     if config[:callback] != nil do
       config[:callback].on_unchanged config[:id]
-    end
-  end
-
-  defp first_launch do
-    case :ets.lookup ets_table, :first_launch do
-      {:first_launch, false} ->
-        false
-      _ ->
-        :ets.insert ets_table, {:first_launch, false}
-        true
     end
   end
 
