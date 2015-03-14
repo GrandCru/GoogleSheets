@@ -1,0 +1,14 @@
+Id,Level,Damage,Range,Hitpoints
+Fighter,1,100,10,400
+Fighter,2,120,11.1,450
+Fighter,3,130,12.5,500
+Fighter,4,140,13.5,550
+Fighter,5,150,14.5,600
+Mage,1,200,5,200
+Mage,2,220,5.5,250
+Mage,3,240,6,300
+Mage,4,260,7.6,350
+Monk,1,150,5,300
+Monk,2,160,5.5,350
+Monk,3,170,6,400
+Monk,4,180,7.6,450

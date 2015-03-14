@@ -3,14 +3,15 @@ defmodule GooglesheetsTest do
 
   require Logger
 
+  alias GoogleSheets.Loader.Docs
   alias GoogleSheets.SpreadSheetData
 
   @document_key "1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs"
 
   test "Fetch all sheets" do
-    sheets = ["KeyValue", "KeyTable", "KeyIndexTable", "Ignored"]
+    sheets = []
     opts = [key: @document_key]
-    assert {updated, %SpreadSheetData{} = spreadsheet} = GoogleSheets.Loader.Docs.load sheets, nil, opts
+    assert {updated, %SpreadSheetData{} = spreadsheet} = Docs.load sheets, nil, opts
 
     assert updated != nil
     assert spreadsheet.hash == "0c55fcbcb0f6480df230bf6e7cedd7ce"
@@ -24,7 +25,7 @@ defmodule GooglesheetsTest do
   test "Fetch sheets with filtering" do
     sheets = ["KeyValue", "KeyTable"]
     opts = [key: @document_key]
-    assert {updated, %SpreadSheetData{} = spreadsheet} = GoogleSheets.Loader.Docs.load sheets, nil, opts
+    assert {updated, %SpreadSheetData{} = spreadsheet} = Docs.load sheets, nil, opts
 
     assert updated != nil
     assert spreadsheet.hash == "42e023ea61cc1131fc79b94084aac247"
@@ -36,7 +37,7 @@ defmodule GooglesheetsTest do
   end
 
   test "fetch invalid url" do
-    assert_raise MatchError, fn -> GoogleSheets.Loader.Docs.load [], nil, [key: "invalid_key"] end
+    assert_raise MatchError, fn -> Docs.load [], nil, [key: "invalid_key"] end
   end
 
 end
