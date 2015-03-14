@@ -36,6 +36,9 @@ defmodule GoogleSheets.Updater do
   defp update_ets_entry(config, {updated, spreadsheet}) do
     id = Keyword.fetch! config, :id
     callback_module = Keyword.fetch! config, :callback_module
+
+    Logger.info "Updating spredsheet #{inspect id} last updated at #{inspect updated}"
+
     data = on_loaded callback_module, id, spreadsheet
     :ets.insert ets_table, {id, updated, data}
     on_saved callback_module, id, data
