@@ -13,7 +13,7 @@ config :google_sheets,
       sheets: ["KeyValue", "KeyTable", "KeyIndexTable"],
       poll_delay_seconds: 10,
       callback_module: nil,
-      loader_init: [module: GoogleSheets.Loader.FileSystem, folder: "priv/data"],
+      loader_init: [module: GoogleSheets.Loader.FileSystem, dir: "priv/data"],
       loader_poll: [module: GoogleSheets.Loader.Docs, key: "1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs"]
     ],
     [
@@ -21,7 +21,7 @@ config :google_sheets,
       sheets: ["KeyValue"],
       poll_delay_seconds: 10,
       callback_module: nil,
-      loader_init: [module: GoogleSheets.Loader.FileSystem, folder: "priv/data"],
+      loader_init: [module: GoogleSheets.Loader.FileSystem, dir: "priv/data"],
       loader_poll: [module: GoogleSheets.Loader.Docs, key: "1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs"]
     ]
   ]

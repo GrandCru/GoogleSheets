@@ -21,7 +21,7 @@ defmodule GoogleSheets.Loader.Docs do
         |> filter_sheets
         |> load_csv_content
 
-      {updated, %SpreadSheetData{sheets: sheets, hash: Utils.calculate_combined_hash(sheets)} }
+      {updated, SpreadSheetData.new(sheets) }
     catch
       :unchanged ->
         Logger.info "Document #{inspect config[:key]} not changed since #{inspect config[:last_updated]}"
@@ -110,13 +110,13 @@ defmodule GoogleSheets.Loader.Docs do
   defp load_csv_content([], []), do: throw({:error, "No sheets loaded"})
   defp load_csv_content([], sheets), do: sheets
   defp load_csv_content([%WorkSheetData{} = sheet | rest], sheets) do
-    {csv, hash} = request_csv_content sheet.url
-    load_csv_content rest, [%WorkSheetData{sheet | csv: csv, hash: hash} | sheets]
+    csv = request_csv_content sheet.url
+    load_csv_content rest, [WorkSheetData.put_csv(sheet, csv) | sheets]
   end
 
   # Fetch and parse the actual CSV content
   defp request_csv_content(url) do
     {:ok, %HTTPoison.Response{status_code: 200} = response} = HTTPoison.get url
-    {response.body, Utils.hexstring(:crypto.hash(:md5, response.body))}
+    response.body
   end
 end

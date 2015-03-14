@@ -3,9 +3,6 @@ defmodule GoogleSheets.Updater do
   use GenServer
   require Logger
 
-  alias GoogleSheets.LoaderConfig
-  alias GoogleSheets.SpreadSheetData
-
   def start_link(config, options \\ []) do
     GenServer.start_link(__MODULE__, config, options)
   end
