@@ -20,6 +20,6 @@ clean:
 	mix deps.clean --all
 
 fetch:
-	mix gs.fetch -k 1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs -d priv/data
+	mix gs.fetch -s https://spreadsheets.google.com/feeds/worksheets/1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs/public/basic -d priv/data
 
 .PHONY: all deps compile run test clean

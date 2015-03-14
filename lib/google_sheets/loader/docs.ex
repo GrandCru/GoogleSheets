@@ -6,25 +6,25 @@ defmodule GoogleSheets.Loader.Docs do
 
   alias GoogleSheets.SpreadSheetData
   alias GoogleSheets.WorkSheetData
-  alias GoogleSheets.Utils
 
   @doc """
   Loads all sheets in the spreadsheet published with the given access key.
   """
   def load(sheets, last_updated, config) when is_list(sheets) and is_list(config) do
     try do
+      src = Keyword.fetch!(config, :src)
       {config, updated, sheets} =
-        %{sheets: sheets, key: Keyword.fetch!(config, :key), last_updated: last_updated}
+        %{sheets: sheets, src: src, last_updated: last_updated}
         |> request_feed
         |> parse_feed_response
         |> parse_feed
         |> filter_sheets
         |> load_csv_content
 
-      {updated, SpreadSheetData.new(sheets) }
+      {updated, SpreadSheetData.new(src, sheets)}
     catch
       :unchanged ->
-        Logger.info "Document #{inspect config[:key]} not changed since #{inspect config[:last_updated]}"
+        Logger.info "Document #{inspect config[:src]} not changed since #{inspect config[:last_updated]}"
         :unchanged
     end
   end
@@ -33,8 +33,7 @@ defmodule GoogleSheets.Loader.Docs do
   # Load atom feed content describing spreadsheet
   #
   defp request_feed(%{} = config) do
-    url = "https://spreadsheets.google.com/feeds/worksheets/#{config[:key]}/public/basic"
-    {:ok, %HTTPoison.Response{status_code: 200} = response} = HTTPoison.get url
+    {:ok, %HTTPoison.Response{status_code: 200} = response} = HTTPoison.get config[:src]
     {config, response.body}
   end
 
@@ -76,7 +75,7 @@ defmodule GoogleSheets.Loader.Docs do
 
   # Parse individual worksheet entry node in feed
   defp parse_feed_entry(entry) do
-    %WorkSheetData{name: find_entry_title(entry), url: find_entry_url(entry)}
+    WorkSheetData.new(find_entry_title(entry), find_entry_url(entry))
   end
 
   # Find the title of of the worksheet
@@ -110,8 +109,8 @@ defmodule GoogleSheets.Loader.Docs do
   defp load_csv_content([], []), do: throw({:error, "No sheets loaded"})
   defp load_csv_content([], sheets), do: sheets
   defp load_csv_content([%WorkSheetData{} = sheet | rest], sheets) do
-    csv = request_csv_content sheet.url
-    load_csv_content rest, [WorkSheetData.put_csv(sheet, csv) | sheets]
+    csv = request_csv_content sheet.src
+    load_csv_content rest, [WorkSheetData.update_csv(sheet, csv) | sheets]
   end
 
   # Fetch and parse the actual CSV content

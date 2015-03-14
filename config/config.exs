@@ -13,15 +13,15 @@ config :google_sheets,
       sheets: ["KeyValue", "KeyTable", "KeyIndexTable"],
       poll_delay_seconds: 10,
       callback_module: nil,
-      loader_init: [module: GoogleSheets.Loader.FileSystem, dir: "priv/data"],
-      loader_poll: [module: GoogleSheets.Loader.Docs, key: "1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs"]
+      loader_init: [module: GoogleSheets.Loader.FileSystem, src: "priv/data"],
+      loader_poll: [module: GoogleSheets.Loader.Docs, src: "https://spreadsheets.google.com/feeds/worksheets/1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs/public/basic"]
     ],
     [
       id: :single_worksheet,
       sheets: ["KeyValue"],
       poll_delay_seconds: 10,
       callback_module: nil,
-      loader_init: [module: GoogleSheets.Loader.FileSystem, dir: "priv/data"],
-      loader_poll: [module: GoogleSheets.Loader.Docs, key: "1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs"]
+      loader_init: [module: GoogleSheets.Loader.FileSystem, src: "priv/data"],
+      loader_poll: [module: GoogleSheets.Loader.Docs, src: "https://spreadsheets.google.com/feeds/worksheets/1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs/public/basic"]
     ]
   ]

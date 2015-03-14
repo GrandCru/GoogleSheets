@@ -10,7 +10,7 @@ defmodule Mix.Tasks.Gs.Fetch do
   mix gs.fetch -k 1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs -d priv/data
 
   ## Command line options
-  * -k, --key - Document key for a published Spreadsheet, see README.md for more information.
+  * -s, --src - Source URL to a published Spreadsheet, see README.md for more information.
   * -d, --dir - Directory where to save all CSV files, relative to application root path.
   """
 
@@ -18,12 +18,12 @@ defmodule Mix.Tasks.Gs.Fetch do
 
   def run(args) do
     Mix.Task.run "app.start", args
-    {options, _, _} = OptionParser.parse args, switches: [key: :string, dir: :string], aliases: [k: :key, d: :dir]
+    {options, _, _} = OptionParser.parse args, switches: [src: :string, dir: :string], aliases: [s: :src, d: :dir]
 
     path = Path.expand Keyword.fetch!(options, :dir)
     File.mkdir_p! path
 
-    {_updated, spreadsheet} = Docs.load [], nil, [key: Keyword.fetch!(options, :key)]
+    {_updated, spreadsheet} = Docs.load [], nil, [src: Keyword.fetch!(options, :src)]
     write_sheets spreadsheet.sheets, path
   end
 

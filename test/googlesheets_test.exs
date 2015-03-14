@@ -6,12 +6,10 @@ defmodule GooglesheetsTest do
   alias GoogleSheets.Loader.Docs
   alias GoogleSheets.SpreadSheetData
 
-  @document_key "1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs"
+  @url "https://spreadsheets.google.com/feeds/worksheets/1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs/public/basic"
 
   test "Fetch all sheets" do
-    sheets = []
-    opts = [key: @document_key]
-    assert {updated, %SpreadSheetData{} = spreadsheet} = Docs.load sheets, nil, opts
+    assert {updated, %SpreadSheetData{} = spreadsheet} = Docs.load [], nil, [src: @url]
 
     assert updated != nil
     assert spreadsheet.hash == "0c55fcbcb0f6480df230bf6e7cedd7ce"
@@ -23,9 +21,7 @@ defmodule GooglesheetsTest do
   end
 
   test "Fetch sheets with filtering" do
-    sheets = ["KeyValue", "KeyTable"]
-    opts = [key: @document_key]
-    assert {updated, %SpreadSheetData{} = spreadsheet} = Docs.load sheets, nil, opts
+    assert {updated, %SpreadSheetData{} = spreadsheet} = Docs.load ["KeyValue", "KeyTable"], nil, [src: @url]
 
     assert updated != nil
     assert spreadsheet.hash == "42e023ea61cc1131fc79b94084aac247"
@@ -37,7 +33,7 @@ defmodule GooglesheetsTest do
   end
 
   test "fetch invalid url" do
-    assert_raise MatchError, fn -> Docs.load [], nil, [key: "invalid_key"] end
+    assert_raise MatchError, fn -> Docs.load [], nil, [src: "http://www.example.org/invalid_key"] end
   end
 
 end

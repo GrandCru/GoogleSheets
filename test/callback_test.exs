@@ -43,8 +43,8 @@ defmodule CallbackTest do
       sheets: ["KeyValue"],
       poll_delay_seconds: 5,
       callback_module: MockCallback,
-      loader_init: [module: GoogleSheets.Loader.FileSystem, dir: "priv/data"],
-      loader_poll: [module: GoogleSheets.Loader.Docs, key: "1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs"]
+      loader_init: [module: GoogleSheets.Loader.FileSystem, src: "priv/data"],
+      loader_poll: [module: GoogleSheets.Loader.Docs, src: "https://spreadsheets.google.com/feeds/worksheets/1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs/public/basic"]
     ]
 
     {:ok, _mock_pid} = MockCallback.start_link self
