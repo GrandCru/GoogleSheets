@@ -17,7 +17,8 @@ The [GoogleSheets.Loader](lib/google_sheets/loader.ex) module defines a behaviou
 All of the Loader modules behaviours implement the load callback function as specified below.
 
 ```elixir
-defcallback load(sheets :: [binary], last_updated :: binary | nil, config :: Keyword.t) :: GoogleSheets.SpreadSheetData.t | :unchanged | :error
+defcallback load(sheets :: [binary], last_updated :: binary | nil, 
+    config :: Keyword.t) :: GoogleSheets.SpreadSheetData.t | :unchanged | :error
 ```
 
 The sheets parameter is a list of Worksheet names that should be loaded, if empty or nil all worksheets in the Spreadsheet are loaded.
@@ -97,7 +98,9 @@ the on_saved and on_unchanged callbacks are meant for notification. on_saved is 
 The loader functionality is used by the [gs.fetch](lib/mix/task/gs.fetch.ex) task for saving a Spreadsheet worksheets in CSV format to a directory. The project [Makefile](Makefile) has an example task, which loads a Spreadsheet and saves all worksheets in it to priv/data folder.
 
 ```
-mix gs.fetch -src https://spreadsheets.google.com/feeds/worksheets/1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs/public/basic -dir priv/data
+mix gs.fetch 
+-src https://spreadsheets.google.com/feeds/worksheets/1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs/public/basic 
+-dir priv/data
 ```
 
 Purpose of this is to have a known good configuration deployed with the server and if the updater module is configured to load data first from filesystem and then start polling, we don't end up in a situation where the whole updater process ends, because it crashed more often than what the supervisor max_restarts and max_seconds parameter allows. This naturally requires that the poll period is long enough.
