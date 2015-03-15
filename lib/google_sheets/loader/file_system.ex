@@ -9,9 +9,13 @@ defmodule GoogleSheets.Loader.FileSystem do
 
   def load(sheets, _last_updated, config) when is_list(sheets) and is_list(config) do
     path = Path.expand Keyword.fetch!(config, :src)
-    files = Path.wildcard(path <> "/*.csv")
-    sheets = load_csv_files files, []
-    {nil, SpreadSheetData.new(path, sheets)}
+    if File.exists? path do
+      files = Path.wildcard(path <> "/*.csv")
+      sheets = load_csv_files files, []
+      {nil, SpreadSheetData.new(path, sheets)}
+    else
+      :error
+    end
   end
 
   defp load_csv_files([], sheets), do: sheets
