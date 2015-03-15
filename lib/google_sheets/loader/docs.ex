@@ -90,7 +90,7 @@ defmodule GoogleSheets.Loader.Docs do
 
 
   #
-  # Filter spreadsheet sheets and leave only those specified in the sheets list, if no list is given, don't do any filtering
+  # Filter spreadsheet sheets and leave only those specified in the sheets list, if empty list is given, don't do any filtering
   #
   defp filter_sheets({%{sheets: []} = config, updated, sheets}), do: {config, updated, sheets}
   defp filter_sheets({%{} = config, updated, sheets}) do

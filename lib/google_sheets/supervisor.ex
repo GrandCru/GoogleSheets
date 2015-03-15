@@ -22,7 +22,7 @@ defmodule GoogleSheets.Supervisor do
     supervise(create_children(spreadsheets, []), strategy: :one_for_one, max_restarts: max_restarts, max_seconds: max_seconds)
   end
 
-  # Create a children for each configured worksheet
+  # Create a children for each configured spreadsheet
   defp create_children([], children), do: children
   defp create_children([spreadsheet | rest], children) do
     id = Keyword.fetch! spreadsheet, :id

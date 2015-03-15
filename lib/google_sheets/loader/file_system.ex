@@ -18,7 +18,7 @@ defmodule GoogleSheets.Loader.FileSystem do
     end
   end
 
-  # No filtering if nil or empty list given
+  # No filtering if empty list given
   defp filter_files(files, []), do: files
   defp filter_files(files, sheets) do
     Enum.filter(files, fn(filename) -> Path.basename(filename, ".csv") in sheets end)
