@@ -4,35 +4,71 @@ defmodule GoogleSheets.Utils do
   @await_delay 100
   @await_timeout 5_000
 
-  # Get latest entry for the given key
-  def get(id) when is_atom(id) do
-    [{_lookup_key, _key, _updated, data}] = :ets.lookup ets_table, {id, :latest}
+  @doc """
+  Return key for the latest entry stored for the Spreadsheet identified by id.
+  """
+  def latest_key(id) when is_atom(id) do
+    [{_lookup_key, _updated, key}] = :ets.lookup ets_table, {id, :latest}
+    {id, key}
+  end
+
+  @doc """
+  Returns the last_update value for the latest entry stored for the Spreadsheet indentified by id, or nil if no entry is found.
+  """
+  def last_updated(id) when is_atom(id) do
+    case :ets.lookup ets_table, {id, :latest} do
+      [{_lookup_key, updated, _key}] ->
+        updated
+      _ ->
+        nil
+    end
+  end
+
+  @doc """
+  Returns data for a stored Spreadsheet matching the given {id, key} tuple.
+  """
+  def get({id, key}) when is_atom(id) do
+    [{_lookup_key, _updated, data}] = :ets.lookup ets_table, {id, key}
     data
   end
 
-  def get(id, key) when is_atom(id) do
-    [{_lookup_key, updated, data}] = :ets.lookup ets_table, {id, key}
-    data
+  @doc """
+  Waits until an ETS entry has been written for the given id and returns the key specifying the latest version.
+  """
+  def await_key(id) do
+    await_key(id, @await_timeout)
+  end
+  def await_key(id, timeout) do
+    task = Task.async(fn -> try_get(id, timeout) end)
+    Task.await task, timeout
   end
 
-  # Wait that ETS table has an entry available
-  def await(id) do
-    await(id, @await_timeout)
-  end
-  def await(id, delay) do
-    task = Task.async(fn -> try_get(id, delay) end)
-    Task.await task, delay
-  end
-
+  @doc """
+  Returns the ETS table name where data is stored.
+  """
   def ets_table do
     {:ok, ets_table} = Application.fetch_env :google_sheets, :ets_table
     ets_table
   end
 
-  # Converts a binary value to hex string (md5 = 128 bits, sha1 = 160 bits, sha256 = 256 bits and sha512 = 512 bits)
+  @doc """
+  Convert a 128 bit binary value into hex string (md5 hash)
+  """
   def hexstring(<<x::size(128)>>), do: to_string(hd(:io_lib.format("~32.16.0b",  [x])))
+
+  @doc """
+  Convert a 160 bit binary value into hex string (sha1 hash)
+  """
   def hexstring(<<x::size(160)>>), do: to_string(hd(:io_lib.format("~40.16.0b",  [x])))
+
+  @doc """
+  Convert a 256 bit binary value into hex string (sha256 hash)
+  """
   def hexstring(<<x::size(256)>>), do: to_string(hd(:io_lib.format("~64.16.0b",  [x])))
+
+  @doc """
+  Convert a 512 bit binary value into hex string (sha512 hash)
+  """
   def hexstring(<<x::size(512)>>), do: to_string(hd(:io_lib.format("~128.16.0b", [x])))
 
   #
@@ -40,14 +76,14 @@ defmodule GoogleSheets.Utils do
   #
 
   # Tries to get the latest entry from database
-  defp try_get(id, 0), do: {:error, :timeout}
+  defp try_get(_id, 0), do: {:error, :timeout}
   defp try_get(id, timeout) do
     case :ets.lookup ets_table, {id, :latest} do
       [] ->
         :timer.sleep @await_delay
         try_get id, max(0, timeout - @await_delay)
-      [{_lookup_key, _key, _last_updated, data}] ->
-        data
+      [{_lookup_key, _last_updated, key}] ->
+        {id, key}
     end
   end
 

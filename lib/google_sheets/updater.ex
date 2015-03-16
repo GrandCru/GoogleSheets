@@ -4,7 +4,6 @@ defmodule GoogleSheets.Updater do
   require Logger
   alias GoogleSheets.Utils
 
-
   def start_link(config, options \\ []) do
     GenServer.start_link(__MODULE__, config, options)
   end
@@ -29,7 +28,7 @@ defmodule GoogleSheets.Updater do
   defp load_spreadsheet(config, loader_config) do
     sheets = Keyword.fetch! config, :sheets
     module = Keyword.fetch! loader_config, :module
-    module.load sheets, last_updated(config), loader_config
+    module.load sheets, Utils.last_updated(config[:id]), loader_config
   end
 
   # Update ets table or notify that the data loaded was unchanged
@@ -45,7 +44,7 @@ defmodule GoogleSheets.Updater do
     data = on_loaded callback_module, id, spreadsheet
 
     :ets.insert Utils.ets_table, {{id, key}, updated, data}
-    :ets.insert Utils.ets_table, {{id, :latest}, key, updated, data}
+    :ets.insert Utils.ets_table, {{id, :latest}, updated, key}
 
     on_saved callback_module, id, data
   end
@@ -74,15 +73,5 @@ defmodule GoogleSheets.Updater do
   #
   # Helpers
   #
-
-  defp last_updated(config) do
-    case :ets.lookup Utils.ets_table, {config[:id], :latest} do
-      [{_lookup_key, _key, last_updated, _data}] ->
-        Logger.debug "Last updated #{config[:id]} #{last_updated}"
-        last_updated
-      _ ->
-        nil
-    end
-  end
 
 end
