@@ -24,7 +24,7 @@ defmodule GoogleSheets.Loader.Docs do
       {updated, SpreadSheetData.new(src, sheets)}
     catch
       :unchanged ->
-        Logger.info "Document #{inspect config[:src]} not changed since #{inspect config[:last_updated]}"
+        # Logger.info "Document #{inspect config[:src]} not changed since #{inspect config[:last_updated]}"
         :unchanged
     end
   end
