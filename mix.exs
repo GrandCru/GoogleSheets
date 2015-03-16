@@ -17,7 +17,8 @@ defmodule Googlesheets.Mixfile do
   defp deps do
     [
       {:httpoison, "~> 0.5"},
-      {:erlsom, github: "willemdj/erlsom"}
+      {:erlsom, github: "willemdj/erlsom"},
+      {:uuid, "~> 0.1.5" }
     ]
   end
 end

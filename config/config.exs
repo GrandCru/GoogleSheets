@@ -2,6 +2,14 @@
 # and its dependencies with the aid of the Mix.Config module.
 use Mix.Config
 
+config :logger,
+  console: [
+    format: "$time [$level]$levelpad $message $metadata\n",
+    level: :debug,
+    metadata: [:module, :line],
+  ],
+  utc_log: true
+
 # Example configuration options, see README.md for more information
 config :google_sheets,
   ets_table: :google_sheets,
@@ -11,7 +19,7 @@ config :google_sheets,
     [
       id: :multiple_worksheets,
       sheets: ["KeyValue", "KeyTable", "KeyIndexTable"],
-      poll_delay_seconds: 10,
+      poll_delay_seconds: 120,
       callback_module: nil,
       loader_init: [
         module: GoogleSheets.Loader.FileSystem,
@@ -25,7 +33,7 @@ config :google_sheets,
     [
       id: :single_worksheet,
       sheets: ["KeyValue"],
-      poll_delay_seconds: 10,
+      poll_delay_seconds: 120,
       callback_module: nil,
       loader_init: [
         module: GoogleSheets.Loader.FileSystem,
