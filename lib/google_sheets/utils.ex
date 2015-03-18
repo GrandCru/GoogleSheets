@@ -13,18 +13,6 @@ defmodule GoogleSheets.Utils do
   end
 
   @doc """
-  Returns the last_update value for the latest entry stored for the Spreadsheet indentified by id, or nil if no entry is found.
-  """
-  def last_updated(id) when is_atom(id) do
-    case :ets.lookup ets_table, {id, :latest} do
-      [{_lookup_key, updated, _key}] ->
-        updated
-      _ ->
-        nil
-    end
-  end
-
-  @doc """
   Returns data for a stored Spreadsheet matching the given {id, key} tuple.
   """
   def get({id, key}) when is_atom(id) do
@@ -82,7 +70,7 @@ defmodule GoogleSheets.Utils do
       [] ->
         :timer.sleep @await_delay
         try_get id, max(0, timeout - @await_delay)
-      [{_lookup_key, _last_updated, key}] ->
+      [{_lookup_key, _version, key}] ->
         {id, key}
     end
   end

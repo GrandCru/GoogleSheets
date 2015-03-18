@@ -28,7 +28,7 @@ defmodule GoogleSheets.Updater do
   defp load_spreadsheet(config, loader_config) do
     sheets = Keyword.fetch! config, :sheets
     module = Keyword.fetch! loader_config, :module
-    module.load sheets, Utils.last_updated(config[:id]), loader_config
+    module.load sheets, latest_version(config[:id]), loader_config
   end
 
   # Update ets table or notify that the data loaded was unchanged
@@ -73,5 +73,13 @@ defmodule GoogleSheets.Updater do
   #
   # Helpers
   #
+  defp latest_version(id) when is_atom(id) do
+    case :ets.lookup Utils.ets_table, {id, :latest} do
+      [{_lookup_key, updated, _key}] ->
+        updated
+      _ ->
+        nil
+    end
+  end
 
 end
