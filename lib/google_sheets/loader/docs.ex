@@ -13,15 +13,16 @@ defmodule GoogleSheets.Loader.Docs do
   def load(sheets, previous_version, config) when is_list(sheets) and is_list(config) do
     try do
       src = Keyword.fetch!(config, :src)
-      {config, updated, sheets} =
+      {config, version, sheets} =
         %{sheets: sheets, src: src, previous_version: previous_version}
         |> request_feed
         |> parse_feed_response
         |> parse_feed
         |> filter_sheets
         |> load_csv_content
+        |> validate_all_sheets_exist
 
-      {updated, SpreadSheetData.new(src, sheets)}
+      {version, SpreadSheetData.new(src, sheets)}
     catch
       :unchanged ->
         # Logger.info "Document #{inspect config[:src]} not changed since #{inspect config[:previous_version]}"
@@ -46,7 +47,7 @@ defmodule GoogleSheets.Loader.Docs do
   end
 
   #
-  # Parse last updated and CSV content URLs from the atom feeds
+  # Parse last updated datetime and CSV content URLs from the atom feeds
   #
   defp parse_feed({%{} = config, feed}) do
     {version, sheets} = parse_feed feed, nil, []
@@ -92,17 +93,17 @@ defmodule GoogleSheets.Loader.Docs do
   #
   # Filter spreadsheet sheets and leave only those specified in the sheets list, if empty list is given, don't do any filtering
   #
-  defp filter_sheets({%{sheets: []} = config, updated, sheets}), do: {config, updated, sheets}
-  defp filter_sheets({%{} = config, updated, sheets}) do
+  defp filter_sheets({%{sheets: []} = config, version, sheets}), do: {config, version, sheets}
+  defp filter_sheets({%{} = config, version, sheets}) do
     filtered = sheets |> Enum.filter(fn(sheet) -> sheet.name in config[:sheets] end)
-    {config, updated, filtered}
+    {config, version, filtered}
   end
 
   #
   # Load the csv content using parsed individual worksheet CSV content URLs.
   #
-  defp load_csv_content({%{} = config, updated, sheets}) do
-    {config, updated, load_csv_content(sheets, [])}
+  defp load_csv_content({%{} = config, version, sheets}) do
+    {config, version, load_csv_content(sheets, [])}
   end
 
   # Recursively loop throug all keys found from the feed
@@ -118,4 +119,14 @@ defmodule GoogleSheets.Loader.Docs do
     {:ok, %HTTPoison.Response{status_code: 200} = response} = HTTPoison.get url
     response.body
   end
+
+  #
+  # Make sure all requested sheets were loaded
+  #
+  defp validate_all_sheets_exist({%{sheets: []} = config, version, worksheets}), do: {config, version, worksheets}
+  defp validate_all_sheets_exist({config, version, worksheets}) do
+    true = Enum.all?(config[:sheets], fn(sheet) -> Enum.any?(worksheets, fn(ws) -> ws.name == sheet end) end)
+    {config, version, worksheets}
+  end
+
 end
