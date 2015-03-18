@@ -4,7 +4,7 @@ defmodule GoogleSheets.Loader do
   a SpreadSheetData structure containing CSV and associated metadata.
   """
   use Behaviour
-  defcallback load(sheets :: [binary], last_updated :: binary | nil, config :: Keyword.t) :: GoogleSheets.SpreadSheetData.t | :unchanged | :error
+  defcallback load(sheets :: [binary], previous_version :: binary | nil, config :: Keyword.t) :: {version :: binary, spreadsheet :: GoogleSheets.SpreadSheetData.t} | :unchanged | :error
 end
 
 defmodule GoogleSheets.SpreadSheetData do

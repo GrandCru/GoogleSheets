@@ -10,11 +10,11 @@ defmodule GoogleSheets.Loader.Docs do
   @doc """
   Loads all sheets in the spreadsheet published with the given access key.
   """
-  def load(sheets, last_updated, config) when is_list(sheets) and is_list(config) do
+  def load(sheets, previous_version, config) when is_list(sheets) and is_list(config) do
     try do
       src = Keyword.fetch!(config, :src)
       {config, updated, sheets} =
-        %{sheets: sheets, src: src, last_updated: last_updated}
+        %{sheets: sheets, src: src, previous_version: previous_version}
         |> request_feed
         |> parse_feed_response
         |> parse_feed
@@ -24,7 +24,7 @@ defmodule GoogleSheets.Loader.Docs do
       {updated, SpreadSheetData.new(src, sheets)}
     catch
       :unchanged ->
-        # Logger.info "Document #{inspect config[:src]} not changed since #{inspect config[:last_updated]}"
+        # Logger.info "Document #{inspect config[:src]} not changed since #{inspect config[:previous_version]}"
         :unchanged
     end
   end
@@ -49,28 +49,28 @@ defmodule GoogleSheets.Loader.Docs do
   # Parse last updated and CSV content URLs from the atom feeds
   #
   defp parse_feed({%{} = config, feed}) do
-    {last_updated, sheets} = parse_feed feed, nil, []
+    {version, sheets} = parse_feed feed, nil, []
 
-    case config[:last_updated] != nil and last_updated != nil and config[:last_updated] == last_updated do
+    case config[:previous_version] != nil and version != nil and config[:previous_version] == version do
       true ->
         throw :unchanged
       false ->
-        {config, last_updated, sheets}
+        {config, version, sheets}
     end
   end
 
   # Parse feed entries
-  defp parse_feed([], updated, sheets) do
-    {updated, sheets}
+  defp parse_feed([], version, sheets) do
+    {version, sheets}
   end
-  defp parse_feed([{'{http://www.w3.org/2005/Atom}updated', [], [last_updated]} | rest], _updated, sheets) do
-    parse_feed rest, last_updated, sheets
+  defp parse_feed([{'{http://www.w3.org/2005/Atom}updated', [], [version]} | rest], nil, sheets) do
+    parse_feed rest, List.to_string(version), sheets
   end
-  defp parse_feed([{'{http://www.w3.org/2005/Atom}entry', _, entry} | rest], updated, sheets) do
-    parse_feed rest, updated, [parse_feed_entry(entry) | sheets]
+  defp parse_feed([{'{http://www.w3.org/2005/Atom}entry', _, entry} | rest], version, sheets) do
+    parse_feed rest, version, [parse_feed_entry(entry) | sheets]
   end
-  defp parse_feed([_node | rest], updated, sheets) do
-    parse_feed rest, updated, sheets
+  defp parse_feed([_node | rest], version, sheets) do
+    parse_feed rest, version, sheets
   end
 
   # Parse individual worksheet entry node in feed

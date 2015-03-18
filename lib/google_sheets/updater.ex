@@ -34,17 +34,17 @@ defmodule GoogleSheets.Updater do
   # Update ets table or notify that the data loaded was unchanged
   defp update_ets_entry(_config, :error), do: :error
   defp update_ets_entry(config, :unchanged), do: on_unchanged(Keyword.fetch!(config, :callback_module), Keyword.fetch!(config, :id))
-  defp update_ets_entry(config, {updated, spreadsheet}) do
+  defp update_ets_entry(config, {version, spreadsheet}) do
     id = Keyword.fetch! config, :id
     key = UUID.uuid1
     callback_module = Keyword.fetch! config, :callback_module
 
-    Logger.info "Updating spredsheet #{inspect id} last updated at #{inspect updated} key #{inspect key}"
+    Logger.info "Updating spredsheet: #{inspect id} version: #{inspect version} key: #{inspect key}"
 
     data = on_loaded callback_module, id, spreadsheet
 
-    :ets.insert Utils.ets_table, {{id, key}, updated, data}
-    :ets.insert Utils.ets_table, {{id, :latest}, updated, key}
+    :ets.insert Utils.ets_table, {{id, key}, version, data}
+    :ets.insert Utils.ets_table, {{id, :latest}, version, key}
 
     on_saved callback_module, id, data
   end
