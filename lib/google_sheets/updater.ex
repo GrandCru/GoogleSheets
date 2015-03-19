@@ -10,6 +10,7 @@ defmodule GoogleSheets.Updater do
 
   # Initial update
   def init(config) do
+    Logger.info "Starting updater process for spreadsheet #{config[:id]}"
     result = load_spreadsheet config, Keyword.fetch!(config, :loader_init)
     update_ets_entry config, result
     schedule_next_update config, Keyword.fetch!(config, :poll_delay_seconds)
