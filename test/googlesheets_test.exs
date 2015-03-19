@@ -9,7 +9,7 @@ defmodule GooglesheetsTest do
   @url "https://spreadsheets.google.com/feeds/worksheets/1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs/public/basic"
 
   test "Fetch all sheets" do
-    assert {updated, %SpreadSheetData{} = spreadsheet} = Docs.load [], nil, [src: @url]
+    assert {updated, %SpreadSheetData{} = spreadsheet} = Docs.load [], nil, [url: @url]
 
     assert updated != nil
     assert spreadsheet.hash == "0c55fcbcb0f6480df230bf6e7cedd7ce"
@@ -21,7 +21,7 @@ defmodule GooglesheetsTest do
   end
 
   test "Fetch sheets with filtering" do
-    assert {updated, %SpreadSheetData{} = spreadsheet} = Docs.load ["KeyValue", "KeyTable"], nil, [src: @url]
+    assert {updated, %SpreadSheetData{} = spreadsheet} = Docs.load ["KeyValue", "KeyTable"], nil, [url: @url]
 
     assert updated != nil
     assert spreadsheet.hash == "42e023ea61cc1131fc79b94084aac247"
@@ -33,11 +33,11 @@ defmodule GooglesheetsTest do
   end
 
   test "fetch invalid url" do
-    assert_raise MatchError, fn -> Docs.load [], nil, [src: "http://www.example.org/invalid_key"] end
+    assert_raise MatchError, fn -> Docs.load [], nil, [url: "http://www.example.org/invalid_key"] end
   end
 
   test "Test non existent sheet" do
-    assert_raise MatchError, fn -> Docs.load ["KeyValue", "NonExistingSheet"], nil, [src: @url] end
+    assert_raise MatchError, fn -> Docs.load ["KeyValue", "NonExistingSheet"], nil, [url: @url] end
   end
 
 

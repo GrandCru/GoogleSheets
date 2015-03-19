@@ -18,7 +18,7 @@ defmodule GoogleSheets.Loader.FileSystem do
   spreadsheets.
   """
   def load(sheets, _previous_version, config) when is_list(sheets) and is_list(config) do
-    path = Path.expand Keyword.fetch!(config, :src)
+    path = Path.expand Keyword.fetch!(config, :dir)
     true = File.exists? path
     files = Path.wildcard(path <> "/*.csv") |> filter_files(sheets)
     worksheets = load_csv_files files, []

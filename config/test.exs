@@ -10,11 +10,11 @@ config :google_sheets,
       callback_module: nil,
       loader_init: [
         module: GoogleSheets.Loader.FileSystem,
-        src: "priv/data"
+        dir: "priv/data"
       ],
       loader_poll: [
         module: GoogleSheets.Loader.Docs,
-        src: "https://spreadsheets.google.com/feeds/worksheets/1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs/public/basic"
+        url: "https://spreadsheets.google.com/feeds/worksheets/1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs/public/basic"
       ]
     ],
     [
@@ -24,11 +24,11 @@ config :google_sheets,
       callback_module: nil,
       loader_init: [
         module: GoogleSheets.Loader.FileSystem,
-        src: "priv/data"
+        dir: "priv/data"
       ],
       loader_poll: [
         module: GoogleSheets.Loader.Docs,
-        src: "https://spreadsheets.google.com/feeds/worksheets/1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs/public/basic"
+        url: "https://spreadsheets.google.com/feeds/worksheets/1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs/public/basic"
       ]
     ]
   ]

@@ -12,9 +12,9 @@ defmodule GoogleSheets.Loader.Docs do
   """
   def load(sheets, previous_version, config) when is_list(sheets) and is_list(config) do
     try do
-      src = Keyword.fetch!(config, :src)
+      url = Keyword.fetch!(config, :url)
       {config, version, sheets} =
-        %{sheets: sheets, src: src, previous_version: previous_version}
+        %{sheets: sheets, url: url, previous_version: previous_version}
         |> request_feed
         |> parse_feed_response
         |> parse_feed
@@ -22,10 +22,10 @@ defmodule GoogleSheets.Loader.Docs do
         |> load_csv_content
         |> validate_all_sheets_exist
 
-      {version, SpreadSheetData.new(src, sheets)}
+      {version, SpreadSheetData.new(url, sheets)}
     catch
       :unchanged ->
-        # Logger.info "Document #{inspect config[:src]} not changed since #{inspect config[:previous_version]}"
+        # Logger.info "Document #{inspect config[:url]} not changed since #{inspect config[:previous_version]}"
         :unchanged
     end
   end
@@ -34,7 +34,7 @@ defmodule GoogleSheets.Loader.Docs do
   # Load atom feed content describing spreadsheet
   #
   defp request_feed(%{} = config) do
-    {:ok, %HTTPoison.Response{status_code: 200} = response} = HTTPoison.get config[:src]
+    {:ok, %HTTPoison.Response{status_code: 200} = response} = HTTPoison.get config[:url]
     {config, response.body}
   end
 

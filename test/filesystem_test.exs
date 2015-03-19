@@ -7,7 +7,7 @@ defmodule FileSystemTest do
   alias GoogleSheets.SpreadSheetData
 
   test "Load all sheets" do
-    assert {nil, %SpreadSheetData{} = spreadsheet} = FileSystem.load [], nil, [src: "priv/data"]
+    assert {nil, %SpreadSheetData{} = spreadsheet} = FileSystem.load [], nil, [dir: "priv/data"]
 
     assert spreadsheet.hash == "0c55fcbcb0f6480df230bf6e7cedd7ce"
     assert length(spreadsheet.sheets) == 4
@@ -18,7 +18,7 @@ defmodule FileSystemTest do
   end
 
   test "Load specified sheets" do
-    assert {nil, %SpreadSheetData{} = spreadsheet} = FileSystem.load ["KeyValue", "KeyTable"], nil, [src: "priv/data"]
+    assert {nil, %SpreadSheetData{} = spreadsheet} = FileSystem.load ["KeyValue", "KeyTable"], nil, [dir: "priv/data"]
     assert spreadsheet.hash == "42e023ea61cc1131fc79b94084aac247"
     assert length(spreadsheet.sheets) == 2
     assert Enum.any?(spreadsheet.sheets, fn(x) -> x.name == "KeyValue" end)
@@ -28,11 +28,11 @@ defmodule FileSystemTest do
   end
 
   test "Test nonexistent sheets" do
-    assert_raise MatchError, fn -> FileSystem.load ["KeyValue", "NonExistingSheet"], nil, [src: "priv/data"] end
+    assert_raise MatchError, fn -> FileSystem.load ["KeyValue", "NonExistingSheet"], nil, [dir: "priv/data"] end
   end
 
   test "Test invalid path" do
-    assert_raise MatchError, fn -> FileSystem.load ["KeyValue", "NonExistingSheet"], nil, [src: "this/path/doesnt/exist"] end
+    assert_raise MatchError, fn -> FileSystem.load ["KeyValue", "NonExistingSheet"], nil, [dir: "this/path/doesnt/exist"] end
   end
 
 end
