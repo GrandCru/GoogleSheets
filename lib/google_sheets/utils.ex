@@ -1,5 +1,9 @@
 defmodule GoogleSheets.Utils do
 
+  @moduledoc """
+  Generic utilities.
+  """
+
   # 5 second timeout before failing the await function
   @await_delay 100
   @await_timeout 5_000
@@ -23,10 +27,7 @@ defmodule GoogleSheets.Utils do
   @doc """
   Waits until an ETS entry has been written for the given id and returns the key specifying the latest version.
   """
-  def await_key(id) do
-    await_key(id, @await_timeout)
-  end
-  def await_key(id, timeout) do
+  def await_key(id, timeout \\ @await_timeout) do
     task = Task.async(fn -> try_get(id, timeout) end)
     Task.await task, timeout
   end

@@ -1,5 +1,27 @@
 defmodule GoogleSheets.Loader.Docs do
 
+
+  @moduledoc """
+  Implemnts GoogleSheets.Loader behaviour by fetching a Spreadsheet with Google spreadsheet API.
+
+  The only loader specific configuration value is :url, which should point to the Atom feed describing
+  the worksheet. See README.md for more detailed information about how to publish a spreadsheet and
+  find the URL.
+
+  The loader first requests the Atom feed and parses URLs pointing to CSV data for each individual
+  worksheet and the last_udpdated timestamp for spreadsheet.
+
+  If the last_updated field is equal to the one passes as previous_version, the loader stops and returns :unchanged
+
+  If not, it will filter the found CSV urls and leave only those that exist in the sheets argument. If the sheets argument
+  is nil, it will load all worksheets.
+
+  After requesting all urls and parsing the responses, the loader checks that each invidivual spreadsheet given as sheets
+  parameter exist and returns an SpreadSheetData.t structure.
+
+  If there are any errors during http requests and/or parsing, it will most likely raise an expection. If you use this
+  loader in code which is not crash resistant, do handle the exceptions.
+  """
   require Logger
 
   @behaviour GoogleSheets.Loader
@@ -8,7 +30,7 @@ defmodule GoogleSheets.Loader.Docs do
   alias GoogleSheets.WorkSheetData
 
   @doc """
-  Loads all sheets in the spreadsheet published with the given access key.
+  Load spreadsheet from the url specified in config[:url] key.
   """
   def load(sheets, previous_version, config) when is_list(sheets) and is_list(config) do
     try do

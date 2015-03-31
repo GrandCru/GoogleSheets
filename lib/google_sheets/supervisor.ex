@@ -1,13 +1,19 @@
 
 defmodule GoogleSheets.Supervisor do
-  use Supervisor
 
+  @moduledoc """
+  Supervisor for the application, launches a process for each spreadsheet configured for polling.
+  """
+
+  use Supervisor
   require Keyword
 
+  @doc false
   def start_link do
     Supervisor.start_link(__MODULE__, [], [name: __MODULE__])
   end
 
+  @doc false
   def init([]) do
     {:ok, ets_table} = Application.fetch_env :google_sheets, :ets_table
     {:ok, spreadsheets} = Application.fetch_env :google_sheets, :spreadsheets

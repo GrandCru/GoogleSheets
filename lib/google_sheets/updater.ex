@@ -1,5 +1,9 @@
 defmodule GoogleSheets.Updater do
 
+  @moduledoc """
+  GenServer for updating and polling a spreadsheet.
+  """
+
   use GenServer
   require Logger
   alias GoogleSheets.Utils

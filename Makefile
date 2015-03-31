@@ -19,7 +19,10 @@ clean:
 	mix clean --all
 	mix deps.clean --all
 
+docs:
+	mix docs
+
 fetch:
 	mix gs.fetch -u https://spreadsheets.google.com/feeds/worksheets/1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs/public/basic -d priv/data
 
-.PHONY: all deps compile run test clean fetch
+.PHONY: all deps compile run test docs clean fetch

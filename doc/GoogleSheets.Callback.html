@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>GoogleSheets.Callback</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" charset="utf-8" />
+    <link rel="stylesheet" href="css/elixir.css" type="text/css" media="screen" charset="utf-8" />
+    <script type="text/javascript" charset="utf-8">
+      relpath = '';
+      if (relpath != '') relpath += '/';
+    </script>
+
+    <script type="text/javascript" charset="utf-8" src="js/jquery.js"></script>
+    <script type="text/javascript" charset="utf-8" src="js/app.js"></script>
+    <script type="text/javascript" charset="utf-8" src="js/highlight.pack.js"></script>
+    <script type="text/javascript" charset="utf-8">
+      hljs.initHighlightingOnLoad();
+      hljs.configure({languages: []}); //disable autodetect
+    </script>
+  </head>
+
+  <body>
+    <script type="text/javascript" charset="utf-8">
+      if (window.top.frames.main) document.body.className = 'frames';
+    </script>
+
+    <section id="content">
+      <div class="breadcrumbs">google_sheets v0.1.0 &rarr; <a href="overview.html">Overview</a> &rarr; GoogleSheets &rarr; <a href="GoogleSheets.Callback.html">Callback</a></div>
+      <h1>
+        GoogleSheets.Callback
+        
+          <small>behaviour</small>
+        
+      </h1>
+
+      <ul class="summary_links">
+        
+        
+        
+        
+        
+          <li><a href="#callbacks_details">Callbacks</a></li>
+        
+      </ul>
+
+      
+        <section id="moduledoc" class="docstring">
+          <p>Behaviour for callbacks when updated has loaded a spreadsheet.</p>
+
+        </section>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <section id="callbacks_details" class="details_list">
+          <h2>Callbacks</h2>
+          <section class="detail">
+  <div class="detail_header" id="c:on_loaded/2">
+    <span class="signature"><strong>on_loaded/2</strong></span>
+    <div class="detail_header_links">
+      <span class="detail_type">(callback)</span>
+      <a href="#c:on_loaded/2" class="detail_link" title="Link to this callback">#</a>
+      <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
+    </div>
+  </div>
+  
+    <p>Specs:</p>
+    <ul class="spec">
+      
+        <li>on_loaded(spreadsheet_id :: atom, data :: <a href="GoogleSheets.SpreadSheetData.html#t:t/0">GoogleSheets.SpreadSheetData.t</a>) :: {:ok, any} | :unchanged | :error</li>
+      
+    </ul>
+  
+  <section class="docstring">
+    <p>Called when a new version of a spreadsheet has been loaded, but before it has been saved to ETS.</p>
+<p>The main reason for this callback is to transform the raw CSV data into application specific format.
+For example, you could use ex_csv library to convert the data into a map and return that as the data
+to store into ETS table.</p>
+<p>The data returned can be of any type that can be inserted into ETS table.</p>
+
+  </section>
+  
+</section>
+<section class="detail">
+  <div class="detail_header" id="c:on_saved/2">
+    <span class="signature"><strong>on_saved/2</strong></span>
+    <div class="detail_header_links">
+      <span class="detail_type">(callback)</span>
+      <a href="#c:on_saved/2" class="detail_link" title="Link to this callback">#</a>
+      <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
+    </div>
+  </div>
+  
+    <p>Specs:</p>
+    <ul class="spec">
+      
+        <li>on_saved(spreadsheet_id :: atom, data :: any) :: any</li>
+      
+    </ul>
+  
+  <section class="docstring">
+    <p>Called after the data has been persisted to ETS.</p>
+<p>The data passed to this function is equal to return value of on_loaded callback.</p>
+
+  </section>
+  
+</section>
+<section class="detail">
+  <div class="detail_header" id="c:on_unchanged/1">
+    <span class="signature"><strong>on_unchanged/1</strong></span>
+    <div class="detail_header_links">
+      <span class="detail_type">(callback)</span>
+      <a href="#c:on_unchanged/1" class="detail_link" title="Link to this callback">#</a>
+      <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
+    </div>
+  </div>
+  
+    <p>Specs:</p>
+    <ul class="spec">
+      
+        <li>on_unchanged(spreadsheet_id :: atom) :: any</li>
+      
+    </ul>
+  
+  <section class="docstring">
+    <p>Called by the updater process when loader returns :unchanged result.</p>
+
+  </section>
+  
+</section>
+
+        </section>
+      
+    </section>
+  </body>
+</html>

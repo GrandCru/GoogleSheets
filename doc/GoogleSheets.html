@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>GoogleSheets</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" charset="utf-8" />
+    <link rel="stylesheet" href="css/elixir.css" type="text/css" media="screen" charset="utf-8" />
+    <script type="text/javascript" charset="utf-8">
+      relpath = '';
+      if (relpath != '') relpath += '/';
+    </script>
+
+    <script type="text/javascript" charset="utf-8" src="js/jquery.js"></script>
+    <script type="text/javascript" charset="utf-8" src="js/app.js"></script>
+    <script type="text/javascript" charset="utf-8" src="js/highlight.pack.js"></script>
+    <script type="text/javascript" charset="utf-8">
+      hljs.initHighlightingOnLoad();
+      hljs.configure({languages: []}); //disable autodetect
+    </script>
+  </head>
+
+  <body>
+    <script type="text/javascript" charset="utf-8">
+      if (window.top.frames.main) document.body.className = 'frames';
+    </script>
+
+    <section id="content">
+      <div class="breadcrumbs">google_sheets v1.0.0 &rarr; <a href="overview.html">Overview</a> &rarr; <a href="GoogleSheets.html">GoogleSheets</a></div>
+      <h1>
+        GoogleSheets
+        
+      </h1>
+
+      <ul class="summary_links">
+        
+        
+        
+        
+        
+      </ul>
+
+      
+        <section id="moduledoc" class="docstring">
+          <p>Elixir library for fetching and polling Google spreadsheet data in CSV format.</p>
+<p>Main purpose of this library is to enable dynamic configuration changes without
+needing to deploy and/or restart a game server. The library starts an updater
+process for each spreadsheet configured for monitoring. When changes to
+spreadsheet are noticed, a new version is written to ETS table, where the data
+can be queried.</p>
+<p>It is also possible to use the library without any updater processes and just use
+the provided code to load CSV data manually.</p>
+<p>See the project homepage for more information: <a href="https://github.com/GrandCru/GoogleSheets/">https://github.com/GrandCru/GoogleSheets/</a></p>
+
+        </section>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+    </section>
+  </body>
+</html>
