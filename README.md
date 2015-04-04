@@ -1,37 +1,63 @@
 # Google Sheets 
 
-Elixir library for fetching and polling Google Spreadsheet data in CSV format. 
+An Elixir library and application for fetching and polling Google spreadsheet data in CSV format. 
 
-Main purpose of the library is to enable constant updates of configuration data stored in a Google Spreadsheet, without the need for deploying a new server with new configuration. 
+Main purpose of this application is to allow runtime configuration of an application. This is achieved by configuring one or more spreadsheets for monitoring and storing a new version of the spreadsheet in ETS table whenever it has been changed. To use the data the host application can query the latest version and load the spreadsheet data from ETS table.
 
-## Usage
+It is also possible to use the CSV data loading modules without launching any updater processes.
 
-The library can be used to simply fetch Spreadsheet data manually using the provided GoogleSheets.Loader.Docs module. The module first loads an atom feed describing the spreadsheet, when it was last updated and the URLs for requesting CSV data for an individual worksheet. After that it requests the data for all worksheets and returns an GoogleSheets.SpreadSheetData.t structure with loaded data.
-
-The main use case leverages the loader functionality by launching configurable updater processes, which peridodically checks if the configured Spreadsheet(s) has been modified and stores the loaded data into ETS table. The updater process can also be configured to preprocess the loaded CSV data, so that parsing CSV data is done only once.
+## Loading CSV data
 
 ### GoogleSheets.Loader behaviour
 
-The [GoogleSheets.Loader](lib/google_sheets/loader.ex) module defines a behaviour which all modules loading CSV data implement. The library has two concrete implementations of this class, [GoogleSheets.Loader.Docs](lib/google_sheets/loader/docs.ex) which loads data from a Google Spreadsheet and [GoogleSheets.Loader.FileSystem](lib/google_sheets/loader/file_system.ex) which loads spreadsheet data from a directory.
+The basic functionality of the library consists of loading CSV data from a source. This is done by classes implementing [GoogleSheets.Loader](lib/google_sheets/loader.ex) behaviour.
 
-All of the Loader modules behaviours implement the load callback function as specified below.
+The behaviour itself defines just a single load/3 function, as shown below:
 
 ```elixir
-defcallback load(sheets :: [binary], last_updated :: binary | nil, 
-    config :: Keyword.t) :: GoogleSheets.SpreadSheetData.t | :unchanged | :error
+defcallback load(sheets :: [binary], previous_version :: binary | nil, 
+config :: Keyword.t) :: {version :: binary, GoogleSheets.SpreadSheetData.t} 
+| :unchanged | :error
 ```
 
-The sheets parameter is a list of Worksheet names that should be loaded, if empty or nil all worksheets in the Spreadsheet are loaded.
+__Arguments__
 
-The last_updated parameter is a string, which allows a poller to short circuit loading.
+* __sheets__ - List of worksheet names to load. If empty all available worksheets are loaded.
+* __previous_version__ - Data which can be used to check if the spreadsheet has been updated since last load time. Usually value returned by a previous call to same loader implementation.
+* __config__ - Keyword list of loader specific configuration options.
 
-The config parameter is loader specific list of options, but both the Docs and Filesystem loader assume that there is as src parameter given. For actual implementation see the example [config.exs](config/config.exs) or tests how it is used.
+__Return values__
 
-### GoogleSheets.Updater
+* __{version, spreadsheet}__ - Data has been succesfully loaded. The version return value is loader specific and can be used in next call to short circuit loading if data hasn't been changed. The spreadsheet is a SpreadSheetData.t structure containing the actual CSV data for all worksheets.
+* __:unchanged__ - The spreadsheet data hasn't changed since last load call as determined by the previous_version argument.
+* __:error__ - If an error was caught while loading data.
 
-Depending on the configuration, you can have multiple updater processes (GenServers) running, each of them polling updates to a Spreadsheet.
+__Errors__
 
-Below is an example configuration, which is the configuration used, when running "make run" command on project directory. It launches two [GoogleSheets.Updater](lib/updater.ex) processes (both of them polling the same Spreadsheet).
+It is important to understand that especially the [GoogleSheets.Loader.Docs](lib/google_sheets/loader/docs.ex) can easily fail and raise exception. It's not uncommon for the retuned CSV data contain #Error values in cells or the requests to timeout. To safely try loading, the load call should catch raised exceptions or be called from a supervised process.
+
+### GoogleSheets.Loader.FileSystem
+
+[GoogleSheets.Loader.FileSystem](lib/google_sheets/loader/file_system.ex) implements the loader behaviour by loading CSV files in a specified directory. The config parameter is a keyword list with :dir key containing directory where to load data. 
+
+See [filesystem_test.exs](test/filesystem_test.exs) for examples how to use it.
+
+### GoogleSheets.Loader.docs
+[GoogleSheets.Loader.Docs](lib/google_sheets/loader/docs.ex) loads a Google spreadsheet in CSV format.
+
+First step is requesting an atom feed describing the spreadsheet. The atom feed has entries with URLs to worksheet data in CSV format and an entry for the the last updated timestamp. If the passed previous_version variable is equal to the atom feed last_updated entry, the loader returns :unchanged atom. Otherwise it request the CSV data URL for each worksheet to be loaded.
+
+The config parameter is a keyword lis with :url key value equal to the atom feed URL. See [googlesheets_test.exs](test/googlesheets_test.exs) for and examples how to use the module manually and [Publishing Google Spreadsheet](#publishing-google-spreadsheet) chapter on how to publish and get an URL for a spreadsheet.
+
+## Polling spreadsheets and storing to ETS
+
+The polling functionality is implemented by a simple [GenServer](lib/google_sheets/updater.ex), which uses configured loaders to load CSV data and then schedules next udpate after delay by sending a delayed :update message to itself.
+
+### Configuration
+
+To use the polling functionality, the :google_sheets application must be configured with data how to load each monitored spreadsheet and some generic data, like ETS table where to save loaded results.
+
+Below is an example configuration polling two spreadsheets:
 
 ```elixir
 config :google_sheets,
@@ -70,20 +96,21 @@ config :google_sheets,
   ]
 ```
 
-#### Configuration options
+__Configuration options__
 
-* :ets_table - Atom id of the ETS table created and where the loaded Spreadsheest are stored.
-* :supervisor_max_restarts - See Elixir supervisor documentation for max_restarts parameter.
-* :supervisor_max_seconds - See Elixir supervisor documentation for max_seconds parameter.
+* :ets_table - Atom identifying the ETS table where Spreadsheets are stored.
+* :supervisor_max_restarts - Supervisor max_restarts parameter.
+* :supervisor_max_seconds - Supervisor max_seconds parameter.
+* :spreadsheets - A list of configuration options with an entry for each monitored spreadsheet.
 
-The :spreadsheets option is a list with each Spreadsheet to poll having it's own entry:
+Each monitored __:spreadsheets__ list entry is a keyword list, with the following parameters:
 
-* :id - Atom used as the key for storing loaded Spreadsheet in ETS table
-* :sheets - List with names of sheets to poll, if empty, all worksheets are loaded.
-* :poll_delay_seconds - How many seconds to wait before next update.
-* :callback_module - Module implementing GoogleSheets.Callback behaviour, see next chapter how they can be used to convert raw CSV data before it's stored into ETS table and get notifications.
-* :loader_init - Configuration for GoogleSheets.Loader implementation used during the first initial loading.
-* :loader_poll - Configuration for GoogleSheets.Loader implementation used after the first load has been completed.
+* :id - Atom used as key in ETS table and as the updater process name.
+* :sheets - List of worksheet names to load.
+* :poll_delay_seconds - Delay between updates, if configured as 0, only the init phase update is done.
+* :callback_module - Module implementing GoogleSheets.Callback behaviour.
+* :loader_init - Loader used during updater init.
+* :loader_poll - Loader used during poll updates.
 
 #### Callbacks
 
@@ -91,23 +118,23 @@ The [GoogleSheets.Callback](lib/callback.ex) module defines behaviour describing
 
 The on_loaded callback can be used to parse and convert the raw CSV data into a format that the application requires. For example converting into a Map etc.
 
-the on_saved and on_unchanged callbacks are meant for notification. on_saved is called whenever the ETS entry is updated and on_unchanged when the document was polled, but the contents didn't change.
+The on_saved and on_unchanged callbacks are meant for notifications. on_saved is called whenever the ETS entry is updated and on_unchanged when the document was polled, but the contents didn't change.
+
+## Helpers
 
 ### Mix gs.fetch task
 
-The loader functionality is used by the [gs.fetch](lib/mix/task/gs.fetch.ex) task for saving a Spreadsheet worksheets in CSV format to a directory. The project [Makefile](Makefile) has an example task, which loads a Spreadsheet and saves all worksheets in it to priv/data folder.
+The [gs.fetch](lib/mix/task/gs.fetch.ex) task loads a Spreadsheet and saves the worksheets in specified directory. An example on how to use the task is shown below.
 
 ```
-mix gs.fetch 
--src https://spreadsheets.google.com/feeds/worksheets/1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs/public/basic 
--dir priv/data
+mix gs.fetch
+-u https://spreadsheets.google.com/feeds/worksheets/1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs/public/basic 
+-d priv/data
 ```
-
-Purpose of this is to have a known good configuration deployed with the server and if the updater module is configured to load data first from filesystem and then start polling, we don't end up in a situation where the whole updater process ends, because it crashed more often than what the supervisor max_restarts and max_seconds parameter allows. This naturally requires that the poll period is long enough.
 
 ## Publishing Google Spreadsheet
 
-The default way to share links in Google Sheets API is to use oauth (see the more information chapter for API documentation), but for a server service this is not feasible. Reasong being that afaik there is no way to get permanent oauth token. Therefore we must make the Worksheet public to be able to fetch document and all worksheets.
+The default way to share links in Google Sheets API is to use oauth (see the more information chapter for API documentation), but for a server service this is not possible since you can't get a permanent oauth token afaik. Therefore we must make the spreadsheet public to be able to fetch document and all worksheets.
 
 To make things worse, you must both publish the worksheet to web (this allows fetching the worksheet feed and find individual sheet URLs) and share the worksheet (this allows us to fetch the actual CSV content).
 
@@ -121,9 +148,8 @@ Publish to web is found in the File menu and it opens a dialog shown below:
 
 ## More information
 
-See the Google Sheets API documentation at https://developers.google.com/google-apps/spreadsheets/ see especially the documentation about public vs private visibilty at https://developers.google.com/google-apps/spreadsheets/#sheets_api_urls_visibilities_and_projections
+See the [Google Sheets API documentation](https://developers.google.com/google-apps/spreadsheets/) for more information about the structure of atom feed and about the public vs private visibility.
 
 ## Credits
 
 Credits for the original C# implementation goes to Harri Hätinen https://github.com/hhatinen and to Teemu Harju https://github.com/tsharju for the original Elixir implementation.
-
