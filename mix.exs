@@ -13,7 +13,7 @@ defmodule Googlesheets.Mixfile do
   end
 
   def application do
-    [ applications: [:logger, :httpoison, :erlsom], mod: { GoogleSheets, [] } ]
+    [ applications: [:logger, :httpoison, :sweet_xml], mod: { GoogleSheets, [] } ]
   end
 
   defp description do
@@ -34,8 +34,8 @@ defmodule Googlesheets.Mixfile do
   defp deps do
     [
       {:httpoison, "~> 0.5"},
-      {:erlsom, github: "willemdj/erlsom"},
       {:uuid, "~> 0.1.5" },
+      {:sweet_xml, "~> 0.1.1"},
       {:earmark, "~> 0.1", only: :dev},
       {:ex_doc, "~> 0.7", only: :dev}
     ]

@@ -55,16 +55,8 @@ defmodule GoogleSheets.WorkSheetData do
   defstruct name: nil, src: nil, hash: nil, csv: nil
   @type t :: %GoogleSheets.WorkSheetData{name: String.t, src: String.t, hash: String.t, csv: [String.t]}
 
-  def new(name, src) do
-    %GoogleSheets.WorkSheetData{name: name, src: src}
-  end
-
   def new(name, src, csv) do
     %GoogleSheets.WorkSheetData{name: name, src: src, csv: csv, hash: GoogleSheets.Utils.hexstring(:crypto.hash(:md5, csv))}
-  end
-
-  def update_csv(worksheet, csv) do
-    %GoogleSheets.WorkSheetData{worksheet | csv: csv, hash: GoogleSheets.Utils.hexstring(:crypto.hash(:md5, csv))}
   end
 end
 
