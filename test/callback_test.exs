@@ -1,31 +1,18 @@
-defmodule MockCallback do
-  use GenServer
-  require Logger
+defmodule MockCallbackHandler do
+
   @behaviour GoogleSheets.Callback
 
-  def start_link(parent_pid) do
-    GenServer.start_link __MODULE__, parent_pid, name: :mock_callback
-  end
-
   def on_loaded(id, data) do
-    Logger.debug "on_loaded #{id}"
-    GenServer.cast :mock_callback, {:loaded, id}
+    send :callback_test, {:loaded, id}
     data
   end
 
   def on_saved(id, _data) do
-    Logger.debug "on_saved #{id}"
-    GenServer.cast :mock_callback, {:saved, id}
+    send :callback_test, {:saved, id}
   end
 
   def on_unchanged(id) do
-    Logger.debug "on_unchanged #{id}"
-    GenServer.cast :mock_callback, {:unchanged, id}
-  end
-
-  def handle_cast(msg, parent_pid) do
-    send parent_pid, msg
-    {:noreply, parent_pid}
+    send :callback_test, {:unchanged, id}
   end
 end
 
@@ -34,20 +21,17 @@ defmodule CallbackTest do
   use ExUnit.Case
   require Logger
 
-  @test_pid nil
-
   test "Test updater process" do
-    Logger.debug "#{inspect self}"
+    Process.register self, :callback_test
+
     cfg = [
       id: :callback_test,
       sheets: ["KeyValue"],
       poll_delay_seconds: 5,
-      callback_module: MockCallback,
+      callback_module: MockCallbackHandler,
       loader_init: [module: GoogleSheets.Loader.FileSystem, dir: "priv/data"],
       loader_poll: [module: GoogleSheets.Loader.Docs, url: "https://spreadsheets.google.com/feeds/worksheets/1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs/public/basic"]
     ]
-
-    {:ok, _mock_pid} = MockCallback.start_link self
     {:ok, _updater_pid} = GoogleSheets.Updater.start_link(cfg, [])
 
     assert_receive {:loaded, :callback_test}, 50_000
