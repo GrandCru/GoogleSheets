@@ -8,8 +8,8 @@ defmodule GoogleSheets.Updater do
   require Logger
   alias GoogleSheets.Utils
 
-  def start_link(config, options \\ []) do
-    GenServer.start_link(__MODULE__, config, options)
+  def start_link(config) do
+    GenServer.start_link(__MODULE__, config, [name: config[:id]])
   end
 
   # Initial update

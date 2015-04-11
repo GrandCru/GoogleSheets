@@ -32,7 +32,7 @@ defmodule GoogleSheets.Supervisor do
   defp create_children([], children), do: children
   defp create_children([spreadsheet | rest], children) do
     id = Keyword.fetch! spreadsheet, :id
-    create_children rest, [worker(GoogleSheets.Updater, [spreadsheet], id: id, restart: :permanent) | children]
+    create_children rest, [worker(GoogleSheets.Updater, [spreadsheet], [id: id, restart: :permanent]) | children]
   end
 
 end
