@@ -25,17 +25,17 @@ defmodule CallbackTest do
     Process.register self, :callback_test
 
     cfg = [
-      id: :callback_test,
+      id: :callback_spreadsheet,
       sheets: ["KeyValue"],
       poll_delay_seconds: 5,
       callback_module: MockCallbackHandler,
       loader_init: [module: GoogleSheets.Loader.FileSystem, dir: "priv/data"],
       loader_poll: [module: GoogleSheets.Loader.Docs, url: "https://spreadsheets.google.com/feeds/worksheets/1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs/public/basic"]
     ]
-    {:ok, _updater_pid} = GoogleSheets.Updater.start_link(cfg, [])
+    {:ok, _updater_pid} = GoogleSheets.Updater.start_link(cfg)
 
-    assert_receive {:loaded, :callback_test}, 50_000
-    assert_receive {:saved, :callback_test}, 50_000
-    assert_receive {:unchanged, :callback_test}, 50_000
+    assert_receive {:loaded, :callback_spreadsheet}, 50_000
+    assert_receive {:saved, :callback_spreadsheet}, 50_000
+    assert_receive {:unchanged, :callback_spreadsheet}, 50_000
   end
 end
