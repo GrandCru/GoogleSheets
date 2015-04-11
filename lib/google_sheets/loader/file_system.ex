@@ -21,13 +21,14 @@ defmodule GoogleSheets.Loader.FileSystem do
     path = Path.expand Keyword.fetch!(config, :dir)
     true = File.exists? path
     files = Path.wildcard(path <> "/*.csv") |> filter_files(sheets)
-    {version, worksheets} = load_csv_files files, previous_version, []
+    version = last_modified files, nil
 
     case version == previous_version do
       true ->
         :unchanged
       false ->
-        validate_all_sheets_exist sheets, worksheets
+        worksheets = load_csv_files files, []
+        true = all_sheets_loaded? sheets, worksheets
         {version, SpreadSheetData.new(path, worksheets)}
     end
   end
@@ -38,31 +39,32 @@ defmodule GoogleSheets.Loader.FileSystem do
     Enum.filter(files, fn(filename) -> Path.basename(filename, ".csv") in sheets end)
   end
 
-  # Make sure there exist an csv file for each sheet to load, unless we load all sheets in directory
-  defp validate_all_sheets_exist([], _worksheets), do: true
-  defp validate_all_sheets_exist(sheets, worksheets) do
-    true = Enum.all?(sheets, fn(sheet) -> Enum.any?(worksheets, fn(ws) -> ws.name == sheet end) end)
-  end
-
-  # Could optimize by first comparing the mtime of each file and then a separate pass for loading data
-  defp load_csv_files([], modified, worksheets), do: {modified, worksheets}
-  defp load_csv_files([file | rest], modified, worksheets) do
-    name = Path.basename(file, ".csv")
-    csv = File.read! file
-    modified = last_modified File.stat!(file), modified
-    load_csv_files rest, modified, [WorkSheetData.new(name, file, csv) | worksheets]
-  end
-
-  defp last_modified(%File.Stat{} = stat, modified) do
+  # Find the newest modified version of files
+  defp last_modified([], version), do: version
+  defp last_modified([file | rest], version) do
+    stat = File.stat! file
     {{year, month, day}, {hour, min, sec}} = stat.mtime
-    file_modified = "#{year}-#{month}-#{day}_#{hour}-#{min}-#{sec}"
-    case file_modified < modified do
+    file_version = "#{year}-#{month}-#{day}_#{hour}-#{min}-#{sec}"
+    case file_version < version do
       true ->
-        modified
+        version
       false ->
-        file_modified
+        file_version
     end
   end
 
-end
+  # Make sure there exist an csv file for each sheet to load, unless we load all sheets in directory
+  defp all_sheets_loaded?([], _worksheets), do: true
+  defp all_sheets_loaded?(sheets, worksheets) do
+    Enum.all?(sheets, fn(sheet) -> Enum.any?(worksheets, fn(ws) -> ws.name == sheet end) end)
+  end
 
+  # Load CSV data
+  defp load_csv_files([], worksheets), do: worksheets
+  defp load_csv_files([file | rest], worksheets) do
+    csv = File.read! file
+    name = Path.basename(file, ".csv")
+    load_csv_files rest, [WorkSheetData.new(name, file, csv) | worksheets]
+  end
+
+end
