@@ -15,8 +15,13 @@ defmodule GoogleSheets.Updater do
   # Initial update
   def init(config) do
     Logger.info "Starting updater process for spreadsheet #{config[:id]}"
-    result = load_spreadsheet config, Keyword.fetch!(config, :loader_init)
-    update_ets_entry config, result
+
+    # Don't use loader_init except during the very first launch
+    if nil == latest_version config[:id] do
+      result = load_spreadsheet config, Keyword.fetch!(config, :loader_init)
+      update_ets_entry config, result
+    end
+
     schedule_next_update config, Keyword.fetch!(config, :poll_delay_seconds)
     {:ok, config}
   end
@@ -37,10 +42,12 @@ defmodule GoogleSheets.Updater do
   end
 
   # Update ets table or notify that the data loaded was unchanged
-  defp update_ets_entry(_config, :error) do
+  defp update_ets_entry(config, :error) do
+    Logger.info "Failed loading data for #{config[:id]}"
     :error
   end
   defp update_ets_entry(config, :unchanged) do
+    Logger.debug "No changes in #{config[:id]}"
     on_unchanged(Keyword.fetch!(config, :callback_module), Keyword.fetch!(config, :id))
   end
   defp update_ets_entry(config, {version, spreadsheet}) do
@@ -52,7 +59,7 @@ defmodule GoogleSheets.Updater do
 
     data = on_loaded callback_module, id, spreadsheet
 
-    :ets.insert Utils.ets_table, {{id, key}, version, data}
+    :ets.insert Utils.ets_table, {{id, key}, data}
     :ets.insert Utils.ets_table, {{id, :latest}, version, key}
 
     on_saved callback_module, id, data
@@ -62,7 +69,8 @@ defmodule GoogleSheets.Updater do
   defp schedule_next_update(config, 0) do
     Logger.info "Stopping scheduled updates for #{config[:id]}"
   end
-  defp schedule_next_update(_config, delay_seconds) do
+  defp schedule_next_update(config, delay_seconds) do
+    Logger.debug "Scheduling next update for #{config[:id]} in #{delay_seconds} seconds"
     Process.send_after self, :update, delay_seconds * 1000
   end
 
@@ -83,8 +91,8 @@ defmodule GoogleSheets.Updater do
   #
   defp latest_version(id) when is_atom(id) do
     case :ets.lookup Utils.ets_table, {id, :latest} do
-      [{_lookup_key, updated, _key}] ->
-        updated
+      [{_lookup_key, version, _key}] ->
+        version
       _ ->
         nil
     end

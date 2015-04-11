@@ -14,8 +14,10 @@ defmodule GoogleSheets.Loader do
   The parameters:
 
   * sheets - A list of worksheets to load, if empty all worksheets available are to be loaded.
-  * previous_version - value returned by a previous call to loader, can be used to stop loading all data if data hasn't changed.
-  For Loader.Docs implementation returns the last_updated value of atom feed, which is used during next poll to not request each worksheet if no changes have been made.
+  * previous_version - Value returned by a previous call to loader or nil. All loaders should implement some
+  way to check that data loaded is equal to previous load. In worst case it is possible to use hash value of spreadsheet
+  for equality comparison, but in many cases there is a last modified timestamp or some other way to do this without
+  loading all data. For example, the Docs loader uses <updated> element value of the atom feed.
   * config - Loader specific configuration options, for example might contain directory where to laod data or URL.
 
   Return values:

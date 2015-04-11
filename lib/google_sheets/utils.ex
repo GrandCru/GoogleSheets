@@ -12,7 +12,7 @@ defmodule GoogleSheets.Utils do
   Return key for the latest entry stored for the Spreadsheet identified by id.
   """
   def latest_key(id) when is_atom(id) do
-    [{_lookup_key, _updated, key}] = :ets.lookup ets_table, {id, :latest}
+    [{_lookup_key, _version, key}] = :ets.lookup ets_table, {id, :latest}
     {id, key}
   end
 
@@ -20,7 +20,7 @@ defmodule GoogleSheets.Utils do
   Returns data for a stored Spreadsheet matching the given {id, key} tuple.
   """
   def get({id, key}) when is_atom(id) do
-    [{_lookup_key, _updated, data}] = :ets.lookup ets_table, {id, key}
+    [{_lookup_key, data}] = :ets.lookup ets_table, {id, key}
     data
   end
 
