@@ -45,12 +45,10 @@ defmodule GoogleSheets.Loader.FileSystem do
     stat = File.stat! file
     {{year, month, day}, {hour, min, sec}} = stat.mtime
     file_version = "#{year}-#{month}-#{day}_#{hour}-#{min}-#{sec}"
-    case file_version < version do
-      true ->
-        version
-      false ->
-        file_version
+    if version < file_version do
+      version = file_version
     end
+    last_modified rest, version
   end
 
   # Make sure there exist an csv file for each sheet to load, unless we load all sheets in directory
