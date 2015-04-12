@@ -26,7 +26,7 @@ defmodule Googlesheets.Mixfile do
     [
       files: ["lib", "mix.exs", "README.md", "LICENSE"],
       contributors: ["Janne Kaistinen"],
-      licenses: "MIT",
+      licenses: ["MIT"],
       links: %{"GitHub" => "https://github.com/GrandCru/GoogleSheets"}
     ]
   end
