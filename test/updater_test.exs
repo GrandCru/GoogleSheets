@@ -16,7 +16,7 @@ defmodule MockCallbackHandler do
   end
 end
 
-defmodule CallbackTest do
+defmodule UpdaterTest do
 
   use ExUnit.Case
   require Logger
@@ -37,5 +37,10 @@ defmodule CallbackTest do
     assert_receive {:loaded, :callback_spreadsheet}, 120_000
     assert_receive {:saved, :callback_spreadsheet}, 120_000
     assert_receive {:unchanged, :callback_spreadsheet}, 120_000
+  end
+
+  test "Test manual update request" do
+    assert {:ok, result} = GoogleSheets.update_config :single_worksheet
+    Logger.debug "Received update result #{inspect result}"
   end
 end

@@ -40,5 +40,4 @@ defmodule GooglesheetsTest do
     assert_raise MatchError, fn -> Docs.load ["KeyValue", "NonExistingSheet"], nil, [url: @url] end
   end
 
-
 end
