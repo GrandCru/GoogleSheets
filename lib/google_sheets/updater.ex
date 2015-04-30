@@ -11,8 +11,8 @@ defmodule GoogleSheets.Updater do
   #
   # Client API
   #
-  def update_config(spreadsheet_id) when is_atom(spreadsheet_id) do
-    GenServer.call spreadsheet_id, :update_config
+  def update_config(spreadsheet_id, timeout \\ 60_000) when is_atom(spreadsheet_id) do
+    GenServer.call spreadsheet_id, :update_config, timeout
   end
 
   #

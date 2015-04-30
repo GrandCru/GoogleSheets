@@ -15,6 +15,7 @@ defmodule GoogleSheets do
   # Library API
   #
   defdelegate update_config(spreadsheet_id), to: GoogleSheets.Updater
+  defdelegate update_config(spreadsheet_id, timeout), to: GoogleSheets.Updater
   defdelegate latest_key(spreadsheet_id), to: GoogleSheets.Utils
   defdelegate get({id, key}), to: GoogleSheets.Utils
   defdelegate await_key(id), to: GoogleSheets.Utils
