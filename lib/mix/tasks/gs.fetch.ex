@@ -7,7 +7,7 @@ defmodule Mix.Tasks.Gs.Fetch do
   Loads a Google spreadsheet and all worksheets in CSV format for the given document key.
 
   ## Examples
-  mix gs.fetch -k 1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs -d priv/data
+  mix gs.fetch -u https://spreadsheets.google.com/feeds/worksheets/1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs/public/basic -d priv/data
 
   ## Command line options
   * -u, --url - Source URL to a published Spreadsheet, see README.md for more information.
