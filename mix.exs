@@ -33,11 +33,12 @@ defmodule Googlesheets.Mixfile do
 
   defp deps do
     [
-      {:httpoison, "~> 0.5"},
-      {:uuid, "~> 0.1.5" },
-      {:sweet_xml, "~> 0.1.1"},
-      {:earmark, "~> 0.1", only: :dev},
-      {:ex_doc, "~> 0.7", only: :dev}
+      {:httpoison, "~> 0.7.0"},
+      {:uuid, "~> 1.0.1" },
+      {:sweet_xml, "~> 0.2.1"},
+      {:earmark, "~> 0.1.17", only: :dev},
+      {:ex_doc, "~> 0.7.3", only: :dev},
+      {:hackney, "~> 1.1.0"}
     ]
   end
 end

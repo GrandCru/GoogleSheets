@@ -16,8 +16,9 @@ test:
 	mix test
 
 clean:
-	mix clean --all
-	mix deps.clean --all
+	rm -rf $(MAKEFILE_DIR)/mix.lock
+	rm -rf $(MAKEFILE_DIR)/_build/*
+	rm -rf $(MAKEFILE_DIR)/deps/*
 
 docs:
 	mix docs
