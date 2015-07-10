@@ -25,7 +25,7 @@
     </script>
 
     <section id="content">
-      <div class="breadcrumbs">google_sheets v0.1.2 &rarr; <a href="overview.html">Overview</a> &rarr; Mix &rarr; Tasks &rarr; Gs &rarr; <a href="Mix.Tasks.Gs.Fetch.html">Fetch</a></div>
+      <div class="breadcrumbs">google_sheets v1.0.0 &rarr; <a href="overview.html">Overview</a> &rarr; Mix &rarr; Tasks &rarr; Gs &rarr; <a href="Mix.Tasks.Gs.Fetch.html">Fetch</a></div>
       <h1>
         Mix.Tasks.Gs.Fetch
         
@@ -46,14 +46,13 @@
       
         <section id="moduledoc" class="docstring">
           <p>Loads a Google spreadsheet and all worksheets in CSV format for the given document key.</p>
-<h2>Examples</h2>
-<p>mix gs.fetch -k 1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs -d priv/data</p>
-<h2>Command line options</h2>
+<p>If no parameters are given, it looks through all configured spreadsheets in :google_sheets configuration.</p>
+<h2 id="examples">Examples</h2>
+<p>mix gs.fetch -u https://spreadsheets.google.com/feeds/worksheets/1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs/public/basic -d priv/data</p>
+<h2 id="command-line-options">Command line options</h2>
 <ul>
-<li>-u, —url - Source URL to a published Spreadsheet, see README.md for more information.
-</li>
-<li>-d, —dir - Directory where to save all CSV files, relative to application root path.
-</li>
+<li>-u, --url - Source URL to a published Spreadsheet, see README.md for more information.</li>
+<li>-d, --dir - Directory where to save all CSV files, relative to application root path.</li>
 </ul>
 
         </section>
@@ -67,7 +66,7 @@
           <tr>
   <td class="summary_signature"><a href="#run/1">run(args)</a></td>
   
-    <td class="summary_synopsis"><p>Callback implementation for <code class="inline">c:Mix.Task.run/1</code></p>
+    <td class="summary_synopsis"><p>Callback implementation for <code>c:Mix.Task.run/1</code></p>
 </td>
   
 </tr>
@@ -91,7 +90,7 @@
   </div>
   
   <section class="docstring">
-    <p>Callback implementation for <code class="inline">c:Mix.Task.run/1</code>.</p>
+    <p>Callback implementation for <code>c:Mix.Task.run/1</code>.</p>
 
   </section>
   

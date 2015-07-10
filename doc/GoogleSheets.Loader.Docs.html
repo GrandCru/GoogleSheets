@@ -25,7 +25,7 @@
     </script>
 
     <section id="content">
-      <div class="breadcrumbs">google_sheets v0.1.2 &rarr; <a href="overview.html">Overview</a> &rarr; GoogleSheets &rarr; <a href="GoogleSheets.Loader.html">Loader</a> &rarr; <a href="GoogleSheets.Loader.Docs.html">Docs</a></div>
+      <div class="breadcrumbs">google_sheets v1.0.0 &rarr; <a href="overview.html">Overview</a> &rarr; <a href="GoogleSheets.html">GoogleSheets</a> &rarr; <a href="GoogleSheets.Loader.html">Loader</a> &rarr; <a href="GoogleSheets.Loader.Docs.html">Docs</a></div>
       <h1>
         GoogleSheets.Loader.Docs
         
@@ -46,18 +46,12 @@
       
         <section id="moduledoc" class="docstring">
           <p>Implemnts GoogleSheets.Loader behaviour by fetching a Spreadsheet with Google spreadsheet API.</p>
-<p>The only loader specific configuration value is :url, which should point to the Atom feed describing
-the worksheet. See README.md for more detailed information about how to publish a spreadsheet and
-find the URL.</p>
-<p>The loader first requests the Atom feed and parses URLs pointing to CSV data for each individual
-worksheet and the last_udpdated timestamp for spreadsheet.</p>
+<p>The only loader specific configuration value is :url, which should point to the Atom feed describing the worksheet. See README.md for more detailed information about how to publish a spreadsheet and find the URL.</p>
+<p>The loader first requests the Atom feed and parses URLs pointing to CSV data for each individual worksheet and the last_udpdated timestamp for spreadsheet.</p>
 <p>If the last_updated field is equal to the one passes as previous_version, the loader stops and returns :unchanged</p>
-<p>If not, it will filter the found CSV urls and leave only those that exist in the sheets argument. If the sheets argument
-is nil, it will load all worksheets.</p>
-<p>After requesting all urls and parsing the responses, the loader checks that each invidivual spreadsheet given as sheets
-parameter exist and returns an SpreadSheetData.t structure.</p>
-<p>If there are any errors during http requests and/or parsing, it will most likely raise an expection. If you use this
-loader in code which is not crash resistant, do handle the exceptions.</p>
+<p>If not, it will filter the found CSV urls and leave only those that exist in the sheets argument. If the sheets argument is nil, it will load all worksheets.</p>
+<p>After requesting all urls and parsing the responses, the loader checks that each invidivual spreadsheet given as sheets parameter exist and returns an SpreadSheetData.t structure.</p>
+<p>If there are any errors during http requests and/or parsing, it will most likely raise an expection. If you use this loader in code which is not crash resistant, do handle the exceptions.</p>
 
         </section>
       
@@ -68,9 +62,9 @@ loader in code which is not crash resistant, do handle the exceptions.</p>
         <h2 id="summary">Summary<span class="detail_header_links"><a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a></span></h2>
         <table class="summary">
           <tr>
-  <td class="summary_signature"><a href="#load/3">load(sheets, previous_version, config)</a></td>
+  <td class="summary_signature"><a href="#load/2">load(previous_version, config)</a></td>
   
-    <td class="summary_synopsis"><p>Load spreadsheet from the url specified in config[:url] key</p>
+    <td class="summary_synopsis"><p>Load spreadsheet from Google sheets using the URL specified in config[:url] key</p>
 </td>
   
 </tr>
@@ -84,17 +78,17 @@ loader in code which is not crash resistant, do handle the exceptions.</p>
         <section id="functions_details" class="details_list">
           <h2>Functions</h2>
           <section class="detail">
-  <div class="detail_header" id="load/3">
-    <span class="signature"><strong>load(sheets, previous_version, config)</strong></span>
+  <div class="detail_header" id="load/2">
+    <span class="signature"><strong>load(previous_version, config)</strong></span>
     <div class="detail_header_links">
       <span class="detail_type">(function)</span>
-      <a href="#load/3" class="detail_link" title="Link to this function">#</a>
+      <a href="#load/2" class="detail_link" title="Link to this function">#</a>
       <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
     </div>
   </div>
   
   <section class="docstring">
-    <p>Load spreadsheet from the url specified in config[:url] key.</p>
+    <p>Load spreadsheet from Google sheets using the URL specified in config[:url] key.</p>
 
   </section>
   

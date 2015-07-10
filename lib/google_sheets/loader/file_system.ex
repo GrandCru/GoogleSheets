@@ -13,56 +13,56 @@ defmodule GoogleSheets.Loader.FileSystem do
   alias GoogleSheets.WorkSheetData
 
   @doc """
-  Reads CSV files matching given sheet names from directory. Returns a spreadsheet with
-  nil as version information and SpreadSheet.t struct containing data for all given
-  spreadsheets.
+  Reads CSV files from config[:dir] directory.
   """
-  def load(sheets, previous_version, config) when is_list(sheets) and is_list(config) do
-    path = Path.expand Keyword.fetch!(config, :dir)
-    true = File.exists? path
-    files = Path.wildcard(path <> "/*.csv") |> filter_files(sheets)
-    version = last_modified files, nil
-
-    case version == previous_version do
-      true ->
-        :unchanged
-      false ->
-        worksheets = load_csv_files files, []
-        true = all_sheets_loaded? sheets, worksheets
-        {version, SpreadSheetData.new(path, worksheets)}
+  def load(previous_version, config) when is_list(config) do
+    try do
+      dir = Keyword.fetch! config, :dir
+      sheets = Keyword.get config, :sheets, []
+      load_spreadsheet previous_version, dir, sheets
+    catch
+      result -> result
     end
   end
 
-  # Filter files based on given sheets, unless loading all files (empty sheets argument)
-  defp filter_files(files, []), do: files
-  defp filter_files(files, sheets) do
-    Enum.filter(files, fn(filename) -> Path.basename(filename, ".csv") in sheets end)
-  end
-
-  # Find the newest modified version of files
-  defp last_modified([], version), do: version
-  defp last_modified([file | rest], version) do
-    stat = File.stat! file
-    {{year, month, day}, {hour, min, sec}} = stat.mtime
-    file_version = "#{year}-#{month}-#{day}_#{hour}-#{min}-#{sec}"
-    if version < file_version do
-      version = file_version
+  defp load_spreadsheet(previous_version, dir, sheets) do
+    path = Path.expand dir
+    if not File.exists? path do
+      throw {:error, "Can't load CSV files from non existing directory #{inspect path}"}
     end
-    last_modified rest, version
+
+    files = Path.wildcard(path <> "/*.csv")
+    worksheets = load_files files, sheets, []
+
+    if not Enum.all?(sheets, fn sheetname -> Enum.any?(worksheets, fn ws -> ws.name == sheetname end) end) do
+      loaded = worksheets |> Enum.map(fn ws -> ws.name end) |> Enum.join(",")
+      throw {:error, "All requested worksheets were not found, expected to load #{inspect sheets} loaded: #{inspect loaded}"}
+    end
+
+    version = calculate_version worksheets
+    if version == previous_version do
+      throw {:ok, :unchanged}
+    end
+
+    {:ok, SpreadSheetData.new(version, worksheets)}
   end
 
-  # Make sure there exist an csv file for each sheet to load, unless we load all sheets in directory
-  defp all_sheets_loaded?([], _worksheets), do: true
-  defp all_sheets_loaded?(sheets, worksheets) do
-    Enum.all?(sheets, fn(sheet) -> Enum.any?(worksheets, fn(ws) -> ws.name == sheet end) end)
+  # Load csv files and filter if only specific sheets should be loaded
+  defp load_files([], _sheets, worksheets), do: worksheets
+  defp load_files([filename | rest], sheets, worksheets) do
+    sheetname = Path.basename filename, ".csv"
+    if sheets == [] or sheetname in sheets do
+      csv = File.read! filename
+      worksheets = [WorkSheetData.new(sheetname, csv) | worksheets]
+    end
+    load_files rest, sheets, worksheets
   end
 
-  # Load CSV data
-  defp load_csv_files([], worksheets), do: worksheets
-  defp load_csv_files([file | rest], worksheets) do
-    csv = File.read! file
-    name = Path.basename(file, ".csv")
-    load_csv_files rest, [WorkSheetData.new(name, file, csv) | worksheets]
+  # Calculate version based on CSV data
+  defp calculate_version(worksheets) when is_list(worksheets) do
+    Logger.debug "worksheets: #{inspect worksheets}"
+    concatenated = worksheets |> Enum.sort(fn a,b -> a.name <= b.name end) |> Enum.reduce("", fn ws, acc -> ws.csv <> acc end)
+    :crypto.hash(:sha, concatenated) |> GoogleSheets.Utils.hexstring
   end
 
 end

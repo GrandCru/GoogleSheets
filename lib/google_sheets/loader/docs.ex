@@ -31,61 +31,66 @@ defmodule GoogleSheets.Loader.Docs do
   alias GoogleSheets.WorkSheetData
 
   @doc """
-  Load spreadsheet from the url specified in config[:url] key.
+  Load spreadsheet from Google sheets using the URL specified in config[:url] key.
   """
-  def load(sheets, previous_version, config) when is_list(sheets) and is_list(config) do
+  def load(previous_version, config) when is_list(config) do
     try do
-      {version, worksheets} = load_spreadsheet sheets, previous_version, Keyword.fetch!(config, :url)
-      {version, SpreadSheetData.new(Keyword.fetch!(config, :url), worksheets)}
+      url = Keyword.fetch! config, :url
+      sheets = Keyword.get config, :sheets, []
+      load_spreadsheet previous_version, url, sheets
     catch
-      :unchanged ->
-        # Logger.info "Document #{inspect config[:url]} not changed since #{inspect config[:previous_version]}"
-        :unchanged
+      result -> result
     end
   end
 
-  # Load spreadsheet data
-  defp load_spreadsheet(sheets, previous_version, url) do
+  # Fetch Atom feed describing feed and request individual sheets if not modified.
+  defp load_spreadsheet(previous_version, url, sheets) do
     {:ok, %HTTPoison.Response{status_code: 200} = response} = HTTPoison.get url
 
-    updated = response.body |> xpath(~x"//feed/updated/text()")
-    if previous_version != nil and updated == previous_version do
-      throw :unchanged
+    updated = response.body |> xpath(~x"//feed/updated/text()") |> List.to_string |> String.strip
+    version = :crypto.hash(:sha, url <> updated) |> GoogleSheets.Utils.hexstring
+
+    if previous_version != nil and version == previous_version do
+      throw {:ok, :unchanged}
     end
 
     worksheets = response.body
-      |> xpath(~x"//feed/entry"l, title: ~x"./title/text()", url: ~x"./link[@type='text/csv']/@href")
-      |> filter_entries(sheets, [])
-      |> load_worksheets([])
-      |> validate_all_sheets_loaded(sheets)
+    |> xpath(~x"//feed/entry"l, title: ~x"./title/text()", url: ~x"./link[@type='text/csv']/@href")
+    |> convert_entries([])
+    |> filter_entries(sheets, [])
+    |> load_worksheets([])
 
-    {updated, worksheets}
+    if not Enum.all?(sheets, fn sheetname -> Enum.any?(worksheets, fn ws -> sheetname == ws.name end) end) do
+      loaded = worksheets |> Enum.map(fn ws -> ws.name end) |> Enum.join(",")
+      throw {:error, "All requested sheets not loaded, expected: #{Enum.join(sheets, ",")} loaded: #{loaded}"}
+    end
+
+    {:ok, SpreadSheetData.new(version, worksheets)}
   end
 
-  # Filter out entries not specified in sheets list
+  # Converts xpath entries to {title, url} with data converted to strings
+  defp convert_entries([], acc), do: acc
+  defp convert_entries([entry | rest], acc) do
+    title = List.to_string entry[:title]
+    url = List.to_string entry[:url]
+    convert_entries rest, [{title, url} | acc]
+  end
+
+  # Filter out entries not specified in sheets list, if empty sheets list, accept all
   defp filter_entries(entries, [], _acc), do: entries
   defp filter_entries([], _sheets, acc), do: acc
-  defp filter_entries([entry | rest], sheets, acc) do
-    case List.to_string(entry[:title]) in sheets do
-      true -> filter_entries rest, sheets, [entry | acc]
-      false -> filter_entries rest, sheets, acc
+  defp filter_entries([{title, url} | rest], sheets, acc) do
+    if title in sheets do
+      acc = [{title, url} | acc]
     end
+    filter_entries rest, sheets, acc
   end
 
   # Request worksheets and create WorkSheetData.t entries
   defp load_worksheets([], worksheets), do: worksheets
-  defp load_worksheets([entry | rest], worksheets) do
-    url = List.to_string entry[:url]
-    title = List.to_string entry[:title]
+  defp load_worksheets([{title, url} | rest], worksheets) do
     {:ok, %HTTPoison.Response{status_code: 200} = response} = HTTPoison.get url
-    load_worksheets rest, [WorkSheetData.new(title, url, response.body) | worksheets]
-  end
-
-  # Make sure all requested sheets were loaded
-  defp validate_all_sheets_loaded(worksheets, []), do: worksheets
-  defp validate_all_sheets_loaded(worksheets, sheets) do
-    true = Enum.all?(sheets, fn(sheet) -> Enum.any?(worksheets, fn(ws) -> ws.name == sheet end) end)
-    worksheets
+    load_worksheets rest, [WorkSheetData.new(title, response.body) | worksheets]
   end
 
 end

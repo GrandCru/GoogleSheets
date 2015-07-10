@@ -33,7 +33,11 @@
 
       <ul class="summary_links">
         
+          <li><a href="#summary">Summary</a></li>
         
+        
+        
+          <li><a href="#functions_details">Functions</a></li>
         
         
         
@@ -41,15 +45,7 @@
 
       
         <section id="moduledoc" class="docstring">
-          <p>Elixir library for fetching and polling Google spreadsheet data in CSV format.</p>
-<p>Main purpose of this library is to enable dynamic configuration changes without
-needing to deploy and/or restart a game server. The library starts an updater
-process for each spreadsheet configured for monitoring. When changes to
-spreadsheet are noticed, a new version is written to ETS table, where the data
-can be queried.</p>
-<p>It is also possible to use the library without any updater processes and just use
-the provided code to load CSV data manually.</p>
-<p>See the project homepage for more information: <a href="https://github.com/GrandCru/GoogleSheets/">https://github.com/GrandCru/GoogleSheets/</a></p>
+          <p>Main starting point of the application and provides functions defining the public client API for the library.</p>
 
         </section>
       
@@ -57,9 +53,141 @@ the provided code to load CSV data manually.</p>
       
 
       
+        <h2 id="summary">Summary<span class="detail_header_links"><a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a></span></h2>
+        <table class="summary">
+          <tr>
+  <td class="summary_signature"><a href="#fetch!/2">fetch!(spreadsheet_id, version_key \\ :latest)</a></td>
+  
+    <td class="summary_synopsis"><p>Return {version_key, data} tuple matching an entry in ETS table for the passed spreadsheet_id, version_key pair</p>
+</td>
+  
+</tr>
+<tr>
+  <td class="summary_signature"><a href="#fetch/2">fetch(spreadsheet_id, version_key \\ :latest)</a></td>
+  
+    <td class="summary_synopsis"><p>Returns {:ok, version_key, data} tuple matching an entry in ETS table for the passed spreadsheet_id, version_key pair</p>
+</td>
+  
+</tr>
+<tr>
+  <td class="summary_signature"><a href="#latest_key!/1">latest_key!(spreadsheet_id)</a></td>
+  
+    <td class="summary_synopsis"><p>Returns version_key where version_key is the one for latest version stored in ETS table</p>
+</td>
+  
+</tr>
+<tr>
+  <td class="summary_signature"><a href="#latest_key/1">latest_key(spreadsheet_id)</a></td>
+  
+    <td class="summary_synopsis"><p>Returns {:ok, version_key} where version_key is the one for latest version stored in ETS table</p>
+</td>
+  
+</tr>
+<tr>
+  <td class="summary_signature"><a href="#update/2">update(spreadsheet_id, timeout \\ 60000)</a></td>
+  
+    <td class="summary_synopsis"><p>Requests the updater process monitoring the given spreadsheet to check for changes immediately</p>
+</td>
+  
+</tr>
+
+        </table>
+      
 
       
 
+      
+        <section id="functions_details" class="details_list">
+          <h2>Functions</h2>
+          <section class="detail">
+  <div class="detail_header" id="fetch/2">
+    <span class="signature"><strong>fetch(spreadsheet_id, version_key \\ :latest)</strong></span>
+    <div class="detail_header_links">
+      <span class="detail_type">(function)</span>
+      <a href="#fetch/2" class="detail_link" title="Link to this function">#</a>
+      <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
+    </div>
+  </div>
+  
+  <section class="docstring">
+    <p>Returns {:ok, version_key, data} tuple matching an entry in ETS table for the passed spreadsheet_id, version_key pair.</p>
+<p>If no version_key is given, the latest stored version is returned.</p>
+<p>If no entry is found, :not_found is returned.</p>
+
+  </section>
+  
+</section>
+<section class="detail">
+  <div class="detail_header" id="fetch!/2">
+    <span class="signature"><strong>fetch!(spreadsheet_id, version_key \\ :latest)</strong></span>
+    <div class="detail_header_links">
+      <span class="detail_type">(function)</span>
+      <a href="#fetch!/2" class="detail_link" title="Link to this function">#</a>
+      <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
+    </div>
+  </div>
+  
+  <section class="docstring">
+    <p>Return {version_key, data} tuple matching an entry in ETS table for the passed spreadsheet_id, version_key pair.</p>
+<p>If no version_key is given, the latest stored version is returned.</p>
+<p>If no entry is found, an KeyError exception is raised.</p>
+
+  </section>
+  
+</section>
+<section class="detail">
+  <div class="detail_header" id="latest_key/1">
+    <span class="signature"><strong>latest_key(spreadsheet_id)</strong></span>
+    <div class="detail_header_links">
+      <span class="detail_type">(function)</span>
+      <a href="#latest_key/1" class="detail_link" title="Link to this function">#</a>
+      <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
+    </div>
+  </div>
+  
+  <section class="docstring">
+    <p>Returns {:ok, version_key} where version_key is the one for latest version stored in ETS table.</p>
+<p>If no entry is found, :not_found is returned.</p>
+
+  </section>
+  
+</section>
+<section class="detail">
+  <div class="detail_header" id="latest_key!/1">
+    <span class="signature"><strong>latest_key!(spreadsheet_id)</strong></span>
+    <div class="detail_header_links">
+      <span class="detail_type">(function)</span>
+      <a href="#latest_key!/1" class="detail_link" title="Link to this function">#</a>
+      <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
+    </div>
+  </div>
+  
+  <section class="docstring">
+    <p>Returns version_key where version_key is the one for latest version stored in ETS table.</p>
+<p>If no entry is found, an KeyError exception is raised.</p>
+
+  </section>
+  
+</section>
+<section class="detail">
+  <div class="detail_header" id="update/2">
+    <span class="signature"><strong>update(spreadsheet_id, timeout \\ 60000)</strong></span>
+    <div class="detail_header_links">
+      <span class="detail_type">(function)</span>
+      <a href="#update/2" class="detail_link" title="Link to this function">#</a>
+      <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
+    </div>
+  </div>
+  
+  <section class="docstring">
+    <p>Requests the updater process monitoring the given spreadsheet to check for changes immediately.</p>
+<p>Return values: {:updated, version_key} - Spreadsheet was updated and stored with the version_key :unchanged - Spreadsheet contents haven't been changed since last update. {:error, reason} - The update failed because of reason.</p>
+
+  </section>
+  
+</section>
+
+        </section>
       
 
       

@@ -25,7 +25,7 @@
     </script>
 
     <section id="content">
-      <div class="breadcrumbs">google_sheets v0.1.2 &rarr; <a href="overview.html">Overview</a> &rarr; GoogleSheets &rarr; <a href="GoogleSheets.WorkSheetData.html">WorkSheetData</a></div>
+      <div class="breadcrumbs">google_sheets v1.0.0 &rarr; <a href="overview.html">Overview</a> &rarr; <a href="GoogleSheets.html">GoogleSheets</a> &rarr; <a href="GoogleSheets.WorkSheetData.html">WorkSheetData</a></div>
       <h1>
         GoogleSheets.WorkSheetData
         
@@ -48,6 +48,10 @@
       
         <section id="moduledoc" class="docstring">
           <p>Structure for a spreadsheet worksheet CSV data.</p>
+<ul>
+<li>:name - Name of the worksheet</li>
+<li>:csv - Raw CSV data split into lines.</li>
+</ul>
 
         </section>
       
@@ -58,7 +62,7 @@
         <h2 id="summary">Summary<span class="detail_header_links"><a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a></span></h2>
         <table class="summary">
           <tr>
-  <td class="summary_signature"><a href="#new/3">new(name, src, csv)</a></td>
+  <td class="summary_signature"><a href="#new/2">new(name, csv)</a></td>
   
 </tr>
 
@@ -70,7 +74,7 @@
           <h2>Types <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a></h2>
           <div class="type_detail">
   <p class="typespec" id="t:t/0">
-    <a href="#t:t/0">t</a> :: %GoogleSheets.WorkSheetData{name: <a href="http://elixir-lang.org/docs/stable/elixir/String.html#t:t/0">String.t</a>, src: <a href="http://elixir-lang.org/docs/stable/elixir/String.html#t:t/0">String.t</a>, hash: <a href="http://elixir-lang.org/docs/stable/elixir/String.html#t:t/0">String.t</a>, csv: [<a href="http://elixir-lang.org/docs/stable/elixir/String.html#t:t/0">String.t</a>]}
+    <a href="#t:t/0">t</a> :: %GoogleSheets.WorkSheetData{name: <a href="http://elixir-lang.org/docs/stable/elixir/String.html#t:t/0">String.t</a>, csv: [<a href="http://elixir-lang.org/docs/stable/elixir/String.html#t:t/0">String.t</a>]}
   </p>
   
 </div>
@@ -82,11 +86,11 @@
         <section id="functions_details" class="details_list">
           <h2>Functions</h2>
           <section class="detail">
-  <div class="detail_header" id="new/3">
-    <span class="signature"><strong>new(name, src, csv)</strong></span>
+  <div class="detail_header" id="new/2">
+    <span class="signature"><strong>new(name, csv)</strong></span>
     <div class="detail_header_links">
       <span class="detail_type">(function)</span>
-      <a href="#new/3" class="detail_link" title="Link to this function">#</a>
+      <a href="#new/2" class="detail_link" title="Link to this function">#</a>
       <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
     </div>
   </div>

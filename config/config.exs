@@ -16,20 +16,17 @@ config :google_sheets,
   supervisor_max_seconds: 5,
   spreadsheets: [
     [
-      id: :spreadsheet,
-      sheets: ["KeyValue"],
-      poll_delay_seconds: 120,
-      callback_module: nil,
-      loader_init: [
-        module: GoogleSheets.Loader.FileSystem,
-        dir: "priv/data"
-      ],
-      loader_poll: [
-        module: GoogleSheets.Loader.Docs,
-        url: "https://spreadsheets.google.com/feeds/worksheets/1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs/public/basic"
-      ]
+      id: :config,
+      sheets: [],
+      callback: nil,
+      dir: "priv/data",
+      url: "https://spreadsheets.google.com/feeds/worksheets/1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs/public/basic",
+      poll_delay_seconds: 120
     ]
   ]
+
+config :ex_doc,
+  :markdown_processor, ExDoc.Markdown.Pandoc
 
 if File.exists? Path.expand("#{Mix.env}.exs", __DIR__) do
   import_config "#{Mix.env}.exs"

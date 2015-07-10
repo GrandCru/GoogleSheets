@@ -25,7 +25,7 @@
     </script>
 
     <section id="content">
-      <div class="breadcrumbs">google_sheets v0.1.2 &rarr; <a href="overview.html">Overview</a> &rarr; GoogleSheets &rarr; <a href="GoogleSheets.Loader.html">Loader</a></div>
+      <div class="breadcrumbs">google_sheets v1.0.0 &rarr; <a href="overview.html">Overview</a> &rarr; <a href="GoogleSheets.html">GoogleSheets</a> &rarr; <a href="GoogleSheets.Loader.html">Loader</a></div>
       <h1>
         GoogleSheets.Loader
         
@@ -65,11 +65,11 @@
         <section id="callbacks_details" class="details_list">
           <h2>Callbacks</h2>
           <section class="detail">
-  <div class="detail_header" id="c:load/3">
-    <span class="signature"><strong>load/3</strong></span>
+  <div class="detail_header" id="c:load/2">
+    <span class="signature"><strong>load/2</strong></span>
     <div class="detail_header_links">
       <span class="detail_type">(callback)</span>
-      <a href="#c:load/3" class="detail_link" title="Link to this callback">#</a>
+      <a href="#c:load/2" class="detail_link" title="Link to this callback">#</a>
       <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
     </div>
   </div>
@@ -77,34 +77,27 @@
     <p>Specs:</p>
     <ul class="spec">
       
-        <li>load(sheets :: [binary], previous_version :: binary | nil, config :: <a href="http://elixir-lang.org/docs/stable/elixir/Keyword.html#t:t/0">Keyword.t</a>) :: {version :: binary, spreadsheet :: <a href="GoogleSheets.SpreadSheetData.html#t:t/0">GoogleSheets.SpreadSheetData.t</a>} | :unchanged | :error</li>
+        <li>load(previous_identifier :: <a href="http://elixir-lang.org/docs/stable/elixir/String.html#t:t/0">String.t</a> | nil, config :: <a href="http://elixir-lang.org/docs/stable/elixir/Keyword.html#t:t/0">Keyword.t</a>) :: {identifier :: binary, spreadsheet :: <a href="GoogleSheets.SpreadSheetData.html#t:t/0">GoogleSheets.SpreadSheetData.t</a>} | :unchanged | {:error, reason :: <a href="http://elixir-lang.org/docs/stable/elixir/String.html#t:t/0">String.t</a>}</li>
       
     </ul>
   
   <section class="docstring">
     <p>The load callback can be called by and updater process or by any other process wishing to load data.</p>
+<p>Versioning:</p>
+<p>Each loader implementation must implement a way to uniquely identify loaded CSV data. For example, the docs.ex loader calculates an hash from the atom feed last updated data and URL. The file_system.ex loaded calculates an hash from the combined CSV data.</p>
+<p>The version value is used as part of the key for looking up a specific version of a configuration from the ETS table. To support multinode architectures, the same raw CSV data should always result in equal hash.</p>
+<p>Another purpose of this is to allow a mechanism for doing quicker check on data changes. For example, the docs.ex loader doesn't actually have to fetch all spreadsheets since it can deduce whether the data has changed or not based on the calculated hash value.</p>
 <p>The parameters:</p>
 <ul>
-<li>sheets - A list of worksheets to load, if empty all worksheets available are to be loaded.
-</li>
-<li>previous_version - Value returned by a previous call to loader or nil. All loaders should implement some
-way to check that data loaded is equal to previous load. In worst case it is possible to use hash value of spreadsheet
-for equality comparison, but in many cases there is a last modified timestamp or some other way to do this without
-loading all data. For example, the Docs loader uses <updated> element value of the atom feed.
-</li>
-<li>config - Loader specific configuration options, for example might contain directory where to laod data or URL.
-</li>
+<li>previous_version - Version value returned by a previous call to a loader.</li>
+<li>config - Configuration for the loaded. The updater passes the whole config of the spreadsheet as value. Expected to by a keyword list.</li>
 </ul>
 <p>Return values:</p>
 <ul>
-<li>{version, spreadsheet} - Tuple with version information and SpreadSheetData.t structure. The version parameter can be nil, if the loader can’t or doesn’t implement optimizations.
-</li>
-<li>:unchanged - No changes since last load time.
-</li>
-<li>:error - Unspecified error, will restart the udpater process.
-</li>
+<li>{:ok, spreadsheet} - SpreadSheetData structure. The version parameter is equal to source URL</li>
+<li>{:ok, :unchanged} - No changes since last load time in spreadsheet.</li>
+<li>{:error, reason} - An handled error case during loading of data.</li>
 </ul>
-<p>The sheets parameter is a list of Worksheet names to load, if nill</p>
 
   </section>
   

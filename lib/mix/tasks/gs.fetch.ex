@@ -1,10 +1,14 @@
 defmodule Mix.Tasks.Gs.Fetch do
+
   use Mix.Task
+  alias GoogleSheets.Loader.Docs
 
   @shortdoc "Fetch Google Spreadsheet and save raw CSV to disk"
 
   @moduledoc """
   Loads a Google spreadsheet and all worksheets in CSV format for the given document key.
+
+  If no parameters are given, it looks through all configured spreadsheets in :google_sheets configuration.
 
   ## Examples
   mix gs.fetch -u https://spreadsheets.google.com/feeds/worksheets/1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs/public/basic -d priv/data
@@ -14,25 +18,34 @@ defmodule Mix.Tasks.Gs.Fetch do
   * -d, --dir - Directory where to save all CSV files, relative to application root path.
   """
 
-  alias GoogleSheets.Loader.Docs
-
   def run(args) do
-    Mix.Task.run "app.start", args
+    Application.ensure_all_started :httpoison
     {options, _, _} = OptionParser.parse args, switches: [url: :string, dir: :string], aliases: [u: :url, d: :dir]
 
-    path = Path.expand Keyword.fetch!(options, :dir)
-    File.mkdir_p! path
+    # If no commandline options are given, we load all spreadsheets configured for the application
+    if options == [] do
+      {:ok, options} = Application.fetch_env :google_sheets, :spreadsheets
+    end
 
-    {_updated, spreadsheet} = Docs.load [], nil, [url: Keyword.fetch!(options, :url)]
-    write_sheets spreadsheet.sheets, path
+    fetch_spreadsheets options
   end
 
-  defp write_sheets([], _path), do: nil
-  defp write_sheets([sheet | rest], path) do
-    filename = Path.join(path, sheet.name) <> ".csv"
-    Mix.shell.info "Writing file #{filename}"
-    File.write! filename, sheet.csv
-    write_sheets rest, path
+  defp fetch_spreadsheets([]), do: :ok
+  defp fetch_spreadsheets([config | rest]) do
+    url = Keyword.fetch! config, :url
+    dir = Keyword.fetch! config, :dir
+    path = Path.expand dir
+
+    Mix.shell.info "Loading spreadsheet from url #{inspect url} and saving to #{path}"
+    spreadsheet = Docs.load nil, config
+
+    Enum.map spreadsheet.sheets, fn ws ->
+      filename = Path.join path, ws.name <> ".csv"
+      Mix.shell.info "Writing file #{filename}"
+      File.write! filename, ws.csv
+    end
+
+    fetch_spreadsheets rest
   end
 
 end

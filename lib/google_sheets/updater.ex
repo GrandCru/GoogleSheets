@@ -6,12 +6,15 @@ defmodule GoogleSheets.Updater do
 
   use GenServer
   require Logger
-  alias GoogleSheets.Utils
+
+  alias GoogleSheets.SpreadSheetData
+
+  @default_poll_delay 5 * 60
 
   #
   # Client API
   #
-  def update_config(spreadsheet_id, timeout \\ 60_000) when is_atom(spreadsheet_id) do
+  def update(spreadsheet_id, timeout) when is_atom(spreadsheet_id) do
     GenServer.call spreadsheet_id, :update_config, timeout
   end
 
@@ -19,107 +22,81 @@ defmodule GoogleSheets.Updater do
   # Implementation
   #
 
-  def start_link(config) do
-    GenServer.start_link(__MODULE__, config, [name: config[:id]])
+  def start_link(config) when is_list(config) do
+    id = Keyword.fetch! config, :id
+    GenServer.start_link(__MODULE__, config, [name: id])
   end
 
   # Initial update
-  def init(config) do
+  def init(config) when is_list(config) do
     Logger.info "Starting updater process for spreadsheet #{config[:id]}"
 
-    # Don't use loader_init except during the very first launch
-    if nil == latest_version config[:id] do
-      result = load_spreadsheet config, Keyword.fetch!(config, :loader_init)
-      update_ets_entry result, config
+    # Don't load data from local filesystem if the updater process has been restarted
+    if :not_found == GoogleSheets.latest_key config[:id] do
+      {:ok, %SpreadSheetData{} = spreadsheet} = GoogleSheets.Loader.FileSystem.load nil, config
+      data = on_loaded_callback Keyword.get(config, :callback), config[:id], spreadsheet
+      update_ets_entry config[:id], spreadsheet.version, data
     end
 
-    schedule_next_update config, Keyword.fetch!(config, :poll_delay_seconds)
+    schedule_next_update config, Keyword.get(config, :poll_delay_seconds, @default_poll_delay)
+
     {:ok, config}
   end
 
-  # Handle manual update request, don't crash here so that we can return a error information and show it to user
+  # Manual update request, rescue exceptions so that we can reply with result of the update.
   def handle_call(:update_config, _from, config) do
     try do
-      result = load_spreadsheet config, Keyword.fetch!(config, :loader_poll)
-      status = update_ets_entry result, config
-      {:reply, {:ok, status}, config}
+      case do_update config do
+        {:ok, :unchanged} ->
+          {:reply, {:ok, "No changes in configuration detected, configuration up-to-date."}, config}
+        {:ok, version} ->
+          {:reply, {:ok, "Configuration updated succesfully, version is #{version}."}, config}
+        {:error, reason} ->
+          {:reply, {:error, reason}, config}
+      end
     rescue
-      error -> {:reply, {:error, error}, config}
+      exception ->
+        {:reply, {:error, "Exception while updating configuration.\n\nExcption:\n#{inspect exception}\n\nStacktrace\n#{inspect :erlang.get_stacktrace}"}, config}
     end
   end
 
-  # Polling update
+  # Polling update request
   def handle_info(:update, config) do
-    result = load_spreadsheet config, Keyword.fetch!(config, :loader_poll)
-    update_ets_entry result, config
-    schedule_next_update config, Keyword.fetch!(config, :poll_delay_seconds)
+    do_update config
+    schedule_next_update config, Keyword.get(config, :poll_delay_seconds, @default_poll_delay)
     {:noreply, config}
   end
 
-  # Load spreadsheet data with a configured loader
-  defp load_spreadsheet(config, loader_config) do
-    sheets = Keyword.fetch! config, :sheets
-    module = Keyword.fetch! loader_config, :module
-    module.load sheets, latest_version(config[:id]), loader_config
-  end
-
-  # Update ets table or notify that the data loaded was unchanged
-  defp update_ets_entry(:error, config) do
-    Logger.info "Failed loading data for #{config[:id]}"
-    :error
-  end
-  defp update_ets_entry(:unchanged, config) do
-    Logger.debug "No changes in #{config[:id]}"
-    on_unchanged(Keyword.fetch!(config, :callback_module), Keyword.fetch!(config, :id))
-    :unchanged
-  end
-  defp update_ets_entry({version, spreadsheet}, config) do
-    id = Keyword.fetch! config, :id
-    key = UUID.uuid1
-    callback_module = Keyword.fetch! config, :callback_module
-
-    Logger.info "Updating spredsheet: #{inspect id} version: #{inspect version} key: #{inspect key}"
-
-    data = on_loaded callback_module, id, spreadsheet
-
-    :ets.insert Utils.ets_table, {{id, key}, data}
-    :ets.insert Utils.ets_table, {{id, :latest}, version, key}
-
-    on_saved callback_module, id, data
-    :updated
-  end
-
-  # If update_delay has been configured to 0, no updates will be done
-  defp schedule_next_update(config, 0) do
-    Logger.info "Stopping scheduled updates for #{config[:id]}"
-  end
-  defp schedule_next_update(config, delay_seconds) do
-    Logger.debug "Scheduling next update for #{config[:id]} in #{delay_seconds} seconds"
-    Process.send_after self, :update, delay_seconds * 1000
-  end
-
-  #
-  # Callbacks if defined on configuration
-  #
-  defp on_loaded(nil, _id, spreadsheet), do: spreadsheet
-  defp on_loaded(module, id, spreadsheet), do: module.on_loaded(id, spreadsheet)
-
-  defp on_saved(nil, _id, data), do: data
-  defp on_saved(module, id, data), do: module.on_saved(id, data)
-
-  defp on_unchanged(nil, _id), do: nil
-  defp on_unchanged(module, id), do: module.on_unchanged id
-
-  #
-  # Helpers
-  #
-  defp latest_version(id) when is_atom(id) do
-    case :ets.lookup Utils.ets_table, {id, :latest} do
-      [{_lookup_key, version, _key}] ->
-        version
-      _ ->
-        nil
+  defp do_update(config) do
+    try do
+      spreadsheet = load_spreadsheet config
+      data = on_loaded_callback Keyword.get(config, :callback), config[:id], spreadsheet
+      update_ets_entry config[:id], spreadsheet.version, data
+    catch
+      result -> result
     end
   end
 
+  defp load_spreadsheet(config) do
+    loader = Keyword.get config, :loader, GoogleSheets.Loader.Docs
+    case loader.load GoogleSheets.latest_key(config[:id]), config do
+      {:ok, spreadsheet} -> spreadsheet
+      result -> throw result
+    end
+  end
+
+  defp update_ets_entry(id, version, data) do
+    ets_table = Application.get_env :google_sheets, :ets_table, :google_sheets
+    :ets.insert ets_table, {{id, version}, data}
+    :ets.insert ets_table, {{id, :latest}, version}
+    {:ok, version}
+  end
+
+  # If update_delay has been configured to 0, no updates will be done
+  defp schedule_next_update(config, 0), do: Logger.info("Stopping scheduled updates for #{config[:id]}")
+  defp schedule_next_update(_config, delay_seconds), do: Process.send_after(self, :update, delay_seconds * 1000)
+
+  # Callbacks if defined on configuration
+  defp on_loaded_callback(nil, _id, %SpreadSheetData{} = spreadsheet), do: spreadsheet
+  defp on_loaded_callback(module, id, %SpreadSheetData{} = spreadsheet), do: module.on_loaded(id, spreadsheet)
 end

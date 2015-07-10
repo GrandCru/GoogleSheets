@@ -25,7 +25,7 @@
     </script>
 
     <section id="content">
-      <div class="breadcrumbs">google_sheets v0.1.2 &rarr; <a href="overview.html">Overview</a> &rarr; GoogleSheets &rarr; <a href="GoogleSheets.SpreadSheetData.html">SpreadSheetData</a></div>
+      <div class="breadcrumbs">google_sheets v1.0.0 &rarr; <a href="overview.html">Overview</a> &rarr; <a href="GoogleSheets.html">GoogleSheets</a> &rarr; <a href="GoogleSheets.SpreadSheetData.html">SpreadSheetData</a></div>
       <h1>
         GoogleSheets.SpreadSheetData
         
@@ -48,6 +48,11 @@
       
         <section id="moduledoc" class="docstring">
           <p>Structure containg a spreadsheet data in CSV format.</p>
+<p>Fields:</p>
+<ul>
+<li>:version - Uniquely identifying version</li>
+<li>:sheets - List of WorkSheetData structures.</li>
+</ul>
 
         </section>
       
@@ -58,7 +63,7 @@
         <h2 id="summary">Summary<span class="detail_header_links"><a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a></span></h2>
         <table class="summary">
           <tr>
-  <td class="summary_signature"><a href="#new/2">new(src, sheets)</a></td>
+  <td class="summary_signature"><a href="#new/2">new(version, sheets)</a></td>
   
 </tr>
 
@@ -70,7 +75,7 @@
           <h2>Types <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a></h2>
           <div class="type_detail">
   <p class="typespec" id="t:t/0">
-    <a href="#t:t/0">t</a> :: %GoogleSheets.SpreadSheetData{src: <a href="http://elixir-lang.org/docs/stable/elixir/String.html#t:t/0">String.t</a>, hash: <a href="http://elixir-lang.org/docs/stable/elixir/String.html#t:t/0">String.t</a>, sheets: [<a href="GoogleSheets.WorkSheetData.html#t:t/0">GoogleSheets.WorkSheetData.t</a>]}
+    <a href="#t:t/0">t</a> :: %GoogleSheets.SpreadSheetData{version: <a href="http://elixir-lang.org/docs/stable/elixir/String.html#t:t/0">String.t</a>, sheets: [<a href="GoogleSheets.WorkSheetData.html#t:t/0">GoogleSheets.WorkSheetData.t</a>]}
   </p>
   
 </div>
@@ -83,7 +88,7 @@
           <h2>Functions</h2>
           <section class="detail">
   <div class="detail_header" id="new/2">
-    <span class="signature"><strong>new(src, sheets)</strong></span>
+    <span class="signature"><strong>new(version, sheets)</strong></span>
     <div class="detail_header_links">
       <span class="detail_type">(function)</span>
       <a href="#new/2" class="detail_link" title="Link to this function">#</a>

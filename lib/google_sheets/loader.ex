@@ -11,54 +11,64 @@ defmodule GoogleSheets.Loader do
   @doc """
   The load callback can be called by and updater process or by any other process wishing to load data.
 
+  Versioning:
+
+  Each loader implementation must implement a way to uniquely identify loaded CSV data. For example, the docs.ex loader calculates
+  an hash from the atom feed last updated data and URL. The file_system.ex loaded calculates an hash from the combined CSV data.
+
+  The version value is used as part of the key for looking up a specific version of a configuration from the ETS table. To support
+  multinode architectures, the same raw CSV data should always result in equal hash.
+
+  Another purpose of this is to allow a mechanism for doing quicker check on data changes. For example, the docs.ex loader doesn't
+  actually have to fetch all spreadsheets since it can deduce whether the data has changed or not based on the calculated hash value.
+
   The parameters:
 
-  * sheets - A list of worksheets to load, if empty all worksheets available are to be loaded.
-  * previous_version - Value returned by a previous call to loader or nil. All loaders should implement some
-  way to check that data loaded is equal to previous load. In worst case it is possible to use hash value of spreadsheet
-  for equality comparison, but in many cases there is a last modified timestamp or some other way to do this without
-  loading all data. For example, the Docs loader uses <updated> element value of the atom feed.
-  * config - Loader specific configuration options, for example might contain directory where to laod data or URL.
+  * previous_version  - Version value returned by a previous call to a loader.
+  * config            - Configuration for the loaded. The updater passes the whole config of the spreadsheet as value.
+                        Expected to by a keyword list.
 
   Return values:
 
-  * {version, spreadsheet} - Tuple with version information and SpreadSheetData.t structure. The version parameter can be nil, if the loader can't or doesn't implement optimizations.
-  * :unchanged - No changes since last load time.
-  * :error - Unspecified error, will restart the udpater process.
+  * {:ok, spreadsheet}  - SpreadSheetData structure. The version parameter is equal to source URL
+  * {:ok, :unchanged}   - No changes since last load time in spreadsheet.
+  * {:error, reason}    - An handled error case during loading of data.
 
-  The sheets parameter is a list of Worksheet names to load, if nill
   """
-  defcallback load(sheets :: [binary], previous_version :: binary | nil, config :: Keyword.t) :: {version :: binary, spreadsheet :: GoogleSheets.SpreadSheetData.t} | :unchanged | :error
+  defcallback load(previous_identifier :: String.t | nil, config :: Keyword.t) :: {identifier :: binary, spreadsheet :: GoogleSheets.SpreadSheetData.t} | :unchanged | {:error, reason :: String.t}
 end
 
 defmodule GoogleSheets.SpreadSheetData do
   @moduledoc """
   Structure containg a spreadsheet data in CSV format.
+
+  Fields:
+
+  * :version  - Uniquely identifying version
+  * :sheets   - List of WorkSheetData structures.
   """
 
-  defstruct src: nil, hash: nil, sheets: []
-  @type t :: %GoogleSheets.SpreadSheetData{src: String.t, hash: String.t, sheets: [GoogleSheets.WorkSheetData.t]}
+  @type t :: %GoogleSheets.SpreadSheetData{version: String.t, sheets: [GoogleSheets.WorkSheetData.t]}
+  defstruct version: nil, sheets: []
 
-  def new(src, sheets) when is_list(sheets) do
-    # Sort sheets so that we get repeatable hashes
-    sheets = sheets |> Enum.sort(fn(a,b) -> a.name > b.name end)
-    hash = Enum.reduce(sheets, "", fn(sheet, acc) -> sheet.hash <> acc end)
-    hash = :crypto.hash(:md5, hash) |> GoogleSheets.Utils.hexstring
-
-    %GoogleSheets.SpreadSheetData{src: src, sheets: sheets, hash: hash}
+  def new(version, sheets) when is_list(sheets) do
+    %GoogleSheets.SpreadSheetData{version: version, sheets: sheets}
   end
 end
 
 defmodule GoogleSheets.WorkSheetData do
   @moduledoc """
   Structure for a spreadsheet worksheet CSV data.
+
+  * :name   - Name of the worksheet
+  * :csv    - Raw CSV data split into lines.
   """
 
-  defstruct name: nil, src: nil, hash: nil, csv: nil
-  @type t :: %GoogleSheets.WorkSheetData{name: String.t, src: String.t, hash: String.t, csv: [String.t]}
+  @type t :: %GoogleSheets.WorkSheetData{name: String.t, csv: [String.t]}
+  defstruct name: nil, csv: nil
 
-  def new(name, src, csv) do
-    %GoogleSheets.WorkSheetData{name: name, src: src, csv: csv, hash: GoogleSheets.Utils.hexstring(:crypto.hash(:md5, csv))}
+  def new(name, csv) do
+    %GoogleSheets.WorkSheetData{name: name, csv: csv}
   end
 end
 
