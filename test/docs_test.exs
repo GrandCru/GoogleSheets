@@ -1,4 +1,4 @@
-defmodule GooglesheetsTest do
+defmodule DocsTest do
   use ExUnit.Case
 
   require Logger
@@ -9,35 +9,39 @@ defmodule GooglesheetsTest do
   @url "https://spreadsheets.google.com/feeds/worksheets/1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs/public/basic"
 
   test "Fetch all sheets" do
-    assert {updated, %SpreadSheetData{} = spreadsheet} = Docs.load [], nil, [url: @url]
+    config = [url: @url]
+    assert {:ok, %SpreadSheetData{} = spreadsheet} = Docs.load nil, config
 
-    assert updated != nil
-    assert spreadsheet.hash == "0c55fcbcb0f6480df230bf6e7cedd7ce"
+    assert spreadsheet.version == "a3d4c20066a7f5ebebde18fc4f7ad1ecd6cb96ac"
     assert length(spreadsheet.sheets) == 4
     assert Enum.any?(spreadsheet.sheets, fn(x) -> x.name == "KeyValue" end)
     assert Enum.any?(spreadsheet.sheets, fn(x) -> x.name == "KeyTable" end)
     assert Enum.any?(spreadsheet.sheets, fn(x) -> x.name == "KeyIndexTable" end)
     assert Enum.any?(spreadsheet.sheets, fn(x) -> x.name == "Ignored" end)
+
+    assert {:ok, :unchanged} = Docs.load spreadsheet.version, config
   end
 
-  test "Fetch sheets with filtering" do
-    assert {updated, %SpreadSheetData{} = spreadsheet} = Docs.load ["KeyValue", "KeyTable"], nil, [url: @url]
+  test "Load specific sheets" do
+    config = [url: @url, sheets: ["KeyValue", "KeyTable"]]
+    assert {:ok, %SpreadSheetData{} = spreadsheet} = Docs.load nil, config
 
-    assert updated != nil
-    assert spreadsheet.hash == "42e023ea61cc1131fc79b94084aac247"
+    assert spreadsheet.version == "a3d4c20066a7f5ebebde18fc4f7ad1ecd6cb96ac"
     assert length(spreadsheet.sheets) == 2
     assert Enum.any?(spreadsheet.sheets, fn(x) -> x.name == "KeyValue" end)
     assert Enum.any?(spreadsheet.sheets, fn(x) -> x.name == "KeyTable" end)
     refute Enum.any?(spreadsheet.sheets, fn(x) -> x.name == "KeyIndexTable" end)
     refute Enum.any?(spreadsheet.sheets, fn(x) -> x.name == "Ignored" end)
+
+    assert {:ok, :unchanged} = Docs.load spreadsheet.version, config
   end
 
   test "fetch invalid url" do
-    assert_raise MatchError, fn -> Docs.load [], nil, [url: "http://www.example.org/invalid_key"] end
+    assert_raise MatchError, fn -> Docs.load nil, [url: "http://www.example.org/invalid_key"] end
   end
 
   test "Test non existent sheet" do
-    assert_raise MatchError, fn -> Docs.load ["KeyValue", "NonExistingSheet"], nil, [url: @url] end
+    assert {:error, _reason} = Docs.load nil, [url: @url, sheets: ["KeyValue", "NonExistingSheet"]]
   end
 
 end

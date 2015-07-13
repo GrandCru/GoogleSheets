@@ -35,13 +35,11 @@ defmodule FileSystemTest do
   end
 
   test "Test nonexistent sheets" do
-    config = [dir: "priv/data", sheets: ["KeyValue", "NonExistingSheet"]]
-    assert {:error, _reason} = FileSystem.load nil, config
+    assert {:error, _reason} = FileSystem.load nil, [dir: "priv/data", sheets: ["KeyValue", "NonExistingSheet"]]
   end
 
   test "Test invalid path" do
-    config = [dir: "this/path/doesnt/exist", sheets: ["KeyValue"]]
-    assert {:error, _reason} = FileSystem.load nil, config
+    assert {:error, _reason} = FileSystem.load nil, [dir: "this/path/doesnt/exist", sheets: ["KeyValue"]]
   end
 
 end
