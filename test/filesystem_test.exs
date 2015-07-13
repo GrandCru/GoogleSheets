@@ -7,36 +7,41 @@ defmodule FileSystemTest do
   alias GoogleSheets.SpreadSheetData
 
   test "Load all sheets" do
-    assert {version, %SpreadSheetData{} = spreadsheet} = FileSystem.load [], nil, [dir: "priv/data"]
+    config = [dir: "priv/data"]
+    assert {:ok, %SpreadSheetData{} = spreadsheet} = FileSystem.load nil, config
 
-    assert spreadsheet.hash == "0c55fcbcb0f6480df230bf6e7cedd7ce"
+    assert spreadsheet.version == "aebc5cd5aae29114bf28150d3d5609e19b2481c8"
     assert length(spreadsheet.sheets) == 4
     assert Enum.any?(spreadsheet.sheets, fn(x) -> x.name == "KeyValue" end)
     assert Enum.any?(spreadsheet.sheets, fn(x) -> x.name == "KeyTable" end)
     assert Enum.any?(spreadsheet.sheets, fn(x) -> x.name == "KeyIndexTable" end)
     assert Enum.any?(spreadsheet.sheets, fn(x) -> x.name == "Ignored" end)
 
-    assert :unchanged = FileSystem.load [], version, [dir: "priv/data"]
+    assert {:ok, :unchanged} = FileSystem.load spreadsheet.version, config
   end
 
   test "Load specified sheets" do
-    assert {version, %SpreadSheetData{} = spreadsheet} = FileSystem.load ["KeyValue", "KeyTable"], nil, [dir: "priv/data"]
-    assert spreadsheet.hash == "42e023ea61cc1131fc79b94084aac247"
+    config = [dir: "priv/data", sheets: ["KeyValue", "KeyTable"]]
+
+    assert {:ok,  %SpreadSheetData{} = spreadsheet} = FileSystem.load nil, config
+    assert spreadsheet.version == "c0f5fc899f4e0f31528090b56aca30c4e4fd058f"
     assert length(spreadsheet.sheets) == 2
     assert Enum.any?(spreadsheet.sheets, fn(x) -> x.name == "KeyValue" end)
     assert Enum.any?(spreadsheet.sheets, fn(x) -> x.name == "KeyTable" end)
     refute Enum.any?(spreadsheet.sheets, fn(x) -> x.name == "KeyIndexTable" end)
     refute Enum.any?(spreadsheet.sheets, fn(x) -> x.name == "Ignored" end)
 
-    assert :unchanged = FileSystem.load ["KeyValue", "KeyTable"], version, [dir: "priv/data"]
+    assert {:ok, :unchanged} = FileSystem.load spreadsheet.version, config
   end
 
   test "Test nonexistent sheets" do
-    assert_raise MatchError, fn -> FileSystem.load ["KeyValue", "NonExistingSheet"], nil, [dir: "priv/data"] end
+    config = [dir: "priv/data", sheets: ["KeyValue", "NonExistingSheet"]]
+    assert {:error, _reason} = FileSystem.load nil, config
   end
 
   test "Test invalid path" do
-    assert_raise MatchError, fn -> FileSystem.load ["KeyValue", "NonExistingSheet"], nil, [dir: "this/path/doesnt/exist"] end
+    config = [dir: "this/path/doesnt/exist", sheets: ["KeyValue"]]
+    assert {:error, _reason} = FileSystem.load nil, config
   end
 
 end

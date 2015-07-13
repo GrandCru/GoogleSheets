@@ -60,7 +60,6 @@ defmodule GoogleSheets.Loader.FileSystem do
 
   # Calculate version based on CSV data
   defp calculate_version(worksheets) when is_list(worksheets) do
-    Logger.debug "worksheets: #{inspect worksheets}"
     concatenated = worksheets |> Enum.sort(fn a,b -> a.name <= b.name end) |> Enum.reduce("", fn ws, acc -> ws.csv <> acc end)
     :crypto.hash(:sha, concatenated) |> GoogleSheets.Utils.hexstring
   end
