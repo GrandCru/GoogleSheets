@@ -5,12 +5,7 @@ defmodule GoogleSheets.Loader.FileSystem do
   from a directory.
   """
 
-  require Logger
-
   @behaviour GoogleSheets.Loader
-
-  alias GoogleSheets.SpreadSheetData
-  alias GoogleSheets.WorkSheetData
 
   @doc """
   Reads CSV files from config[:dir] directory.
@@ -44,7 +39,7 @@ defmodule GoogleSheets.Loader.FileSystem do
       throw {:ok, :unchanged}
     end
 
-    {:ok, SpreadSheetData.new(version, worksheets)}
+    {:ok, version, worksheets}
   end
 
   # Load csv files and filter if only specific sheets should be loaded
@@ -53,7 +48,7 @@ defmodule GoogleSheets.Loader.FileSystem do
     sheetname = Path.basename filename, ".csv"
     if sheets == [] or sheetname in sheets do
       csv = File.read! filename
-      worksheets = [WorkSheetData.new(sheetname, csv) | worksheets]
+      worksheets = [%GoogleSheets.WorkSheet{name: sheetname, csv: csv} | worksheets]
     end
     load_files rest, sheets, worksheets
   end

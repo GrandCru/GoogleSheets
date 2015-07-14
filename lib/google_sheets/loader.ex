@@ -5,7 +5,7 @@ defmodule GoogleSheets.Loader do
   @moduledoc """
   Behaviour for a spreadsheet loader.
 
-  Each module implementing this behaviour is expected to load CSV data from a source and return SpreadSheetData.t structure.
+  Each module implementing this behaviour is expected to load CSV data from a source and return unique version identifier and list of WorkSheet.t structures.
   """
 
   @doc """
@@ -35,40 +35,5 @@ defmodule GoogleSheets.Loader do
   * {:error, reason}    - An handled error case during loading of data.
 
   """
-  defcallback load(previous_identifier :: String.t | nil, config :: Keyword.t) :: {identifier :: binary, spreadsheet :: GoogleSheets.SpreadSheetData.t} | :unchanged | {:error, reason :: String.t}
+  defcallback load(previous_identifier :: String.t | nil, config :: Keyword.t) :: {:ok, version :: binary, [GoogleSheets.WorkSheet.t]} | :unchanged | {:error, reason :: String.t}
 end
-
-defmodule GoogleSheets.SpreadSheetData do
-  @moduledoc """
-  Structure containg a spreadsheet data in CSV format.
-
-  Fields:
-
-  * :version  - Uniquely identifying version
-  * :sheets   - List of WorkSheetData structures.
-  """
-
-  @type t :: %GoogleSheets.SpreadSheetData{version: String.t, sheets: [GoogleSheets.WorkSheetData.t]}
-  defstruct version: nil, sheets: []
-
-  def new(version, sheets) when is_list(sheets) do
-    %GoogleSheets.SpreadSheetData{version: version, sheets: sheets}
-  end
-end
-
-defmodule GoogleSheets.WorkSheetData do
-  @moduledoc """
-  Structure for a spreadsheet worksheet CSV data.
-
-  * :name   - Name of the worksheet
-  * :csv    - Raw CSV data split into lines.
-  """
-
-  @type t :: %GoogleSheets.WorkSheetData{name: String.t, csv: [String.t]}
-  defstruct name: nil, csv: nil
-
-  def new(name, csv) do
-    %GoogleSheets.WorkSheetData{name: name, csv: csv}
-  end
-end
-

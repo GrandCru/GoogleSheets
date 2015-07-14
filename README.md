@@ -1,12 +1,16 @@
 # Google Sheets 
 
-`Google Sheets` is an Elixir library for fetching Google spreadsheet data in CSV format. It supports both saving `*.csv` files into local directory as well as monitoring changes in a spreadsheet during application runtime. The loaded `CSV` data is stored in an `ETS table`, where application can access it.
+`Google Sheets` is an Elixir library for fetching data in `CSV` format from a published Google spreadsheet. It supports both fetching and saving a spreadsheet into a local directory as well as monitoring changes in a spreadsheet during applications runtime. The loaded (and potentially parsed and transformed) spreadsheet is stored in `ETS` table where the application can access it.
 
 [![Hex.pm Version](http://img.shields.io/hexpm/v/google_sheets.svg?style=flat)](https://hex.pm/packages/google_sheets)
 
 ## Quick start
 
 ```elixir
+
+# Make sure you have made your spreadsheet readable to without authorization,
+see Publishing Google spreadsheet chapter on how to do it.
+
 # Add dependency to GoogleSheets in your `mix.exs` file:
 defp deps do
   [ {:google_sheets, "~> 1.0"} ]
@@ -18,65 +22,57 @@ config :google_sheets,
   [
     [
       id: :config,
-      callback: ConfigParser,
+      callback: MyConfigParser,
       dir: "priv/data",
       url: "https://spreadsheets.google.com/feeds/worksheets/" <>
            "19HcQV5Z-uTXaVxjm2jVJNGNFv0pzA_cgdBTWMe4a77Y/public/basic",
     ]
   ]
 
-# Write a module implementing GoogleSheets.Callback behaviour for
-# converting raw CSV data into useable data structures for your
-# application.
-defmodule ConfigParser do
+# Optionally write a module implementing GoogleSheets.Callback behaviour for
+# converting raw CSV data into useable data structures for your application.
+defmodule MyConfigParser do
 
   @behaviour GoogleSheets.Callback
 
   def on_loaded(_id, %GoogleSheets.SpreadSheetData{} = spreadsheet) do
-    Enum.map spreadsheet.sheets fn sheet -> parse_config sheet end)
-  end
-
-  def on_saved(_id, _data) do
-  end
-
-  def on_unchanged(_id) do
-  end
-
-  # Internal implementation
-  defp parse_locale(%GoogleSheets.WorkSheetData{} = ws) do
     # Actual conversion using something like ex_csv library 
     # left as an exercise for the reader.
   end
+
 end
 
 # In your application code
 defmodule MyApp do
   def func do
-    {:ok, version_key, data} = GoogleSheets.latest :config
-    {version, data} = GoogleSheets.latest! :config
+    {:ok, version_key} = GoogleSheets.latest_key :config
+    version_key = GoogleSheets.latest_key! :config
 
-    {:ok, version_key} = GoogleSheets.latest_version_key :config
-    version_key = GoogleSheets.latest_version_key! :config
-
-    {:ok, data} = GoogleSheets.latest_data :config
-    data = GoogleSheets.latest_data! :config
-
-    {:ok, data} = GoogleSheets.get :config, version_key
-    data = GoogleSheets.get! :config, version_key
+    {:ok, version_key, data} = GoogleSheets.fetch :config
+    {version_key, data} = GoogleSheets.fetch! :config
   end
 end
 
-# Fetch initial CSV data form all configured spreadsheets with:
+# The library requires that known good data is present locally
+# through filesystem at the application startup phase. 
+# The mix task gs.fetch uses the configuration to fetch CSV
+# data from spreadsheets and saves them into directories specified
+# in the config/config.exs file
 mix gs.fetch
-
-# And make sure you're spreadsheet is published, see the 
-# Publishing Google spreadsheet how to do it.
 
 ```
 
 ## How it works
 
-When the application starts, an [updater process](lib/google_sheets/updater.ex) is started for each configured spreadsheet. During updater process init phase `CSV` data is loaded from the directory specified in `:dir` configuration option using [GoogleSheets.Loader.FileSystem](lib/google_sheets/loader/file_system.ex).
+When the application starts, an [updater process](lib/google_sheets/updater.ex) is started for each configured spreadsheet. During the init phase of the updater process, initial data is loaded from configured directory. A `SpreadSheetData` structure is created with multiple worksheets. This data is passed to 
+
+
+
+During updater process init phase `CSV` data is loaded from the directory specified in `:dir` configuration option using [GoogleSheets.Loader.FileSystem](lib/google_sheets/loader/file_system.ex) and a [GoogleSheets.SpreadSheetData](lib/google_sheets/loader.ex) structure is constructed.
+
+Before this data is stored into `ETS` table, a call is made to the module 
+
+After the raw CSV data is loaded into a SpreadSheetData structure, that data is passed to 
 
 After data has been loaded one of the one of the `on_loaded` method of the configured `:callback` module implementing [GoogleSheets.Callback](lib/google_sheets/callback.ex) is called. Result of this function is stored in `ETS` table, named by default `:google_sheets` and an unique GUID as key.
 

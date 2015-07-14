@@ -46,7 +46,7 @@
       
         <section id="moduledoc" class="docstring">
           <p>Behaviour for a spreadsheet loader.</p>
-<p>Each module implementing this behaviour is expected to load CSV data from a source and return SpreadSheetData.t structure.</p>
+<p>Each module implementing this behaviour is expected to load CSV data from a source and return unique version identifier and list of WorkSheet.t structures.</p>
 
         </section>
       
@@ -77,7 +77,7 @@
     <p>Specs:</p>
     <ul class="spec">
       
-        <li>load(previous_identifier :: <a href="http://elixir-lang.org/docs/stable/elixir/String.html#t:t/0">String.t</a> | nil, config :: <a href="http://elixir-lang.org/docs/stable/elixir/Keyword.html#t:t/0">Keyword.t</a>) :: {identifier :: binary, spreadsheet :: <a href="GoogleSheets.SpreadSheetData.html#t:t/0">GoogleSheets.SpreadSheetData.t</a>} | :unchanged | {:error, reason :: <a href="http://elixir-lang.org/docs/stable/elixir/String.html#t:t/0">String.t</a>}</li>
+        <li>load(previous_identifier :: <a href="http://elixir-lang.org/docs/stable/elixir/String.html#t:t/0">String.t</a> | nil, config :: <a href="http://elixir-lang.org/docs/stable/elixir/Keyword.html#t:t/0">Keyword.t</a>) :: {:ok, version :: binary, [<a href="GoogleSheets.WorkSheet.html#t:t/0">GoogleSheets.WorkSheet.t</a>]} | :unchanged | {:error, reason :: <a href="http://elixir-lang.org/docs/stable/elixir/String.html#t:t/0">String.t</a>}</li>
       
     </ul>
   

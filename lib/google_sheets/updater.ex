@@ -7,8 +7,6 @@ defmodule GoogleSheets.Updater do
   use GenServer
   require Logger
 
-  alias GoogleSheets.SpreadSheetData
-
   @default_poll_delay 5 * 60
 
   #
@@ -33,9 +31,9 @@ defmodule GoogleSheets.Updater do
 
     # Don't load data from local filesystem if the updater process has been restarted
     if :not_found == GoogleSheets.latest_key config[:id] do
-      {:ok, %SpreadSheetData{} = spreadsheet} = GoogleSheets.Loader.FileSystem.load nil, config
-      data = on_loaded_callback Keyword.get(config, :callback), config[:id], spreadsheet
-      update_ets_entry config[:id], spreadsheet.version, data
+      {:ok, version, worksheets} = GoogleSheets.Loader.FileSystem.load nil, config
+      data = on_loaded_callback Keyword.get(config, :callback), config[:id], worksheets
+      update_ets_entry config[:id], version, data
     end
 
     schedule_next_update config, Keyword.get(config, :poll_delay_seconds, @default_poll_delay)
@@ -69,9 +67,9 @@ defmodule GoogleSheets.Updater do
 
   defp do_update(config) do
     try do
-      spreadsheet = load_spreadsheet config
-      data = on_loaded_callback Keyword.get(config, :callback), config[:id], spreadsheet
-      update_ets_entry config[:id], spreadsheet.version, data
+      {version, worksheets} = load_spreadsheet config
+      data = on_loaded_callback Keyword.get(config, :callback), config[:id], worksheets
+      update_ets_entry config[:id], version, data
     catch
       result -> result
     end
@@ -80,7 +78,7 @@ defmodule GoogleSheets.Updater do
   defp load_spreadsheet(config) do
     loader = Keyword.get config, :loader, GoogleSheets.Loader.Docs
     case loader.load GoogleSheets.latest_key(config[:id]), config do
-      {:ok, spreadsheet} -> spreadsheet
+      {:ok, version, worksheets} -> {version, worksheets}
       result -> throw result
     end
   end
@@ -97,6 +95,6 @@ defmodule GoogleSheets.Updater do
   defp schedule_next_update(_config, delay_seconds), do: Process.send_after(self, :update, delay_seconds * 1000)
 
   # Callbacks if defined on configuration
-  defp on_loaded_callback(nil, _id, %SpreadSheetData{} = spreadsheet), do: spreadsheet
-  defp on_loaded_callback(module, id, %SpreadSheetData{} = spreadsheet), do: module.on_loaded(id, spreadsheet)
+  defp on_loaded_callback(nil, _id, worksheets) when is_list(worksheets), do: worksheets
+  defp on_loaded_callback(module, id, worksheets) when is_list(worksheets), do: module.on_loaded(id, worksheets)
 end

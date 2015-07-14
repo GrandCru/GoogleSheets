@@ -22,13 +22,9 @@ defmodule GoogleSheets.Loader.Docs do
   If there are any errors during http requests and/or parsing, it will most likely raise an expection. If you use this
   loader in code which is not crash resistant, do handle the exceptions.
   """
-  require Logger
   import SweetXml
 
   @behaviour GoogleSheets.Loader
-
-  alias GoogleSheets.SpreadSheetData
-  alias GoogleSheets.WorkSheetData
 
   @doc """
   Load spreadsheet from Google sheets using the URL specified in config[:url] key.
@@ -65,7 +61,7 @@ defmodule GoogleSheets.Loader.Docs do
       throw {:error, "All requested sheets not loaded, expected: #{Enum.join(sheets, ",")} loaded: #{loaded}"}
     end
 
-    {:ok, SpreadSheetData.new(version, worksheets)}
+    {:ok, version, worksheets}
   end
 
   # Converts xpath entries to {title, url} with data converted to strings
@@ -86,11 +82,11 @@ defmodule GoogleSheets.Loader.Docs do
     filter_entries rest, sheets, acc
   end
 
-  # Request worksheets and create WorkSheetData.t entries
+  # Request worksheets and create WorkSheet.t entries
   defp load_worksheets([], worksheets), do: worksheets
   defp load_worksheets([{title, url} | rest], worksheets) do
     {:ok, %HTTPoison.Response{status_code: 200} = response} = HTTPoison.get url
-    load_worksheets rest, [WorkSheetData.new(title, response.body) | worksheets]
+    load_worksheets rest, [%GoogleSheets.WorkSheet{name: title, csv: response.body} | worksheets]
   end
 
 end
