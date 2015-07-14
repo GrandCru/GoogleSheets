@@ -20,7 +20,8 @@ defmodule Example.Mixfile do
     # In real application you would use the following to declare dependency:
     # {:google_sheets, "~> 1.0"}
     [
-      {:google_sheets, path: "../"}
+      {:google_sheets, path: "../"},
+      {:ex_csv, "~> 0.1.3"}
     ]
   end
 end
