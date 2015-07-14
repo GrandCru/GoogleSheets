@@ -27,12 +27,13 @@ defmodule GoogleSheets.Updater do
 
   # Initial update
   def init(config) when is_list(config) do
-    Logger.info "Starting updater process for spreadsheet #{config[:id]}"
+    Logger.info "Starting updater process for spreadsheet #{inspect config[:id]}"
 
     # Don't load data from local filesystem if the updater process has been restarted
     if :not_found == GoogleSheets.latest_key config[:id] do
+      Logger.info "Loading initial data for spreadsheet #{inspect config[:id]} from #{inspect config[:dir]}"
       {:ok, version, worksheets} = GoogleSheets.Loader.FileSystem.load nil, config
-      data = on_loaded_callback Keyword.get(config, :callback), config[:id], worksheets
+      {:ok, data} = parse Keyword.get(config, :parser), config[:id], worksheets
       update_ets_entry config[:id], version, data
     end
 
@@ -54,7 +55,8 @@ defmodule GoogleSheets.Updater do
       end
     rescue
       exception ->
-        {:reply, {:error, "Exception while updating configuration.\n\nExcption:\n#{inspect exception}\n\nStacktrace\n#{inspect :erlang.get_stacktrace}"}, config}
+        stacktrace = System.stacktrace
+        {:reply, {:error, "Exception while updating configuration.\n\nExcption:\n#{inspect exception}\n\nStacktrace\n#{inspect stacktrace}"}, config}
     end
   end
 
@@ -68,7 +70,7 @@ defmodule GoogleSheets.Updater do
   defp do_update(config) do
     try do
       {version, worksheets} = load_spreadsheet config
-      data = on_loaded_callback Keyword.get(config, :callback), config[:id], worksheets
+      data = parse_spreadsheet worksheets, config
       update_ets_entry config[:id], version, data
     catch
       result -> result
@@ -83,10 +85,16 @@ defmodule GoogleSheets.Updater do
     end
   end
 
+  defp parse_spreadsheet(worksheets, config) do
+    case parse Keyword.get(config, :parser), config[:id], worksheets do
+      {:ok, data} -> data
+      result -> throw result
+    end
+  end
+
   defp update_ets_entry(id, version, data) do
-    ets_table = Application.get_env :google_sheets, :ets_table, :google_sheets
-    :ets.insert ets_table, {{id, version}, data}
-    :ets.insert ets_table, {{id, :latest}, version}
+    :ets.insert :google_sheets, {{id, version}, data}
+    :ets.insert :google_sheets, {{id, :latest}, version}
     {:ok, version}
   end
 
@@ -94,7 +102,7 @@ defmodule GoogleSheets.Updater do
   defp schedule_next_update(config, 0), do: Logger.info("Stopping scheduled updates for #{config[:id]}")
   defp schedule_next_update(_config, delay_seconds), do: Process.send_after(self, :update, delay_seconds * 1000)
 
-  # Callbacks if defined on configuration
-  defp on_loaded_callback(nil, _id, worksheets) when is_list(worksheets), do: worksheets
-  defp on_loaded_callback(module, id, worksheets) when is_list(worksheets), do: module.on_loaded(id, worksheets)
+  # Parse CSV data if configured to do so
+  defp parse(nil, _id, worksheets) when is_list(worksheets), do: {:ok, worksheets}
+  defp parse(module, id, worksheets) when is_list(worksheets), do: module.parse(id, worksheets)
 end

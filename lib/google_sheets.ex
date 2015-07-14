@@ -23,8 +23,7 @@ defmodule GoogleSheets do
   If no entry is found, :not_found is returned.
   """
   def latest_key(spreadsheet_id) when is_atom(spreadsheet_id) do
-    ets_table = Application.get_env :google_sheets, :ets_table, :google_sheets
-    case :ets.lookup ets_table, {spreadsheet_id, :latest} do
+    case :ets.lookup :google_sheets, {spreadsheet_id, :latest} do
       [] -> :not_found
       [{{^spreadsheet_id, :latest}, key}] -> {:ok, key}
     end
@@ -57,8 +56,7 @@ defmodule GoogleSheets do
       end
     end
 
-    ets_table = Application.get_env :google_sheets, :ets_table, :google_sheets
-    case :ets.lookup ets_table, {spreadsheet_id, version_key} do
+    case :ets.lookup  :google_sheets, {spreadsheet_id, version_key} do
       [] -> :not_found
       [{{^spreadsheet_id, ^version_key}, data}] -> {:ok, version_key, data}
     end

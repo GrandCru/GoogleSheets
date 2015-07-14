@@ -1,6 +1,6 @@
 # Google Sheets 
 
-`Google Sheets` is an Elixir library for fetching data in `CSV` format from a published Google spreadsheet. It supports both fetching and saving a spreadsheet into a local directory as well as monitoring changes in a spreadsheet during applications runtime. The loaded (and potentially parsed and transformed) spreadsheet is stored in `ETS` table where the application can access it.
+`Google Sheets` is an Elixir library for fetching Google spreadsheet in `CSV` format. It supports both fetching and saving a spreadsheet into a local directory as well as monitoring changes in a spreadsheet during applications runtime. The loaded (and potentially parsed and transformed) spreadsheet is stored in `ETS` table where the application can access it.
 
 [![Hex.pm Version](http://img.shields.io/hexpm/v/google_sheets.svg?style=flat)](https://hex.pm/packages/google_sheets)
 
@@ -9,7 +9,7 @@
 ```elixir
 
 # Make sure you have made your spreadsheet readable to without authorization,
-see Publishing Google spreadsheet chapter on how to do it.
+# see Publishing Google spreadsheet chapter on how to do it.
 
 # Add dependency to GoogleSheets in your `mix.exs` file:
 defp deps do
@@ -20,9 +20,9 @@ end
 config :google_sheets,
   spreadsheets:
   [
-    [
+    [    
       id: :config,
-      callback: MyConfigParser,
+      parser: MyConfigParser,
       dir: "priv/data",
       url: "https://spreadsheets.google.com/feeds/worksheets/" <>
            "19HcQV5Z-uTXaVxjm2jVJNGNFv0pzA_cgdBTWMe4a77Y/public/basic",
@@ -33,9 +33,9 @@ config :google_sheets,
 # converting raw CSV data into useable data structures for your application.
 defmodule MyConfigParser do
 
-  @behaviour GoogleSheets.Callback
+  @behaviour GoogleSheets.Transform
 
-  def on_loaded(_id, %GoogleSheets.SpreadSheetData{} = spreadsheet) do
+  def transform(_id, worksheets) do
     # Actual conversion using something like ex_csv library 
     # left as an exercise for the reader.
   end
@@ -64,7 +64,22 @@ mix gs.fetch
 
 ## How it works
 
-When the application starts, an [updater process](lib/google_sheets/updater.ex) is started for each configured spreadsheet. During the init phase of the updater process, initial data is loaded from configured directory. A `SpreadSheetData` structure is created with multiple worksheets. This data is passed to 
+When application starts, the [supervisor](lib/google_sheets/supervisor.ex) creates an `ETS` table named `:google_sheets` and starts an [updater process](lib/google_sheets/updater.ex) for each configured spreadsheet.
+
+During the updater process init phase, initial data is loaded from local filesystem. Before the data is stored into `ETS` table, 
+
+
+
+is started for each configured spreadsheet. The updater process is responsible for loading initial data using local files and after that periodically polling the configured google spreadsheet. Whenever the monitored spreadsheet data is changed, a new version of the data is written into `ETS` table.
+
+To allow applications to convert the raw CSV data into more useable format, the updater process will call the configured callback module's on_loaded method before storing data into `ETS` table.
+
+Since the data is initially loaded during the application startup phase, the application code can access.
+
+
+
+
+During the init phase of the updater process, initial data is loaded from configured directory. A `SpreadSheetData` structure is created with multiple worksheets. This data is passed to 
 
 
 
@@ -100,9 +115,6 @@ Publish to web is found in the File menu and it opens a dialog shown below:
 
 ## Configuration
 
-* __:ets_table__ - Name of the ETS table where Spreadsheets are stored, default is `:google_sheets`
-* __:supervisor_max_restarts__ - Supervisor max_restarts parameter.
-* __:supervisor_max_seconds__ - Supervisor max_seconds parameter.
 * __:spreadsheets__ - A list of configurations for each spreadsheet to monitor.
 
 Each __:spreadsheets__ list entry is a keyword list with parameters how to monitor a single spreadsheet:

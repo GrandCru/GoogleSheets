@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>GoogleSheets.Callback</title>
+    <title>GoogleSheets.Parser</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" charset="utf-8" />
     <link rel="stylesheet" href="css/elixir.css" type="text/css" media="screen" charset="utf-8" />
@@ -25,9 +25,9 @@
     </script>
 
     <section id="content">
-      <div class="breadcrumbs">google_sheets v1.0.0 &rarr; <a href="overview.html">Overview</a> &rarr; <a href="GoogleSheets.html">GoogleSheets</a> &rarr; <a href="GoogleSheets.Callback.html">Callback</a></div>
+      <div class="breadcrumbs">google_sheets v1.0.0 &rarr; <a href="overview.html">Overview</a> &rarr; <a href="GoogleSheets.html">GoogleSheets</a> &rarr; <a href="GoogleSheets.Parser.html">Parser</a></div>
       <h1>
-        GoogleSheets.Callback
+        GoogleSheets.Parser
         
           <small>behaviour</small>
         
@@ -45,7 +45,7 @@
 
       
         <section id="moduledoc" class="docstring">
-          <p>Behaviour for callbacks transforming SpreadSheetData structure into application specific format.</p>
+          <p>Behaviour for parsing and transforming loaded CSV data into application specific format before it's stored into ETS table.</p>
 
         </section>
       
@@ -64,11 +64,11 @@
         <section id="callbacks_details" class="details_list">
           <h2>Callbacks</h2>
           <section class="detail">
-  <div class="detail_header" id="c:on_loaded/2">
-    <span class="signature"><strong>on_loaded/2</strong></span>
+  <div class="detail_header" id="c:parse/2">
+    <span class="signature"><strong>parse/2</strong></span>
     <div class="detail_header_links">
       <span class="detail_type">(callback)</span>
-      <a href="#c:on_loaded/2" class="detail_link" title="Link to this callback">#</a>
+      <a href="#c:parse/2" class="detail_link" title="Link to this callback">#</a>
       <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
     </div>
   </div>
@@ -76,14 +76,23 @@
     <p>Specs:</p>
     <ul class="spec">
       
-        <li>on_loaded(spreadsheet_id :: atom, data :: GoogleSheets.SpreadSheetData.t) :: {:ok, any} | :unchanged | :error</li>
+        <li>parse(spreadsheet_id :: atom, worksheets :: [<a href="GoogleSheets.WorkSheet.html#t:t/0">GoogleSheets.WorkSheet.t</a>]) :: {:ok, any} | {:error, reason :: binary}</li>
       
     </ul>
   
   <section class="docstring">
-    <p>Called when a new version of a spreadsheet has been loaded, but before it has been saved to ETS.</p>
-<p>The main reason for this callback is to transform the raw CSV data into application specific format. For example, you could use ex_csv library to convert the data into a map and return that as the data to store into ETS table.</p>
-<p>The data returned can be of any type that can be inserted into ETS table.</p>
+    <p>After udpater process has loaded CSV data, but before data is stored into ETS table an application can parse the raw data by writing a module implementing this behaviour.</p>
+<p>To configure this method, use the :parser configure setting for a spreadsheet. If no :parser is configured or it is set to nil, the updater process will store the list of Worksheet entires into ETS table.</p>
+<p>Parameters:</p>
+<ul>
+<li>spreadsheet_id - The configured :id parameter for a monitored spreadsheet</li>
+<li>worksheets - List of Worksheet structures.</li>
+</ul>
+<p>Return values:</p>
+<ul>
+<li>{:ok, data} - In case data was succesfully parased, the data can be anything that can be stored into ETS table</li>
+<li>{:error, reason} - If parsing failed for a known reason.</li>
+</ul>
 
   </section>
   

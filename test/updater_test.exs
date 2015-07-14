@@ -1,8 +1,8 @@
-defmodule UpdaterTestCallback do
-  @behaviour GoogleSheets.Callback
-  def on_loaded(id, data) do
-    send :updater_test_process, {:on_loaded, id}
-    data
+defmodule UpdaterTestMockParser do
+  @behaviour GoogleSheets.Parser
+  def parse(id, worksheets) do
+    send :updater_test_process, {:parsed, id}
+    {:ok, worksheets}
   end
 end
 
@@ -17,7 +17,7 @@ defmodule UpdaterTest do
     cfg = [
       id: :updater_test_spreadsheet,
       sheets: ["KeyValue"],
-      callback: UpdaterTestCallback,
+      parser: UpdaterTestMockParser,
       loader: GoogleSheets.Loader.Docs,
       poll_delay_seconds: 1,
       dir: "priv/data",
@@ -28,8 +28,8 @@ defmodule UpdaterTest do
     # first by file system loader in the init phase of updater process
     # and immediately after by configure loader module.
     {:ok, _updater_pid} = GoogleSheets.Updater.start_link(cfg)
-    assert_receive {:on_loaded, :updater_test_spreadsheet}, 120_000
-    assert_receive {:on_loaded, :updater_test_spreadsheet}, 120_00
+    assert_receive {:parsed, :updater_test_spreadsheet}, 120_000
+    assert_receive {:parsed, :updater_test_spreadsheet}, 120_000
 
     # Trigger manual update
     assert {:ok, _msg} = GoogleSheets.update :updater_test_spreadsheet
