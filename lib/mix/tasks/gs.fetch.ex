@@ -1,6 +1,8 @@
 defmodule Mix.Tasks.Gs.Fetch do
 
   use Mix.Task
+  require Logger
+
   alias GoogleSheets.Loader.Docs
 
   @shortdoc "Fetch Google Spreadsheet and save raw CSV to disk"
@@ -25,6 +27,9 @@ defmodule Mix.Tasks.Gs.Fetch do
     # If no commandline options are given, we load all spreadsheets configured for the application
     if options == [] do
       {:ok, options} = Application.fetch_env :google_sheets, :spreadsheets
+    else
+      # Make a list of lists from parsed options
+      options = [options]
     end
 
     fetch_spreadsheets options
@@ -37,7 +42,7 @@ defmodule Mix.Tasks.Gs.Fetch do
     path = Path.expand dir
 
     Mix.shell.info "Loading spreadsheet from url #{inspect url} and saving to #{path}"
-    spreadsheet = Docs.load nil, config
+    {:ok, spreadsheet} = Docs.load nil, config
 
     Enum.map spreadsheet.sheets, fn ws ->
       filename = Path.join path, ws.name <> ".csv"
