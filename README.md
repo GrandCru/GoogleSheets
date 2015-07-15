@@ -112,7 +112,7 @@ Publish to web is found in the File menu and it opens a dialog shown below:
 
 ![Publish to Web](/docs/publish_to_web.png)
 
-### Mix gs.fetch task
+## Mix gs.fetch task
 
 The mix task [gs.fetch](lib/mix/task/gs.fetch.ex) loads a Google spreadsheet and saves worksheets in specified directory. If no parameters are given, it fetches all spreadsheets specified in the applications :google_sheets configuration and writes data into corresponding directory. You can also provide `-u` and `-d` params to explicitly load a spreadsheet.
 
@@ -121,6 +121,10 @@ mix gs.fetch
 -u https://spreadsheets.google.com/feeds/worksheets/1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs/public/basic 
 -d priv/data
 ```
+
+## Triggering manually an update
+
+To trigger an check for changes in spreadsheet, you can call the GoogleSheets.Update/1 function with spreadsheet_id as parameter. This can be useful when you have just changed a spreadsheet and wan't the updates to be immediately available. For example, you can expose a http API which will then call this function.
 
 ## More information
 
