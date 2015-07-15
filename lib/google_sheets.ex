@@ -18,6 +18,16 @@ defmodule GoogleSheets do
   #
 
   @doc ~S"""
+  Returns true, if there is an version for for the given spreadsheet_id stored, false otherwise.
+  """
+  def has_version?(spreadsheet_id) when is_atom(spreadsheet_id) do
+    case :ets.lookup :google_sheets, {spreadsheet_id, :latest} do
+      [] -> false
+       _ -> true
+    end
+  end
+
+  @doc ~S"""
   Returns {:ok, version_key, data} where version_key and data are the latest ones found.
 
   If no entry is found, :not_found is returned.
@@ -27,8 +37,13 @@ defmodule GoogleSheets do
       :not_found ->
         :not_found
       version_key ->
-        data = fetch version_key
-        {:ok, version_key, data}
+        case fetch version_key do
+          :not_found ->
+            Logger.error "No data found for spreadsheet_id #{inspect spreadsheet_id} version #{inspect version_key}"
+            :not_found
+          {:ok, data} ->
+            {:ok, version_key, data}
+        end
     end
   end
 
@@ -51,7 +66,9 @@ defmodule GoogleSheets do
   """
   def latest_key(spreadsheet_id) when is_atom(spreadsheet_id) do
     case :ets.lookup :google_sheets, {spreadsheet_id, :latest} do
-      [] -> :not_found
+      [] ->
+        Logger.error "No version key found for spreadsheet_id #{inspect spreadsheet_id}"
+        :not_found
       [{{^spreadsheet_id, :latest}, key}] -> {:ok, key}
     end
   end

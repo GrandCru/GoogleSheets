@@ -25,7 +25,7 @@ defmodule GoogleSheets.Updater do
     Logger.info "Starting updater process for spreadsheet #{inspect config[:id]}"
 
     # Don't load data from local filesystem if the updater process has been restarted
-    if :not_found == GoogleSheets.latest_key config[:id] do
+    if not GoogleSheets.has_version? config[:id] do
       Logger.info "Loading initial data for spreadsheet #{inspect config[:id]} from #{inspect config[:dir]}"
       {:ok, version, worksheets} = GoogleSheets.Loader.FileSystem.load nil, config
       {:ok, data} = parse Keyword.get(config, :parser), config[:id], version, worksheets
