@@ -68,6 +68,32 @@ During the updater process init phase, CSV data is loaded from the local filesys
 
 After that the udpater process enters in loop, where it periodically fetches spreadsheet data, checks if it has changed, calls the :parser module and stores a new version into ETS table, if the monitored spreadsheet has changed.
 
+## Using the library
+
+After the application has started, you can access the loaded data using the [GoogleSheets.fetch and GoogleSheets.latest_key](doc/GoogleSheets.html) functions.
+
+### ETS storage
+
+Each time a change is noticed by an updater process, a new version of the data is stored in ETS table named `:google_sheets`. They key for each entry is a tuple {:spreadsheet_id, version_key}. In addition, a special entry with key {:spreadsheet_id, :latest} contains the version_key of the latest version.
+
+### Multiple spreadsheets
+
+Since the :spreadsheets configuration parameter is a list, you can monitor as many spreadsheets as your application requires.
+
+### Configuration
+
+* __:spreadsheets__ - A list of configurations for each spreadsheet to monitor.
+
+Each __:spreadsheets__ list entry is a keyword list with parameters how to monitor a single spreadsheet:
+
+* __:id__ - Atom used as the name of the updater process and as part of key when saving data into ETS table.
+* __:sheets__ - List of worksheet names to load. If empty, all worksheets in spreadsheet are loaded.
+* __:poll_delay_seconds__ - Delay between updates. If 0, only the init phase loading is done. Default is 30.
+* __:parser__ - Module implementing GoogleSheets.Parser behaviour. If implemented, the parse/2 method of the module is called after CSV data has been loaded, but before a new entry is stored into ETS table.
+* __:loader__ - Module responsible for loading data after the inital loading from fileystem. The module must be implement [GoogleSheets.Loader](lib/google_sheets/loader.ex) behaviour. Default is [GoogleSheets.Loader.Docs](lib/google_sheets/loader/docs.ex) which loads data form a google spreadsheet pointed by :url parameter.
+* __:url__ - URL of the google spreadsheet to load.
+* __:dir__ - Local directory relative to application root where CSV files fetched before are located.
+
 ## Publishing Google Spreadsheet
 
 The default way to share a spreadsheet using Google Sheets API is to use `OAuth`, but afaik there is no way to get a permanent `OAuth` token to use with a server. Therefore we must make the spreadsheet public to allow access from a server.
@@ -82,21 +108,9 @@ Publish to web is found in the File menu and it opens a dialog shown below:
 
 ![Publish to Web](/docs/publish_to_web.png)
 
-## Configuration
-
-* __:spreadsheets__ - A list of configurations for each spreadsheet to monitor.
-
-Each __:spreadsheets__ list entry is a keyword list with parameters how to monitor a single spreadsheet:
-
-* __:id__ - Atom used as the name of the updater process and as part of key when saving data into ETS table.
-* __:sheets__ - List of worksheet names to load. If empty, all worksheets in spreadsheet area loaded.
-* __:poll_delay_seconds__ - Delay between updates. If 0, only the init phase loading is done. Default is 30.
-* __:parser__ - Module implementing GoogleSheets.Parser behaviour. If implemented, the parse/2 method of the module is called after CSV data has been loaded, but before a new entry is stored into ETS table.
-* __:loader__ - Module implementing [GoogleSheets.Loader](lib/google_sheets/loader.ex) behaviour. Default is [GoogleSheets.Loader.Docs](lib/google_sheets/loader/docs.ex)
-
 ### Mix gs.fetch task
 
-The [gs.fetch](lib/mix/task/gs.fetch.ex) task loads a Google spreadsheet and saves worksheets in specified directory. If no parameters are given, it fetches all spreadsheets specified in the applications :google_sheets configuration and writes data into corresponding directory. You can also provide `-u` and `-d` params to explicitly load a spreadsheet.
+The mix task [gs.fetch](lib/mix/task/gs.fetch.ex) loads a Google spreadsheet and saves worksheets in specified directory. If no parameters are given, it fetches all spreadsheets specified in the applications :google_sheets configuration and writes data into corresponding directory. You can also provide `-u` and `-d` params to explicitly load a spreadsheet.
 
 ```
 mix gs.fetch
