@@ -88,7 +88,7 @@ defmodule GoogleSheets.Updater do
   end
 
   defp update_ets_entry(id, version, data) do
-    :ets.insert :google_sheets, {{id, version}, data}
+    :ets.insert :google_sheets, {version, data}
     :ets.insert :google_sheets, {{id, :latest}, version}
     {:ok, version}
   end

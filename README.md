@@ -44,11 +44,15 @@ end
 # In your application code
 defmodule MyApp do
   def func do
+    {:ok, version_key, data} = GoogleSheets.latest :config
+    {version_key, data} = GoogleSheets.latest :config
+
     {:ok, version_key} = GoogleSheets.latest_key :config
     version_key = GoogleSheets.latest_key! :config
 
-    {:ok, version_key, data} = GoogleSheets.fetch :config
-    {version_key, data} = GoogleSheets.fetch! :config
+    # With a previously queried version_key
+    {:ok, data} = GoogleSheets.fetch version_key
+    data = GoogleSheets.fetch! version_key
   end
 end
 
@@ -74,7 +78,7 @@ After the application has started, you can access the loaded data using the [Goo
 
 ### ETS storage
 
-Each time a change is noticed by an updater process, a new version of the data is stored in ETS table named `:google_sheets`. They key for each entry is a tuple {:spreadsheet_id, version_key}. In addition, a special entry with key {:spreadsheet_id, :latest} contains the version_key of the latest version.
+Each time a change is noticed by an updater process, a new version of the data is stored in ETS table named `:google_sheets` with an unique version_key. In addition for each spreadsheet, a special entry {:spreadsheet_id, :latest} contains the key for the latest version of a spreadsheet stored.
 
 ### Multiple spreadsheets
 
