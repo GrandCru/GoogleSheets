@@ -65,7 +65,7 @@ defmodule GoogleSheets.Updater do
   defp do_update(config) do
     try do
       {version, worksheets} = load_spreadsheet config
-      data = parse_spreadsheet version, worksheets, config
+      {:ok, data} = parse_spreadsheet version, worksheets, config
       update_ets_entry config[:id], version, data
     catch
       result -> result
