@@ -81,7 +81,7 @@ defmodule GoogleSheets do
   def latest_key!(spreadsheet_id) when is_atom(spreadsheet_id) do
     case latest_key spreadsheet_id do
       :not_found -> raise KeyError, key: spreadsheet_id
-      key -> key
+      {:ok, key} -> key
     end
   end
 
