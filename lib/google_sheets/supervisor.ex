@@ -2,7 +2,7 @@
 defmodule GoogleSheets.Supervisor do
 
   @moduledoc """
-  Supervisor for the application, launches a process for each spreadsheet configured for polling.
+  Supervisor for the application. Creates ETS table for storage and launches a process for each spreadsheet configured for polling.
   """
 
   use Supervisor
@@ -16,7 +16,7 @@ defmodule GoogleSheets.Supervisor do
   @doc false
   def init([]) do
     # ETS table is created here, so that if the updater process dies, the table is not lost.
-    # Must set the permission to public, so that the GoogleSheets.Updater can write,
+    # Must set the permission to public, so that the GoogleSheets.Updater can write
     # to the table, even if it's not the owning process.
     :ets.new :google_sheets, [:set, :named_table, :public]
 

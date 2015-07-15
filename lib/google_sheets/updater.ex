@@ -9,23 +9,18 @@ defmodule GoogleSheets.Updater do
 
   @default_poll_delay 5 * 60
 
-  #
-  # Client API
-  #
+  @doc false
   def update(spreadsheet_id, timeout) when is_atom(spreadsheet_id) do
     GenServer.call spreadsheet_id, :update_config, timeout
   end
 
-  #
-  # Implementation
-  #
-
+  @doc false
   def start_link(config) when is_list(config) do
     id = Keyword.fetch! config, :id
     GenServer.start_link(__MODULE__, config, [name: id])
   end
 
-  # Initial update
+  @doc false
   def init(config) when is_list(config) do
     Logger.info "Starting updater process for spreadsheet #{inspect config[:id]}"
 
@@ -42,7 +37,7 @@ defmodule GoogleSheets.Updater do
     {:ok, config}
   end
 
-  # Manual update request, rescue exceptions so that we can reply with result of the update.
+  @doc false
   def handle_call(:update_config, _from, config) do
     try do
       case do_update config do
@@ -60,7 +55,7 @@ defmodule GoogleSheets.Updater do
     end
   end
 
-  # Polling update request
+  @doc false
   def handle_info(:update, config) do
     do_update config
     schedule_next_update config, Keyword.get(config, :poll_delay_seconds, @default_poll_delay)

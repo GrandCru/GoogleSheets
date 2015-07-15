@@ -20,6 +20,7 @@ defmodule Mix.Tasks.Gs.Fetch do
   * -d, --dir - Directory where to save all CSV files, relative to application root path.
   """
 
+  @doc false
   def run(args) do
     Application.ensure_all_started :httpoison
     {options, _, _} = OptionParser.parse args, switches: [url: :string, dir: :string], aliases: [u: :url, d: :dir]
