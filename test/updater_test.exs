@@ -31,6 +31,19 @@ defmodule UpdaterTest do
     assert_receive {:parsed, :updater_test_spreadsheet}, 120_000
     assert_receive {:parsed, :updater_test_spreadsheet}, 120_000
 
+    # Test API
+    assert true == GoogleSheets.has_version? :updater_test_spreadsheet
+
+    # Request latest versions
+    assert {:ok, version_key} = GoogleSheets.latest_key :updater_test_spreadsheet
+    assert ^version_key = GoogleSheets.latest_key! :updater_test_spreadsheet
+    assert {:ok, ^version_key, data} = GoogleSheets.latest :updater_test_spreadsheet
+    assert {^version_key, ^data} = GoogleSheets.latest! :updater_test_spreadsheet
+
+    # Request specfic version
+    assert {:ok, ^data} = GoogleSheets.fetch version_key
+    assert ^data = GoogleSheets.fetch! version_key
+
     # Trigger manual update
     assert {:ok, _msg} = GoogleSheets.update :updater_test_spreadsheet
   end

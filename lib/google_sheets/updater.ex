@@ -43,7 +43,7 @@ defmodule GoogleSheets.Updater do
       case do_update config do
         {:ok, :unchanged} ->
           {:reply, {:ok, "No changes in configuration detected, configuration up-to-date."}, config}
-        {:ok, version} ->
+        {:ok, :updated, version} ->
           {:reply, {:ok, "Configuration updated succesfully, version is #{version}."}, config}
         {:error, reason} ->
           {:reply, {:error, reason}, config}
@@ -65,8 +65,9 @@ defmodule GoogleSheets.Updater do
   defp do_update(config) do
     try do
       {version, worksheets} = load_spreadsheet config
-      {:ok, data} = parse_spreadsheet version, worksheets, config
+      data = parse_spreadsheet version, worksheets, config
       update_ets_entry config[:id], version, data
+      {:ok, :updated, version}
     catch
       result -> result
     end
@@ -90,7 +91,6 @@ defmodule GoogleSheets.Updater do
   defp update_ets_entry(id, version, data) do
     :ets.insert :google_sheets, {version, data}
     :ets.insert :google_sheets, {{id, :latest}, version}
-    {:ok, version}
   end
 
   # If update_delay has been configured to 0, no updates will be done

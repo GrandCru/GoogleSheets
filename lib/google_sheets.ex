@@ -36,7 +36,7 @@ defmodule GoogleSheets do
     case latest_key spreadsheet_id do
       :not_found ->
         :not_found
-      version_key ->
+      {:ok, version_key} ->
         case fetch version_key do
           :not_found ->
             Logger.error "No data found for spreadsheet_id #{inspect spreadsheet_id} version #{inspect version_key}"
