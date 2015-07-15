@@ -16,6 +16,7 @@ defmodule GoogleSheets.Parser do
   Parameters:
 
   * spreadsheet_id  - The configured :id parameter for a monitored spreadsheet
+  * version         - The version key uniquely identifying the loaded worksheets. Used as key in ETS table.
   * worksheets      - List of Worksheet structures.
 
   Return values:
@@ -23,6 +24,6 @@ defmodule GoogleSheets.Parser do
   * {:ok, data}       - In case data was succesfully parased, the data can be anything that can be stored into ETS table
   * {:error, reason}  - If parsing failed for a known reason.
   """
-  defcallback parse(spreadsheet_id :: atom, worksheets :: [GoogleSheets.WorkSheet.t]) :: {:ok, any} | {:error, reason :: binary}
+  defcallback parse(spreadsheet_id :: atom, version :: binary, worksheets :: [GoogleSheets.WorkSheet.t]) :: {:ok, any} | {:error, reason :: binary}
 
 end

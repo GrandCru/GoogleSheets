@@ -56,16 +56,30 @@
         <h2 id="summary">Summary<span class="detail_header_links"><a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a></span></h2>
         <table class="summary">
           <tr>
-  <td class="summary_signature"><a href="#fetch!/2">fetch!(spreadsheet_id, version_key \\ :latest)</a></td>
+  <td class="summary_signature"><a href="#fetch!/1">fetch!(version_key)</a></td>
   
-    <td class="summary_synopsis"><p>Return {version_key, data} tuple matching an entry in ETS table for the passed spreadsheet_id, version_key pair</p>
+    <td class="summary_synopsis"><p>Returns data stored for the given version_key. If no entry is found, an KeyError exception is raised</p>
 </td>
   
 </tr>
 <tr>
-  <td class="summary_signature"><a href="#fetch/2">fetch(spreadsheet_id, version_key \\ :latest)</a></td>
+  <td class="summary_signature"><a href="#fetch/1">fetch(version_key)</a></td>
   
     <td class="summary_synopsis"><p>Returns {:ok, version_key, data} tuple matching an entry in ETS table for the passed spreadsheet_id, version_key pair</p>
+</td>
+  
+</tr>
+<tr>
+  <td class="summary_signature"><a href="#latest!/1">latest!(spreadsheet_id)</a></td>
+  
+    <td class="summary_synopsis"><p>Returns {version_key, data} for the latest one stored in ETS table</p>
+</td>
+  
+</tr>
+<tr>
+  <td class="summary_signature"><a href="#latest/1">latest(spreadsheet_id)</a></td>
+  
+    <td class="summary_synopsis"><p>Returns {:ok, version_key, data} where version_key and data are the latest ones found</p>
 </td>
   
 </tr>
@@ -100,11 +114,11 @@
         <section id="functions_details" class="details_list">
           <h2>Functions</h2>
           <section class="detail">
-  <div class="detail_header" id="fetch/2">
-    <span class="signature"><strong>fetch(spreadsheet_id, version_key \\ :latest)</strong></span>
+  <div class="detail_header" id="fetch/1">
+    <span class="signature"><strong>fetch(version_key)</strong></span>
     <div class="detail_header_links">
       <span class="detail_type">(function)</span>
-      <a href="#fetch/2" class="detail_link" title="Link to this function">#</a>
+      <a href="#fetch/1" class="detail_link" title="Link to this function">#</a>
       <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
     </div>
   </div>
@@ -118,18 +132,50 @@
   
 </section>
 <section class="detail">
-  <div class="detail_header" id="fetch!/2">
-    <span class="signature"><strong>fetch!(spreadsheet_id, version_key \\ :latest)</strong></span>
+  <div class="detail_header" id="fetch!/1">
+    <span class="signature"><strong>fetch!(version_key)</strong></span>
     <div class="detail_header_links">
       <span class="detail_type">(function)</span>
-      <a href="#fetch!/2" class="detail_link" title="Link to this function">#</a>
+      <a href="#fetch!/1" class="detail_link" title="Link to this function">#</a>
       <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
     </div>
   </div>
   
   <section class="docstring">
-    <p>Return {version_key, data} tuple matching an entry in ETS table for the passed spreadsheet_id, version_key pair.</p>
-<p>If no version_key is given, the latest stored version is returned.</p>
+    <p>Returns data stored for the given version_key. If no entry is found, an KeyError exception is raised.</p>
+
+  </section>
+  
+</section>
+<section class="detail">
+  <div class="detail_header" id="latest/1">
+    <span class="signature"><strong>latest(spreadsheet_id)</strong></span>
+    <div class="detail_header_links">
+      <span class="detail_type">(function)</span>
+      <a href="#latest/1" class="detail_link" title="Link to this function">#</a>
+      <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
+    </div>
+  </div>
+  
+  <section class="docstring">
+    <p>Returns {:ok, version_key, data} where version_key and data are the latest ones found.</p>
+<p>If no entry is found, :not_found is returned.</p>
+
+  </section>
+  
+</section>
+<section class="detail">
+  <div class="detail_header" id="latest!/1">
+    <span class="signature"><strong>latest!(spreadsheet_id)</strong></span>
+    <div class="detail_header_links">
+      <span class="detail_type">(function)</span>
+      <a href="#latest!/1" class="detail_link" title="Link to this function">#</a>
+      <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
+    </div>
+  </div>
+  
+  <section class="docstring">
+    <p>Returns {version_key, data} for the latest one stored in ETS table.</p>
 <p>If no entry is found, an KeyError exception is raised.</p>
 
   </section>

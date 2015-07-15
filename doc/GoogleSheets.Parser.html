@@ -64,11 +64,11 @@
         <section id="callbacks_details" class="details_list">
           <h2>Callbacks</h2>
           <section class="detail">
-  <div class="detail_header" id="c:parse/2">
-    <span class="signature"><strong>parse/2</strong></span>
+  <div class="detail_header" id="c:parse/3">
+    <span class="signature"><strong>parse/3</strong></span>
     <div class="detail_header_links">
       <span class="detail_type">(callback)</span>
-      <a href="#c:parse/2" class="detail_link" title="Link to this callback">#</a>
+      <a href="#c:parse/3" class="detail_link" title="Link to this callback">#</a>
       <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
     </div>
   </div>
@@ -76,7 +76,7 @@
     <p>Specs:</p>
     <ul class="spec">
       
-        <li>parse(spreadsheet_id :: atom, worksheets :: [<a href="GoogleSheets.WorkSheet.html#t:t/0">GoogleSheets.WorkSheet.t</a>]) :: {:ok, any} | {:error, reason :: binary}</li>
+        <li>parse(spreadsheet_id :: atom, version :: binary, worksheets :: [<a href="GoogleSheets.WorkSheet.html#t:t/0">GoogleSheets.WorkSheet.t</a>]) :: {:ok, any} | {:error, reason :: binary}</li>
       
     </ul>
   
@@ -86,6 +86,7 @@
 <p>Parameters:</p>
 <ul>
 <li>spreadsheet_id - The configured :id parameter for a monitored spreadsheet</li>
+<li>version - The version key uniquely identifying the loaded worksheets. Used as key in ETS table.</li>
 <li>worksheets - List of Worksheet structures.</li>
 </ul>
 <p>Return values:</p>

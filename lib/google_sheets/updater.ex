@@ -28,7 +28,7 @@ defmodule GoogleSheets.Updater do
     if :not_found == GoogleSheets.latest_key config[:id] do
       Logger.info "Loading initial data for spreadsheet #{inspect config[:id]} from #{inspect config[:dir]}"
       {:ok, version, worksheets} = GoogleSheets.Loader.FileSystem.load nil, config
-      {:ok, data} = parse Keyword.get(config, :parser), config[:id], worksheets
+      {:ok, data} = parse Keyword.get(config, :parser), config[:id], version, worksheets
       update_ets_entry config[:id], version, data
     end
 
@@ -65,7 +65,7 @@ defmodule GoogleSheets.Updater do
   defp do_update(config) do
     try do
       {version, worksheets} = load_spreadsheet config
-      data = parse_spreadsheet worksheets, config
+      data = parse_spreadsheet version, worksheets, config
       update_ets_entry config[:id], version, data
     catch
       result -> result
@@ -80,8 +80,8 @@ defmodule GoogleSheets.Updater do
     end
   end
 
-  defp parse_spreadsheet(worksheets, config) do
-    case parse Keyword.get(config, :parser), config[:id], worksheets do
+  defp parse_spreadsheet(version, worksheets, config) do
+    case parse Keyword.get(config, :parser), config[:id], version, worksheets do
       {:ok, data} -> data
       result -> throw result
     end
@@ -98,6 +98,6 @@ defmodule GoogleSheets.Updater do
   defp schedule_next_update(_config, delay_seconds), do: Process.send_after(self, :update, delay_seconds * 1000)
 
   # Parse CSV data if configured to do so
-  defp parse(nil, _id, worksheets) when is_list(worksheets), do: {:ok, worksheets}
-  defp parse(module, id, worksheets) when is_list(worksheets), do: module.parse(id, worksheets)
+  defp parse(nil, _id, _version, worksheets) when is_list(worksheets), do: {:ok, worksheets}
+  defp parse(module, id, version, worksheets) when is_list(worksheets), do: module.parse(id, version, worksheets)
 end
