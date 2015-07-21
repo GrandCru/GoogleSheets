@@ -38,7 +38,7 @@ config :google_sheets,
 # converting raw CSV data into useable data structures for your application.
 defmodule MyConfigParser do
   @behaviour GoogleSheets.Parser
-  def parse(_id, worksheets) do
+  def parse(_id, _version, worksheets) do
     # Actual conversion using something like ex_csv library 
     # left as an exercise for the reader.
     converted = parse_worksheets worksheets
