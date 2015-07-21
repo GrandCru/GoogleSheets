@@ -16,6 +16,11 @@ defp deps do
   [ {:google_sheets, "~> 1.0"} ]
 end
 
+# Add `:google_sheets` as an OTP application
+def application do
+  [applications: [:logger, :google_sheets]]
+end
+
 # In your `config/config.exs` file:
 config :google_sheets,
   spreadsheets:
