@@ -25,7 +25,7 @@
     </script>
 
     <section id="content">
-      <div class="breadcrumbs">google_sheets v1.0.0 &rarr; <a href="overview.html">Overview</a> &rarr; <a href="GoogleSheets.html">GoogleSheets</a></div>
+      <div class="breadcrumbs">google_sheets v1.0.1 &rarr; <a href="overview.html">Overview</a> &rarr; <a href="GoogleSheets.html">GoogleSheets</a></div>
       <h1>
         GoogleSheets
         
@@ -66,6 +66,13 @@
   <td class="summary_signature"><a href="#fetch/1">fetch(version_key)</a></td>
   
     <td class="summary_synopsis"><p>Returns {:ok, version_key, data} tuple matching an entry in ETS table for the passed spreadsheet_id, version_key pair</p>
+</td>
+  
+</tr>
+<tr>
+  <td class="summary_signature"><a href="#has_version?/1">has_version?(spreadsheet_id)</a></td>
+  
+    <td class="summary_synopsis"><p>Returns true, if there is an version for for the given spreadsheet_id stored, false otherwise</p>
 </td>
   
 </tr>
@@ -143,6 +150,22 @@
   
   <section class="docstring">
     <p>Returns data stored for the given version_key. If no entry is found, an KeyError exception is raised.</p>
+
+  </section>
+  
+</section>
+<section class="detail">
+  <div class="detail_header" id="has_version?/1">
+    <span class="signature"><strong>has_version?(spreadsheet_id)</strong></span>
+    <div class="detail_header_links">
+      <span class="detail_type">(function)</span>
+      <a href="#has_version?/1" class="detail_link" title="Link to this function">#</a>
+      <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
+    </div>
+  </div>
+  
+  <section class="docstring">
+    <p>Returns true, if there is an version for for the given spreadsheet_id stored, false otherwise.</p>
 
   </section>
   

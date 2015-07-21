@@ -43,7 +43,7 @@ defmodule Mix.Tasks.Gs.Fetch do
     path = Path.expand dir
 
     Mix.shell.info "Loading spreadsheet from url #{inspect url} and saving to #{path}"
-    {:ok, version, worksheets} = Docs.load nil, config
+    {:ok, _version, worksheets} = Docs.load nil, config
 
     Enum.map worksheets, fn ws ->
       filename = Path.join path, ws.name <> ".csv"
