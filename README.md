@@ -50,7 +50,7 @@ end
 defmodule MyApp do
   def func do
     {:ok, version_key, data} = GoogleSheets.latest :config
-    {version_key, data} = GoogleSheets.latest :config
+    {version_key, data} = GoogleSheets.latest! :config
 
     {:ok, version_key} = GoogleSheets.latest_key :config
     version_key = GoogleSheets.latest_key! :config
