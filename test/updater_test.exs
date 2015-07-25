@@ -48,4 +48,50 @@ defmodule UpdaterTest do
     assert {:ok, _msg} = GoogleSheets.update :updater_test_spreadsheet
   end
 
+  test "ETS lookup for latest key" do
+    Process.register self, :updater_test_process
+
+    cfg1 = [
+      id: :sheet_1,
+      sheets: ["KeyValue"],
+      parser: UpdaterTestMockParser,
+      loader: GoogleSheets.Loader.Docs,
+      poll_delay_seconds: 1,
+      dir: "priv/data",
+      url: "https://spreadsheets.google.com/feeds/worksheets/1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs/public/basic"
+    ]
+
+    cfg2 = [
+      id: :sheet_2,
+      sheets: ["KeyTable"],
+      parser: UpdaterTestMockParser,
+      loader: GoogleSheets.Loader.Docs,
+      poll_delay_seconds: 1,
+      dir: "priv/data",
+      url: "https://spreadsheets.google.com/feeds/worksheets/1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs/public/basic"
+    ]
+
+    {:ok, _updater_pid} = GoogleSheets.Updater.start_link cfg1
+    {:ok, _updater_pid} = GoogleSheets.Updater.start_link cfg2
+
+    version_key_1 = GoogleSheets.latest_key! :sheet_1
+    version_key_2 = GoogleSheets.latest_key! :sheet_2
+    assert version_key_1 != version_key_2
+
+    {:ok, _msg} = GoogleSheets.update :sheet_1
+
+    version_key_1 = GoogleSheets.latest_key! :sheet_1
+    version_key_2 = GoogleSheets.latest_key! :sheet_2
+    assert version_key_1 != version_key_2
+
+    # This update will get us same version key on next assertion
+    {:ok, _msg} = GoogleSheets.update :sheet_2
+
+    version_key_1 = GoogleSheets.latest_key! :sheet_1
+    version_key_2 = GoogleSheets.latest_key! :sheet_2
+
+    # This assertion will fail, but IMO it shouldn't
+    assert version_key_1 != version_key_2
+  end
+
 end
