@@ -25,7 +25,7 @@ defmodule DocsTest do
     config = [url: @url, sheets: ["KeyValue", "KeyTable"]]
     assert {:ok, version, worksheets} = Docs.load nil, config
 
-    assert version == "a3d4c20066a7f5ebebde18fc4f7ad1ecd6cb96ac"
+    assert version == "eeb80c2fe8872b3e6b0ea13f7fa4125228c1da48"
     assert length(worksheets) == 2
     assert Enum.any?(worksheets, fn(x) -> x.name == "KeyValue" end)
     assert Enum.any?(worksheets, fn(x) -> x.name == "KeyTable" end)
