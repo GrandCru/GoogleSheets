@@ -44,7 +44,7 @@ defmodule GoogleSheets.Updater do
         {:ok, :unchanged} ->
           {:reply, {:ok, "No changes in configuration detected, configuration up-to-date."}, config}
         {:ok, :updated, version} ->
-          {:reply, {:ok, "Configuration updated succesfully, version is #{version}."}, config}
+          {:reply, {:ok, "Configuration updated succesfully, version is #{version}"}, config}
         {:error, reason} ->
           {:reply, {:error, reason}, config}
       end
@@ -75,7 +75,7 @@ defmodule GoogleSheets.Updater do
 
   defp load_spreadsheet(config) do
     loader = Keyword.get config, :loader, GoogleSheets.Loader.Docs
-    case loader.load GoogleSheets.latest_key(config[:id]), config do
+    case loader.load latest_version(config[:id]), config do
       {:ok, version, worksheets} -> {version, worksheets}
       result -> throw result
     end
@@ -100,4 +100,11 @@ defmodule GoogleSheets.Updater do
   # Parse CSV data if configured to do so
   defp parse(nil, _id, _version, worksheets) when is_list(worksheets), do: {:ok, worksheets}
   defp parse(module, id, version, worksheets) when is_list(worksheets), do: module.parse(id, version, worksheets)
+
+  defp latest_version(spreadsheet_id) when is_atom(spreadsheet_id) do
+    case GoogleSheets.latest_key spreadsheet_id do
+      :not_found -> nil
+      {:ok, version} -> version
+    end
+  end
 end

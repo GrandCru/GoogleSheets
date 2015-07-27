@@ -72,5 +72,9 @@ defmodule UpdaterTest do
     assert 6 == length ets_entries
     assert 1 == Enum.count ets_entries, fn {key, _value} -> key == sheet1_version_key end
     assert 1 == Enum.count ets_entries, fn {key, _value} -> key == sheet2_version_key end
+
+    # Verify that the updater can shortcircuit when there are no changes
+    assert {:ok, "No changes in configuration detected, configuration up-to-date."} = GoogleSheets.update :sheet1
   end
+
 end
