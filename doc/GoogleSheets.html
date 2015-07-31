@@ -25,7 +25,7 @@
     </script>
 
     <section id="content">
-      <div class="breadcrumbs">google_sheets v1.0.3 &rarr; <a href="overview.html">Overview</a> &rarr; <a href="GoogleSheets.html">GoogleSheets</a></div>
+      <div class="breadcrumbs">google_sheets v1.0.4 &rarr; <a href="overview.html">Overview</a> &rarr; <a href="GoogleSheets.html">GoogleSheets</a></div>
       <h1>
         GoogleSheets
         
@@ -87,6 +87,20 @@
   <td class="summary_signature"><a href="#latest/1">latest(spreadsheet_id)</a></td>
   
     <td class="summary_synopsis"><p>Returns {:ok, version_key, data} where version_key and data are the latest ones found</p>
+</td>
+  
+</tr>
+<tr>
+  <td class="summary_signature"><a href="#latest_data!/1">latest_data!(spreadsheet_id)</a></td>
+  
+    <td class="summary_synopsis"><p>Returns data where data is the latest one found</p>
+</td>
+  
+</tr>
+<tr>
+  <td class="summary_signature"><a href="#latest_data/1">latest_data(spreadsheet_id)</a></td>
+  
+    <td class="summary_synopsis"><p>Returns {:ok, data} where data is the latest one found</p>
 </td>
   
 </tr>
@@ -199,6 +213,40 @@
   
   <section class="docstring">
     <p>Returns {version_key, data} for the latest one stored in ETS table.</p>
+<p>If no entry is found, an KeyError exception is raised.</p>
+
+  </section>
+  
+</section>
+<section class="detail">
+  <div class="detail_header" id="latest_data/1">
+    <span class="signature"><strong>latest_data(spreadsheet_id)</strong></span>
+    <div class="detail_header_links">
+      <span class="detail_type">(function)</span>
+      <a href="#latest_data/1" class="detail_link" title="Link to this function">#</a>
+      <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
+    </div>
+  </div>
+  
+  <section class="docstring">
+    <p>Returns {:ok, data} where data is the latest one found.</p>
+<p>If no entry is found, :not_found is returned.</p>
+
+  </section>
+  
+</section>
+<section class="detail">
+  <div class="detail_header" id="latest_data!/1">
+    <span class="signature"><strong>latest_data!(spreadsheet_id)</strong></span>
+    <div class="detail_header_links">
+      <span class="detail_type">(function)</span>
+      <a href="#latest_data!/1" class="detail_link" title="Link to this function">#</a>
+      <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
+    </div>
+  </div>
+  
+  <section class="docstring">
+    <p>Returns data where data is the latest one found.</p>
 <p>If no entry is found, an KeyError exception is raised.</p>
 
   </section>
