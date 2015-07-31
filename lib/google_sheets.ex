@@ -54,8 +54,32 @@ defmodule GoogleSheets do
   """
   def latest!(spreadsheet_id) when is_atom(spreadsheet_id) do
     case latest spreadsheet_id do
-      :not_found -> raise KeyError, key: spreadsheet_id
       {:ok, version_key, data} -> {version_key, data}
+      :not_found -> raise KeyError, key: spreadsheet_id
+    end
+  end
+
+  @doc ~S"""
+  Returns {:ok, data} where data is the latest one found.
+
+  If no entry is found, :not_found is returned.
+  """
+  def latest_data(spreadsheet_id) when is_atom(spreadsheet_id) do
+    case latest spreadsheet_id do
+      {:ok, _version_key, data} -> {:ok, data}
+      :not_found -> :not_found
+    end
+  end
+
+  @doc ~S"""
+  Returns data where data is the latest one found.
+
+  If no entry is found, an KeyError exception is raised.
+  """
+  def latest_data!(spreadsheet_id) when is_atom(spreadsheet_id) do
+    case latest_data(spreadsheet_id) do
+      {:ok, data} -> data
+      :not_found -> raise KeyError, key: spreadsheet_id
     end
   end
 

@@ -54,6 +54,8 @@ defmodule UpdaterTest do
     assert ^sheet1_version_key = GoogleSheets.latest_key! :sheet1
     assert {:ok, ^sheet1_version_key, data} = GoogleSheets.latest :sheet1
     assert {^sheet1_version_key, ^data} = GoogleSheets.latest! :sheet1
+    assert {:ok, ^data} = GoogleSheets.latest_data :sheet1
+    assert ^data = GoogleSheets.latest_data! :sheet1
 
     # Request specfic version
     assert {:ok, ^data} = GoogleSheets.fetch sheet1_version_key

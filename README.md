@@ -52,6 +52,9 @@ defmodule MyApp do
     {:ok, version_key, data} = GoogleSheets.latest :config
     {version_key, data} = GoogleSheets.latest! :config
 
+    {:ok, data} = GoogleSheets.latest_data :config
+    data = GoogleSheets.latest_data! :config
+
     {:ok, version_key} = GoogleSheets.latest_key :config
     version_key = GoogleSheets.latest_key! :config
 
