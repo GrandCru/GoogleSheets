@@ -5,6 +5,13 @@ defmodule FileSystemTest do
 
   alias GoogleSheets.Loader.FileSystem
 
+  test "Loadd sheets using Application.app_dir" do
+    config = [dir: {:google_sheets, "priv/data"}]
+    assert {:ok, version, worksheets} = FileSystem.load nil, config
+    assert version == "aebc5cd5aae29114bf28150d3d5609e19b2481c8"
+    assert length(worksheets) == 4
+  end
+
   test "Load all sheets" do
     config = [dir: "priv/data"]
     assert {:ok, version, worksheets} = FileSystem.load nil, config
