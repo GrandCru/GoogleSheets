@@ -2,6 +2,7 @@
 
 `Google Sheets` is an Elixir library for fetching Google spreadsheet in `CSV` format. It supports both saving a spreadsheet into a local directory as well as monitoring changes in a spreadsheet during runtime. The loaded spreadsheet is stored in `ETS` table where the application can access it.
 
+[![Build Status](https://travis-ci.org/GrandCru/GoogleSheets.svg?branch=master)](https://travis-ci.org/GrandCru/GoogleSheets)
 [![Hex.pm Version](http://img.shields.io/hexpm/v/google_sheets.svg?style=flat)](https://hex.pm/packages/google_sheets)
 
 ## Quick start
