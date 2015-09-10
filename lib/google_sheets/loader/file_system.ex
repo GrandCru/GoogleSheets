@@ -20,6 +20,10 @@ defmodule GoogleSheets.Loader.FileSystem do
     end
   end
 
+  defp load_spreadsheet(previous_version, {app, dir}, sheets) when is_atom(app) do
+    load_spreadsheet(previous_version, Application.app_dir(app, dir), sheets)
+  end
+
   defp load_spreadsheet(previous_version, dir, sheets) do
     path = Path.expand dir
     if not File.exists? path do
