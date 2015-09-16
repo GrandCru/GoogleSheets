@@ -1,4 +1,3 @@
-
 defmodule GoogleSheets do
 
   use Application
@@ -18,6 +17,30 @@ defmodule GoogleSheets do
   #
 
   @doc ~S"""
+  Returns {:ok, data} tuple for the spreadsheet stored in the ETS table with given key.
+
+  :not_found is returned, if no data is found in ETS table for the given version.
+  """
+  def fetch(version) do
+    case :ets.lookup :google_sheets, version_key do
+      [] -> :not_found
+      [{^version_key, _loader_version, data}] -> {:ok, data}
+    end
+  end
+
+  @doc ~S"""
+  Returns spreadsheet data stored in ETS table with the given key.
+
+  KeyError is raised if no data is found with the given version.
+  """
+  def fetch!(version) do
+    case fetch version do
+      :not_found -> raise KeyError, key: version
+      {:ok, data} -> data
+    end
+  end
+
+  @doc ~S"""
   Returns true, if there is an version for for the given spreadsheet_id stored, false otherwise.
   """
   def has_version?(spreadsheet_id) when is_atom(spreadsheet_id) do
@@ -28,46 +51,68 @@ defmodule GoogleSheets do
   end
 
   @doc ~S"""
-  Returns {:ok, version_key, data} where version_key and data are the latest ones found.
+  Returns {:ok, version, data} for the latest spreadsheet update stored in ETS.
 
-  If no entry is found, :not_found is returned.
+  :not_found is returned if no entry if found in ETS.
   """
   def latest(spreadsheet_id) when is_atom(spreadsheet_id) do
-    case latest_key spreadsheet_id do
-      :not_found ->
-        :not_found
-      {:ok, version_key} ->
-        case fetch version_key do
-          :not_found ->
-            Logger.error "No data found for spreadsheet_id #{inspect spreadsheet_id} version #{inspect version_key}"
-            :not_found
-          {:ok, data} ->
-            {:ok, version_key, data}
+    case latest_version spreadsheet_id do
+      :not_found -> :not_found
+      {:ok, version} ->
+        case fetch version do
+          :not_found -> :not_found
+          {:ok, data} -> {:ok, version, data}
         end
     end
   end
 
   @doc ~S"""
-  Returns {version_key, data} for the latest one stored in ETS table.
+  Returns {version, data} for the latest spreadsheet update stored in ETS.
 
   If no entry is found, an KeyError exception is raised.
   """
   def latest!(spreadsheet_id) when is_atom(spreadsheet_id) do
     case latest spreadsheet_id do
-      {:ok, version_key, data} -> {version_key, data}
       :not_found -> raise KeyError, key: spreadsheet_id
+      {:ok, version_key, data} -> {version_key, data}
     end
   end
 
   @doc ~S"""
-  Returns {:ok, data} where data is the latest one found.
+  Returns {:ok, version} tuple, where version points to latest stored version in ETS.
+
+  :not_found is returned, if no stored version is found in ETS.
+  """
+  def latest_version(spreadsheet_id) when is_atom(spreadsheet_id) do
+    case :ets.lookup :google_sheets, {spreadsheet_id, :latest} do
+      [] ->
+        :not_found
+      [{{^spreadsheet_id, :latest}, version}] ->
+        {:ok, version}
+    end
+  end
+
+  @doc ~S"""
+  Returns latest version stored for the given spreadsheet in ETS.
+
+  KeyError exception is raised if no version is found in ETS.
+  """
+  def latest_version!(spreadsheet_id) when is_atom(spreadsheet_id) do
+    case latest_version spreadsheet_id do
+      :not_found -> raise KeyError, key: spreadsheet_id
+      {:ok, version} -> version
+    end
+  end
+
+  @doc ~S"""
+  Returns {:ok, data} for the latest spreadsheet update stored in ETS.
 
   If no entry is found, :not_found is returned.
   """
   def latest_data(spreadsheet_id) when is_atom(spreadsheet_id) do
     case latest spreadsheet_id do
-      {:ok, _version_key, data} -> {:ok, data}
       :not_found -> :not_found
+      {:ok, _version_key, data} -> {:ok, data}
     end
   end
 
@@ -80,56 +125,6 @@ defmodule GoogleSheets do
     case latest_data(spreadsheet_id) do
       {:ok, data} -> data
       :not_found -> raise KeyError, key: spreadsheet_id
-    end
-  end
-
-  @doc ~S"""
-  Returns {:ok, version_key} where version_key is the one for latest version stored in ETS table.
-
-  If no entry is found, :not_found is returned.
-  """
-  def latest_key(spreadsheet_id) when is_atom(spreadsheet_id) do
-    case :ets.lookup :google_sheets, {spreadsheet_id, :latest} do
-      [] ->
-        Logger.error "No version key found for spreadsheet_id #{inspect spreadsheet_id}"
-        :not_found
-      [{{^spreadsheet_id, :latest}, key}] -> {:ok, key}
-    end
-  end
-
-  @doc ~S"""
-  Returns version_key where version_key is the one for latest version stored in ETS table.
-
-  If no entry is found, an KeyError exception is raised.
-  """
-  def latest_key!(spreadsheet_id) when is_atom(spreadsheet_id) do
-    case latest_key spreadsheet_id do
-      :not_found -> raise KeyError, key: spreadsheet_id
-      {:ok, key} -> key
-    end
-  end
-
-  @doc ~S"""
-  Returns {:ok, version_key, data} tuple matching an entry in ETS table for the passed spreadsheet_id, version_key pair.
-
-  If no version_key is given, the latest stored version is returned.
-
-  If no entry is found, :not_found is returned.
-  """
-  def fetch(version_key) do
-    case :ets.lookup  :google_sheets, version_key do
-      [] -> :not_found
-      [{^version_key, data}] -> {:ok, data}
-    end
-  end
-
-  @doc ~S"""
-  Returns data stored for the given version_key. If no entry is found, an KeyError exception is raised.
-  """
-  def fetch!(version_key) do
-    case fetch version_key do
-      :not_found -> raise KeyError, key: version_key
-      {:ok, data} -> data
     end
   end
 

@@ -11,7 +11,7 @@ defmodule GoogleSheets.Updater do
 
   @doc false
   def update(spreadsheet_id, timeout) when is_atom(spreadsheet_id) do
-    GenServer.call spreadsheet_id, :update_config, timeout
+    GenServer.call spreadsheet_id, :manual_update, timeout
   end
 
   @doc false
@@ -24,12 +24,12 @@ defmodule GoogleSheets.Updater do
   def init(config) when is_list(config) do
     Logger.info "Starting updater process for spreadsheet #{inspect config[:id]}"
 
-    # Don't load data from local filesystem if the updater process has been restarted
+    # Don't load data from local filesystem if the updater process was restarted
     if not GoogleSheets.has_version? config[:id] do
       Logger.info "Loading initial data for spreadsheet #{inspect config[:id]} from #{inspect config[:dir]}"
-      {:ok, version, worksheets} = GoogleSheets.Loader.FileSystem.load nil, config
-      {:ok, data} = parse Keyword.get(config, :parser), config[:id], version, worksheets
-      update_ets_entry config[:id], version, data
+      {:ok, loader_version, worksheets} = GoogleSheets.Loader.FileSystem.load nil, config
+      {:ok, parser_version, data} = parse_csv parser_impl(config), config[:id], worksheets
+      update_ets_entry config[:id], loader_version, parser_version, data
     end
 
     schedule_next_update config, Keyword.get(config, :poll_delay_seconds, @default_poll_delay)
@@ -38,7 +38,7 @@ defmodule GoogleSheets.Updater do
   end
 
   @doc false
-  def handle_call(:update_config, _from, config) do
+  def handle_call(:manual_update, _from, config) do
     try do
       case do_update config do
         {:ok, :unchanged} ->
@@ -64,47 +64,61 @@ defmodule GoogleSheets.Updater do
 
   defp do_update(config) do
     try do
-      {version, worksheets} = load_spreadsheet config
-      data = parse_spreadsheet version, worksheets, config
-      update_ets_entry config[:id], version, data
+      {loader_version, worksheets} = do_load config
+      {key, data} = do_parseworksheets, config
+      update_ets_entry config[:id], loader_version, parserr_version, data
       {:ok, :updated, version}
     catch
       result -> result
     end
   end
 
-  defp load_spreadsheet(config) do
-    loader = Keyword.get config, :loader, GoogleSheets.Loader.Docs
-    case loader.load latest_version(config[:id]), config do
+  defp do_load(config) do
+    loader = loader_impl config
+
+    case loader.load
+    case loader.load latest_loader_version(config[:id]), config do
       {:ok, version, worksheets} -> {version, worksheets}
       result -> throw result
     end
   end
 
-  defp parse_spreadsheet(version, worksheets, config) do
-    case parse Keyword.get(config, :parser), config[:id], version, worksheets do
+  defp do_parse(version, worksheets, config) do
+    case parse parser_impl(config), config[:id], version, worksheets do
       {:ok, data} -> data
       result -> throw result
     end
   end
 
-  defp update_ets_entry(id, version, data) do
-    :ets.insert :google_sheets, {version, data}
-    :ets.insert :google_sheets, {{id, :latest}, version}
+  # Write a new entry into ETS table and make the {:id, :latest} tuple point to new version
+  defp update_ets_entry(id, loader_version, parser_version, data) do
+    :ets.insert :google_sheets, {parser_version, loader_version, data}
+    :ets.insert :google_sheets, {{id, :latest}, parser_version}
   end
 
   # If update_delay has been configured to 0, no updates will be done
   defp schedule_next_update(config, 0), do: Logger.info("Stopping scheduled updates for #{config[:id]}")
   defp schedule_next_update(_config, delay_seconds), do: Process.send_after(self, :update, delay_seconds * 1000)
 
-  # Parse CSV data if configured to do so
-  defp parse(nil, _id, _version, worksheets) when is_list(worksheets), do: {:ok, worksheets}
-  defp parse(module, id, version, worksheets) when is_list(worksheets), do: module.parse(id, version, worksheets)
-
-  defp latest_version(spreadsheet_id) when is_atom(spreadsheet_id) do
-    case GoogleSheets.latest_key spreadsheet_id do
-      :not_found -> nil
-      {:ok, version} -> version
-    end
+  # If no parser is configured and raw CSV data is stored into ETS, calculate md5 hash,
+  # otherwise call the module implementing parser behaviour
+  defp parse_csv(nil, _id, worksheets) when is_list(worksheets) do
+    binary = worksheets |> :erlang.term_to_binary
+    parser_version = :crypto.hash(:md5, binary) |> Base.encode16(case: :lower)
+    {:ok, parser_version, worksheets}
   end
+  defp parse_csv(parser_impl, id, worksheets) when is_list(worksheets) do
+    parser_impl.parse id, worksheets
+  end
+
+  # Return the module implementing parser, if configured or nil
+  defp parser_impl(config) do
+    Keyword.get config, :parser
+  end
+
+  # Return the module implementing polling loader, default to GoogleSheets.Loader.Docs
+  defp loader_impl(config) do
+    Keyword.get config, :loader, GoogleSheets.Loader.Docs
+  end
+
 end
