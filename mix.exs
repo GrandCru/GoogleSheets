@@ -1,4 +1,4 @@
-defmodule Googlesheets.Mixfile do
+defmodule GoogleSheets.Mixfile do
   use Mix.Project
 
   def project do
@@ -8,7 +8,9 @@ defmodule Googlesheets.Mixfile do
       elixir: "~> 1.0",
       description: description,
       package: package,
-      deps: deps
+      deps: deps,
+      name: "GoogleSheets",
+      docs: [ main: "GoogleSheets", readme: "README.md"]
     ]
   end
 
@@ -39,4 +41,5 @@ defmodule Googlesheets.Mixfile do
       {:ex_doc, "~> 0.9", only: :dev}
     ]
   end
+
 end

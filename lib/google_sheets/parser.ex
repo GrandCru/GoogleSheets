@@ -20,9 +20,10 @@ defmodule GoogleSheets.Parser do
 
   Return values:
 
-  * {:ok, version, data}  - Version is a key uniquely identifieng data. In simplest cases it can be a hash of returned data, GUID or ref.
+  * {:ok, version, data}  - Parsed CSV data is retuned as data, version is a key uniquely identifieng data.
+  * {:ok, data}           - Parsed CSV data is retuned as data. The key used to store data is a hash of the data returned.
   * {:error, reason}      - If parsing failed for a known reason.
   """
-  defcallback parse(spreadsheet_id :: atom, worksheets :: [GoogleSheets.WorkSheet.t]) :: {:ok, version :: term, data :: term} | {:error, reason :: binary}
+  defcallback parse(spreadsheet_id :: atom, worksheets :: [GoogleSheets.WorkSheet.t]) :: {:ok, version :: term, data :: term} | {:ok, data :: term} | {:error, reason :: binary}
 
 end

@@ -1,6 +1,6 @@
 defmodule UpdaterTestMockParser do
   @behaviour GoogleSheets.Parser
-  def parse(id, _version, worksheets) do
+  def parse(id, worksheets) do
     send :updater_test_process, {:parsed, id}
     {:ok, worksheets}
   end
@@ -50,30 +50,29 @@ defmodule UpdaterTest do
     assert true == GoogleSheets.has_version? :sheet2
 
     # Request latest versions
-    assert {:ok, sheet1_version_key} = GoogleSheets.latest_key :sheet1
-    assert ^sheet1_version_key = GoogleSheets.latest_key! :sheet1
-    assert {:ok, ^sheet1_version_key, data} = GoogleSheets.latest :sheet1
-    assert {^sheet1_version_key, ^data} = GoogleSheets.latest! :sheet1
+    assert {:ok, sheet1_version} = GoogleSheets.latest_version :sheet1
+    assert ^sheet1_version = GoogleSheets.latest_version! :sheet1
+    assert {:ok, ^sheet1_version, data} = GoogleSheets.latest :sheet1
+    assert {^sheet1_version, ^data} = GoogleSheets.latest! :sheet1
     assert {:ok, ^data} = GoogleSheets.latest_data :sheet1
     assert ^data = GoogleSheets.latest_data! :sheet1
 
     # Request specfic version
-    assert {:ok, ^data} = GoogleSheets.fetch sheet1_version_key
-    assert ^data = GoogleSheets.fetch! sheet1_version_key
+    assert {:ok, ^data} = GoogleSheets.fetch sheet1_version
+    assert ^data = GoogleSheets.fetch! sheet1_version
 
     # Trigger manual update
     assert {:ok, _msg} = GoogleSheets.update :sheet1
 
     # Assert that sheet 1 and two have different keys
-    assert {:ok, sheet2_version_key} = GoogleSheets.latest_key :sheet2
-    assert sheet1_version_key != sheet2_version_key
+    assert {:ok, sheet2_version} = GoogleSheets.latest_version :sheet2
+    assert sheet1_version != sheet2_version
 
     # Check the ETS entries
     ets_entries = :ets.tab2list :google_sheets
 
-    assert 6 == length ets_entries
-    assert 1 == Enum.count ets_entries, fn {key, _value} -> key == sheet1_version_key end
-    assert 1 == Enum.count ets_entries, fn {key, _value} -> key == sheet2_version_key end
+    assert 1 == Enum.count ets_entries, fn {key, _value} -> key == sheet1_version end
+    assert 1 == Enum.count ets_entries, fn {key, _value} -> key == sheet2_version end
 
     # Verify that the updater can shortcircuit when there are no changes
     assert {:ok, "No changes in configuration detected, configuration up-to-date."} = GoogleSheets.update :sheet1

@@ -1,51 +1,429 @@
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html>
   <head>
-    <title>GoogleSheets</title>
-    <meta charset="utf-8" />
-    <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" charset="utf-8" />
-    <link rel="stylesheet" href="css/elixir.css" type="text/css" media="screen" charset="utf-8" />
-    <script type="text/javascript" charset="utf-8">
-      relpath = '';
-      if (relpath != '') relpath += '/';
-    </script>
-
-    <script type="text/javascript" charset="utf-8" src="js/jquery.js"></script>
-    <script type="text/javascript" charset="utf-8" src="js/app.js"></script>
-    <script type="text/javascript" charset="utf-8" src="js/highlight.pack.js"></script>
-    <script type="text/javascript" charset="utf-8">
-      hljs.initHighlightingOnLoad();
-      hljs.configure({languages: []}); //disable autodetect
-    </script>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+        <title>GoogleSheets – GoogleSheets v1.1.0</title>
+      
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="ExDoc v0.9.0">
+    <link href="http://fonts.googleapis.com/css?family=Lato:400,300,700,900|Merriweather:300italic,300,700,700italic|Inconsolata:400,700" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="dist/app.css" />
+    <script src="dist/sidebar_items.js"></script>
   </head>
-
   <body>
-    <script type="text/javascript" charset="utf-8">
-      if (window.top.frames.main) document.body.className = 'frames';
-    </script>
 
-    <section id="content">
-      <div class="breadcrumbs">google_sheets v1.0.4 &rarr; <a href="overview.html">Overview</a> &rarr; <a href="GoogleSheets.html">GoogleSheets</a></div>
+    
+    <div class="main">
+<button class="sidebar-toggle">
+  <i class="fa fa-bars"></i>
+</button>
+<section class="sidebar">
+  <button class="sidebar-toggle">
+    <i class="fa fa-bars"></i>
+  </button>
+
+  
+    <div class="sidebar-projectDetails sidebar-projectLink">
+      <h1 class="sidebar-projectName">
+        GoogleSheets
+      </h1>
+      <h2 class="sidebar-projectVersion">
+        v1.1.0
+      </h2>
+    </div>
+    
+  
+
+  <div class="sidebar-search">
+    <i class="fa fa-search"></i>
+    <input type="text" class="sidebar-searchInput" placeholder="search" autocomplete="off" results="0" />
+  </div>
+
+  <ul class="sidebar-mainNav">
+    
+
+    <li><a href="overview.html">Overview</a></li>
+  </ul>
+
+  <ul class="sidebar-listNav">
+    
+      <li><a id="modules_list" href="#full_list">Modules</a></li>
+    
+
+    
+      <li role="presentation" class="disabled">Exceptions</li>
+    
+
+    
+      <li role="presentation" class="disabled">Protocols</li>
+    
+  </ul>
+
+  <ul id="full_list" class="sidebar-fullList"></ul>
+  <div class="sidebar-noResults"></div>
+</section>
+
+<section id="content" class="content">
+  <div class="content-inner">
+
+
       <h1>
         GoogleSheets
         
+        
       </h1>
-
-      <ul class="summary_links">
-        
-          <li><a href="#summary">Summary</a></li>
-        
-        
-        
-          <li><a href="#functions_details">Functions</a></li>
-        
-        
-        
-      </ul>
 
       
         <section id="moduledoc" class="docstring">
           <p>Main starting point of the application and provides functions defining the public client API for the library.</p>
+<p>More</p>
+
+        </section>
+      
+
+      
+        <section id="summary_details" class="details-list">
+          <h1 id="summary" class="section-heading">Summary</h1>
+          <div class="summary">
+            <div class="summary-row">
+  <div class="summary-signature"><a href="#fetch!/1">fetch!(version)</a></div>
+  
+    <div class="summary-synopsis"><p>Fetches previosly loaded spreadsheet data from ETS matching the given version. KeyError is raised if no spreadsheet data is found with the given version</p>
+</div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature"><a href="#fetch/1">fetch(version)</a></div>
+  
+    <div class="summary-synopsis"><p>Fetches previosly loaded spreadsheet data from ETS matching the given version and returns it as a {:ok, data} tuple</p>
+</div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature"><a href="#has_version?/1">has_version?(spreadsheet_id)</a></div>
+  
+    <div class="summary-synopsis"><p>Returns true, if there is a version stored for the spreadsheet identified by spreadsheet_id argument</p>
+</div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature"><a href="#latest!/1">latest!(spreadsheet_id)</a></div>
+  
+    <div class="summary-synopsis"><p>Returns {version, data} tuple for the latest stored version for the spreadsheet identified by spreadsheet_id argument. If no version is found, KeyError exception is raised</p>
+</div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature"><a href="#latest/1">latest(spreadsheet_id)</a></div>
+  
+    <div class="summary-synopsis"><p>Returns {:ok, version, data} tuple for the latest stored version for the spreadsheet identifieed by spreadsheet_id argument. If there is no version available, :not_found is returned</p>
+</div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature"><a href="#latest_data!/1">latest_data!(spreadsheet_id)</a></div>
+  
+    <div class="summary-synopsis"><p>Returns the latest stored entry for the spreadsheet identified by spreadsheet_id argument. If no entry is found, KeyError exception is raised</p>
+</div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature"><a href="#latest_data/1">latest_data(spreadsheet_id)</a></div>
+  
+    <div class="summary-synopsis"><p>Returns {:ok, data} tuple for the latest stored entry for the spreadsheet identified by spreadsheet_id argument. If no entry is found, :not_found is returned</p>
+</div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature"><a href="#latest_version!/1">latest_version!(spreadsheet_id)</a></div>
+  
+    <div class="summary-synopsis"><p>Returns the latest version stored for the spreadsheet identified by spreadsheet_id argument. If no version is found, KeyError exception is raised</p>
+</div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature"><a href="#latest_version/1">latest_version(spreadsheet_id)</a></div>
+  
+    <div class="summary-synopsis"><p>Returns {:ok, version} tuple or the latest stored version for the spreadsheet identified by spreadsheet_id argument. If no version is found, :not_found is returned</p>
+</div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature"><a href="#update/2">update(spreadsheet_id, timeout \\ 60000)</a></div>
+  
+    <div class="summary-synopsis"><p>Manually triggers an update for fetching new data for the given spreadsheet_id argument</p>
+</div>
+  
+</div>
+
+          </div>
+        </section>
+      
+
+      
+
+      
+        <section id="functions_details" class="details-list">
+          <h1 class="section-heading">Functions</h1>
+          <div class="detail">
+  <div class="detail-header" id="fetch/1">
+    <a href="#fetch/1" class="detail-link" title="Link to this function">
+      <i class="fa fa-link"></i>
+    </a>
+    <span class="signature">fetch(version)</span>
+      
+  </div>
+  
+    <div class="specs">
+      <h4 class="specs-title">Specs</h4>
+      <div class="specs-list">
+        
+          <pre><code class="elixir">fetch(term) :: {:ok, term} | :not_found</code></pre>
+        
+      </div>
+    </div>
+  
+  <section class="docstring">
+    <p>Fetches previosly loaded spreadsheet data from ETS matching the given version and returns it as a {:ok, data} tuple.</p>
+<h2 id="examples">Examples</h2>
+<pre><code class="iex elixir">iex&gt; GoogleSheets.fetch &quot;fccb56afd7d7f1cdf457e8b9b841ec75&quot;
+{:ok, [
+  %GoogleSheets.WorkSheet{
+    csv: &quot;Key,Value\r\nInteger,1\r\nFloat,1.1\r\nString,string&quot;,
+    name: &quot;KeyValue&quot;
+  }]
+}
+
+iex&gt; GoogleSheets.fetch &quot;not_a_valid_version&quot;
+:not_found</code></pre>
+
+  </section>
+</div>
+<div class="detail">
+  <div class="detail-header" id="fetch!/1">
+    <a href="#fetch!/1" class="detail-link" title="Link to this function">
+      <i class="fa fa-link"></i>
+    </a>
+    <span class="signature">fetch!(version)</span>
+      
+  </div>
+  
+    <div class="specs">
+      <h4 class="specs-title">Specs</h4>
+      <div class="specs-list">
+        
+          <pre><code class="elixir">fetch!(term) :: term | no_return</code></pre>
+        
+      </div>
+    </div>
+  
+  <section class="docstring">
+    <p>Fetches previosly loaded spreadsheet data from ETS matching the given version. KeyError is raised if no spreadsheet data is found with the given version.</p>
+<h2 id="examples">Examples</h2>
+<pre><code class="iex elixir">iex&gt; GoogleSheets.fetch! &quot;fccb56afd7d7f1cdf457e8b9b841ec75&quot;
+[%GoogleSheets.WorkSheet{
+  csv: &quot;Key,Value\r\nInteger,1\r\nFloat,1.1\r\nString,string&quot;,
+  name: &quot;KeyValue&quot;}
+]
+
+iex&gt; GoogleSheets.fetch! &quot;not_a_valid_version&quot;
+** (KeyError) key &quot;invalid_version&quot; not found</code></pre>
+
+  </section>
+</div>
+<div class="detail">
+  <div class="detail-header" id="has_version?/1">
+    <a href="#has_version?/1" class="detail-link" title="Link to this function">
+      <i class="fa fa-link"></i>
+    </a>
+    <span class="signature">has_version?(spreadsheet_id)</span>
+      
+  </div>
+  
+    <div class="specs">
+      <h4 class="specs-title">Specs</h4>
+      <div class="specs-list">
+        
+          <pre><code class="elixir">has_version?(atom) :: boolean</code></pre>
+        
+      </div>
+    </div>
+  
+  <section class="docstring">
+    <p>Returns true, if there is a version stored for the spreadsheet identified by spreadsheet_id argument.</p>
+
+  </section>
+</div>
+<div class="detail">
+  <div class="detail-header" id="latest/1">
+    <a href="#latest/1" class="detail-link" title="Link to this function">
+      <i class="fa fa-link"></i>
+    </a>
+    <span class="signature">latest(spreadsheet_id)</span>
+      
+  </div>
+  
+    <div class="specs">
+      <h4 class="specs-title">Specs</h4>
+      <div class="specs-list">
+        
+          <pre><code class="elixir">latest(atom) :: {:ok, term, term} | :not_found</code></pre>
+        
+      </div>
+    </div>
+  
+  <section class="docstring">
+    <p>Returns {:ok, version, data} tuple for the latest stored version for the spreadsheet identifieed by spreadsheet_id argument. If there is no version available, :not_found is returned.</p>
+
+  </section>
+</div>
+<div class="detail">
+  <div class="detail-header" id="latest!/1">
+    <a href="#latest!/1" class="detail-link" title="Link to this function">
+      <i class="fa fa-link"></i>
+    </a>
+    <span class="signature">latest!(spreadsheet_id)</span>
+      
+  </div>
+  
+    <div class="specs">
+      <h4 class="specs-title">Specs</h4>
+      <div class="specs-list">
+        
+          <pre><code class="elixir">latest!(atom) :: {term, term} | no_return</code></pre>
+        
+      </div>
+    </div>
+  
+  <section class="docstring">
+    <p>Returns {version, data} tuple for the latest stored version for the spreadsheet identified by spreadsheet_id argument. If no version is found, KeyError exception is raised.</p>
+
+  </section>
+</div>
+<div class="detail">
+  <div class="detail-header" id="latest_data/1">
+    <a href="#latest_data/1" class="detail-link" title="Link to this function">
+      <i class="fa fa-link"></i>
+    </a>
+    <span class="signature">latest_data(spreadsheet_id)</span>
+      
+  </div>
+  
+    <div class="specs">
+      <h4 class="specs-title">Specs</h4>
+      <div class="specs-list">
+        
+          <pre><code class="elixir">latest_data(atom) :: {:ok, term} | :not_found</code></pre>
+        
+      </div>
+    </div>
+  
+  <section class="docstring">
+    <p>Returns {:ok, data} tuple for the latest stored entry for the spreadsheet identified by spreadsheet_id argument. If no entry is found, :not_found is returned.</p>
+
+  </section>
+</div>
+<div class="detail">
+  <div class="detail-header" id="latest_data!/1">
+    <a href="#latest_data!/1" class="detail-link" title="Link to this function">
+      <i class="fa fa-link"></i>
+    </a>
+    <span class="signature">latest_data!(spreadsheet_id)</span>
+      
+  </div>
+  
+    <div class="specs">
+      <h4 class="specs-title">Specs</h4>
+      <div class="specs-list">
+        
+          <pre><code class="elixir">latest_data!(atom) :: term | no_return</code></pre>
+        
+      </div>
+    </div>
+  
+  <section class="docstring">
+    <p>Returns the latest stored entry for the spreadsheet identified by spreadsheet_id argument. If no entry is found, KeyError exception is raised.</p>
+
+  </section>
+</div>
+<div class="detail">
+  <div class="detail-header" id="latest_version/1">
+    <a href="#latest_version/1" class="detail-link" title="Link to this function">
+      <i class="fa fa-link"></i>
+    </a>
+    <span class="signature">latest_version(spreadsheet_id)</span>
+      
+  </div>
+  
+    <div class="specs">
+      <h4 class="specs-title">Specs</h4>
+      <div class="specs-list">
+        
+          <pre><code class="elixir">latest_version(atom) :: {:ok, term} | :not_found</code></pre>
+        
+      </div>
+    </div>
+  
+  <section class="docstring">
+    <p>Returns {:ok, version} tuple or the latest stored version for the spreadsheet identified by spreadsheet_id argument. If no version is found, :not_found is returned.</p>
+
+  </section>
+</div>
+<div class="detail">
+  <div class="detail-header" id="latest_version!/1">
+    <a href="#latest_version!/1" class="detail-link" title="Link to this function">
+      <i class="fa fa-link"></i>
+    </a>
+    <span class="signature">latest_version!(spreadsheet_id)</span>
+      
+  </div>
+  
+    <div class="specs">
+      <h4 class="specs-title">Specs</h4>
+      <div class="specs-list">
+        
+          <pre><code class="elixir">latest_version!(atom) :: term | no_return</code></pre>
+        
+      </div>
+    </div>
+  
+  <section class="docstring">
+    <p>Returns the latest version stored for the spreadsheet identified by spreadsheet_id argument. If no version is found, KeyError exception is raised.</p>
+
+  </section>
+</div>
+<div class="detail">
+  <div class="detail-header" id="update/2">
+    <a href="#update/2" class="detail-link" title="Link to this function">
+      <i class="fa fa-link"></i>
+    </a>
+    <span class="signature">update(spreadsheet_id, timeout \\ 60000)</span>
+      
+  </div>
+  
+    <div class="specs">
+      <h4 class="specs-title">Specs</h4>
+      <div class="specs-list">
+        
+          <pre><code class="elixir">update(atom, integer) ::
+  {:updated, term} |
+  :unchanged |
+  {:error, term} |
+  no_return</code></pre>
+        
+      </div>
+    </div>
+  
+  <section class="docstring">
+    <p>Manually triggers an update for fetching new data for the given spreadsheet_id argument.</p>
+<p>Return values:</p>
+<p>{:updated, version} - Spreadsheet was updated and stored with the version :unchanged - Spreadsheet contents haven't been changed since last update. {:error, reason} - The update failed because of reason.</p>
+
+  </section>
+</div>
 
         </section>
       
@@ -53,263 +431,20 @@
       
 
       
-        <h2 id="summary">Summary<span class="detail_header_links"><a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a></span></h2>
-        <table class="summary">
-          <tr>
-  <td class="summary_signature"><a href="#fetch!/1">fetch!(version_key)</a></td>
-  
-    <td class="summary_synopsis"><p>Returns data stored for the given version_key. If no entry is found, an KeyError exception is raised</p>
-</td>
-  
-</tr>
-<tr>
-  <td class="summary_signature"><a href="#fetch/1">fetch(version_key)</a></td>
-  
-    <td class="summary_synopsis"><p>Returns {:ok, version_key, data} tuple matching an entry in ETS table for the passed spreadsheet_id, version_key pair</p>
-</td>
-  
-</tr>
-<tr>
-  <td class="summary_signature"><a href="#has_version?/1">has_version?(spreadsheet_id)</a></td>
-  
-    <td class="summary_synopsis"><p>Returns true, if there is an version for for the given spreadsheet_id stored, false otherwise</p>
-</td>
-  
-</tr>
-<tr>
-  <td class="summary_signature"><a href="#latest!/1">latest!(spreadsheet_id)</a></td>
-  
-    <td class="summary_synopsis"><p>Returns {version_key, data} for the latest one stored in ETS table</p>
-</td>
-  
-</tr>
-<tr>
-  <td class="summary_signature"><a href="#latest/1">latest(spreadsheet_id)</a></td>
-  
-    <td class="summary_synopsis"><p>Returns {:ok, version_key, data} where version_key and data are the latest ones found</p>
-</td>
-  
-</tr>
-<tr>
-  <td class="summary_signature"><a href="#latest_data!/1">latest_data!(spreadsheet_id)</a></td>
-  
-    <td class="summary_synopsis"><p>Returns data where data is the latest one found</p>
-</td>
-  
-</tr>
-<tr>
-  <td class="summary_signature"><a href="#latest_data/1">latest_data(spreadsheet_id)</a></td>
-  
-    <td class="summary_synopsis"><p>Returns {:ok, data} where data is the latest one found</p>
-</td>
-  
-</tr>
-<tr>
-  <td class="summary_signature"><a href="#latest_key!/1">latest_key!(spreadsheet_id)</a></td>
-  
-    <td class="summary_synopsis"><p>Returns version_key where version_key is the one for latest version stored in ETS table</p>
-</td>
-  
-</tr>
-<tr>
-  <td class="summary_signature"><a href="#latest_key/1">latest_key(spreadsheet_id)</a></td>
-  
-    <td class="summary_synopsis"><p>Returns {:ok, version_key} where version_key is the one for latest version stored in ETS table</p>
-</td>
-  
-</tr>
-<tr>
-  <td class="summary_signature"><a href="#update/2">update(spreadsheet_id, timeout \\ 60000)</a></td>
-  
-    <td class="summary_synopsis"><p>Requests the updater process monitoring the given spreadsheet to check for changes immediately</p>
-</td>
-  
-</tr>
-
-        </table>
-      
-
-      
-
-      
-        <section id="functions_details" class="details_list">
-          <h2>Functions</h2>
-          <section class="detail">
-  <div class="detail_header" id="fetch/1">
-    <span class="signature"><strong>fetch(version_key)</strong></span>
-    <div class="detail_header_links">
-      <span class="detail_type">(function)</span>
-      <a href="#fetch/1" class="detail_link" title="Link to this function">#</a>
-      <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
-    </div>
+        <footer class="footer">
+      <p>
+        Designed by
+        <a href="https://twitter.com/dignifiedquire" target="_blank" title="@dignifiedquire">Friedel Ziegelmayer</a>
+        and the
+        <a href="https://github.com/elixir-lang/ex_doc/graphs/contributors" target="_blank">ExDoc team</a>.
+        Built using
+        <a href="https://github.com/elixir-lang/ex_doc" title="ExDoc" rel="help" target="_blank">ExDoc</a> (v0.9.0).
+      </p>
+    </footer>
   </div>
-  
-  <section class="docstring">
-    <p>Returns {:ok, version_key, data} tuple matching an entry in ETS table for the passed spreadsheet_id, version_key pair.</p>
-<p>If no version_key is given, the latest stored version is returned.</p>
-<p>If no entry is found, :not_found is returned.</p>
-
-  </section>
-  
 </section>
-<section class="detail">
-  <div class="detail_header" id="fetch!/1">
-    <span class="signature"><strong>fetch!(version_key)</strong></span>
-    <div class="detail_header_links">
-      <span class="detail_type">(function)</span>
-      <a href="#fetch!/1" class="detail_link" title="Link to this function">#</a>
-      <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
-    </div>
-  </div>
-  
-  <section class="docstring">
-    <p>Returns data stored for the given version_key. If no entry is found, an KeyError exception is raised.</p>
-
-  </section>
-  
-</section>
-<section class="detail">
-  <div class="detail_header" id="has_version?/1">
-    <span class="signature"><strong>has_version?(spreadsheet_id)</strong></span>
-    <div class="detail_header_links">
-      <span class="detail_type">(function)</span>
-      <a href="#has_version?/1" class="detail_link" title="Link to this function">#</a>
-      <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
-    </div>
-  </div>
-  
-  <section class="docstring">
-    <p>Returns true, if there is an version for for the given spreadsheet_id stored, false otherwise.</p>
-
-  </section>
-  
-</section>
-<section class="detail">
-  <div class="detail_header" id="latest/1">
-    <span class="signature"><strong>latest(spreadsheet_id)</strong></span>
-    <div class="detail_header_links">
-      <span class="detail_type">(function)</span>
-      <a href="#latest/1" class="detail_link" title="Link to this function">#</a>
-      <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
-    </div>
-  </div>
-  
-  <section class="docstring">
-    <p>Returns {:ok, version_key, data} where version_key and data are the latest ones found.</p>
-<p>If no entry is found, :not_found is returned.</p>
-
-  </section>
-  
-</section>
-<section class="detail">
-  <div class="detail_header" id="latest!/1">
-    <span class="signature"><strong>latest!(spreadsheet_id)</strong></span>
-    <div class="detail_header_links">
-      <span class="detail_type">(function)</span>
-      <a href="#latest!/1" class="detail_link" title="Link to this function">#</a>
-      <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
-    </div>
-  </div>
-  
-  <section class="docstring">
-    <p>Returns {version_key, data} for the latest one stored in ETS table.</p>
-<p>If no entry is found, an KeyError exception is raised.</p>
-
-  </section>
-  
-</section>
-<section class="detail">
-  <div class="detail_header" id="latest_data/1">
-    <span class="signature"><strong>latest_data(spreadsheet_id)</strong></span>
-    <div class="detail_header_links">
-      <span class="detail_type">(function)</span>
-      <a href="#latest_data/1" class="detail_link" title="Link to this function">#</a>
-      <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
-    </div>
-  </div>
-  
-  <section class="docstring">
-    <p>Returns {:ok, data} where data is the latest one found.</p>
-<p>If no entry is found, :not_found is returned.</p>
-
-  </section>
-  
-</section>
-<section class="detail">
-  <div class="detail_header" id="latest_data!/1">
-    <span class="signature"><strong>latest_data!(spreadsheet_id)</strong></span>
-    <div class="detail_header_links">
-      <span class="detail_type">(function)</span>
-      <a href="#latest_data!/1" class="detail_link" title="Link to this function">#</a>
-      <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
-    </div>
-  </div>
-  
-  <section class="docstring">
-    <p>Returns data where data is the latest one found.</p>
-<p>If no entry is found, an KeyError exception is raised.</p>
-
-  </section>
-  
-</section>
-<section class="detail">
-  <div class="detail_header" id="latest_key/1">
-    <span class="signature"><strong>latest_key(spreadsheet_id)</strong></span>
-    <div class="detail_header_links">
-      <span class="detail_type">(function)</span>
-      <a href="#latest_key/1" class="detail_link" title="Link to this function">#</a>
-      <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
-    </div>
-  </div>
-  
-  <section class="docstring">
-    <p>Returns {:ok, version_key} where version_key is the one for latest version stored in ETS table.</p>
-<p>If no entry is found, :not_found is returned.</p>
-
-  </section>
-  
-</section>
-<section class="detail">
-  <div class="detail_header" id="latest_key!/1">
-    <span class="signature"><strong>latest_key!(spreadsheet_id)</strong></span>
-    <div class="detail_header_links">
-      <span class="detail_type">(function)</span>
-      <a href="#latest_key!/1" class="detail_link" title="Link to this function">#</a>
-      <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
-    </div>
-  </div>
-  
-  <section class="docstring">
-    <p>Returns version_key where version_key is the one for latest version stored in ETS table.</p>
-<p>If no entry is found, an KeyError exception is raised.</p>
-
-  </section>
-  
-</section>
-<section class="detail">
-  <div class="detail_header" id="update/2">
-    <span class="signature"><strong>update(spreadsheet_id, timeout \\ 60000)</strong></span>
-    <div class="detail_header_links">
-      <span class="detail_type">(function)</span>
-      <a href="#update/2" class="detail_link" title="Link to this function">#</a>
-      <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
-    </div>
-  </div>
-  
-  <section class="docstring">
-    <p>Requests the updater process monitoring the given spreadsheet to check for changes immediately.</p>
-<p>Return values: {:updated, version_key} - Spreadsheet was updated and stored with the version_key :unchanged - Spreadsheet contents haven't been changed since last update. {:error, reason} - The update failed because of reason.</p>
-
-  </section>
-  
-</section>
-
-        </section>
-      
-
-      
-
-      
-    </section>
+</div>
+    <script src="dist/app.js"></script>
   </body>
 </html>
+

@@ -1,30 +1,77 @@
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html>
   <head>
-    <title>Overview</title>
     <meta charset="utf-8">
-    <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" charset="utf-8" />
-
-    <script type="text/javascript" charset="utf-8">
-      relpath = '';
-      if (relpath != '') relpath += '/';
-    </script>
-
-    <script type="text/javascript" charset="utf-8" src="js/jquery.js"></script>
-    <script type="text/javascript" charset="utf-8" src="js/app.js"></script>
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+        <title>Overview – GoogleSheets v1.1.0</title>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="ExDoc v0.9.0">
+    <link href="http://fonts.googleapis.com/css?family=Lato:400,300,700,900|Merriweather:300italic,300,700,700italic|Inconsolata:400,700" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="dist/app.css" />
+    <script src="dist/sidebar_items.js"></script>
   </head>
-
   <body>
-    <script type="text/javascript" charset="utf-8">
-      if (window.top.frames.main) document.body.className = 'frames';
-    </script>
 
-    <section id="content">
-      <div class="breadcrumbs">google_sheets v1.0.4 &rarr; <a href="overview.html">Overview</a></div>
+    <div class="main">
+<button class="sidebar-toggle">
+  <i class="fa fa-bars"></i>
+</button>
+<section class="sidebar">
+  <button class="sidebar-toggle">
+    <i class="fa fa-bars"></i>
+  </button>
 
-      <h1>google_sheets v1.0.4</h1>
+  
+    <div class="sidebar-projectDetails sidebar-projectLink">
+      <h1 class="sidebar-projectName">
+        GoogleSheets
+      </h1>
+      <h2 class="sidebar-projectVersion">
+        v1.1.0
+      </h2>
+    </div>
+    
+  
 
-      <ul class="summary_links">
+  <div class="sidebar-search">
+    <i class="fa fa-search"></i>
+    <input type="text" class="sidebar-searchInput" placeholder="search" autocomplete="off" results="0" />
+  </div>
+
+  <ul class="sidebar-mainNav">
+    
+
+    <li><a href="overview.html">Overview</a></li>
+  </ul>
+
+  <ul class="sidebar-listNav">
+    
+      <li><a id="modules_list" href="#full_list">Modules</a></li>
+    
+
+    
+      <li role="presentation" class="disabled">Exceptions</li>
+    
+
+    
+      <li role="presentation" class="disabled">Protocols</li>
+    
+  </ul>
+
+  <ul id="full_list" class="sidebar-fullList"></ul>
+  <div class="sidebar-noResults"></div>
+</section>
+
+<section id="content" class="content">
+  <div class="content-inner">
+
+
+      <h1>GoogleSheets v1.1.0</h1>
+
+      <ul class="summary-links">
         
           <li><a href="#modules_summary">Modules</a></li>
         
@@ -33,85 +80,92 @@
       </ul>
 
       
-        <h2 id="modules_summary">Modules summary <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a></h2>
-        <table class="summary">
-          <tr>
-  <td class="summary_signature"><a href="GoogleSheets.html">GoogleSheets</a></td>
+        <h1 id="modules_summary" class="section-heading">Modules summary</h1>
+        <div class="summary">
+          <div class="summary-row">
+  <div class="summary-signature"><a href="GoogleSheets.html">GoogleSheets</a></div>
   
-    <td class="summary_synopsis"><p>Main starting point of the application and provides functions defining the public client API for the library</p>
-</td>
+    <div class="summary-synopsis"><p>Main starting point of the application and provides functions defining the public client API for the library</p>
+</div>
   
-</tr>
-<tr>
-  <td class="summary_signature"><a href="GoogleSheets.Loader.html">GoogleSheets.Loader</a></td>
+</div>
+<div class="summary-row">
+  <div class="summary-signature"><a href="GoogleSheets.Loader.html">GoogleSheets.Loader</a></div>
   
-    <td class="summary_synopsis"><p>Behaviour for a spreadsheet loader</p>
-</td>
+    <div class="summary-synopsis"><p>Behaviour for a spreadsheet loader</p>
+</div>
   
-</tr>
-<tr>
-  <td class="summary_signature"><a href="GoogleSheets.Loader.Docs.html">GoogleSheets.Loader.Docs</a></td>
+</div>
+<div class="summary-row">
+  <div class="summary-signature"><a href="GoogleSheets.Loader.Docs.html">GoogleSheets.Loader.Docs</a></div>
   
-    <td class="summary_synopsis"><p>Implemnts GoogleSheets.Loader behaviour by fetching a Spreadsheet with Google spreadsheet API</p>
-</td>
+    <div class="summary-synopsis"><p>Implemnts GoogleSheets.Loader behaviour by fetching a Spreadsheet with Google spreadsheet API</p>
+</div>
   
-</tr>
-<tr>
-  <td class="summary_signature"><a href="GoogleSheets.Loader.FileSystem.html">GoogleSheets.Loader.FileSystem</a></td>
+</div>
+<div class="summary-row">
+  <div class="summary-signature"><a href="GoogleSheets.Loader.FileSystem.html">GoogleSheets.Loader.FileSystem</a></div>
   
-    <td class="summary_synopsis"><p>Implements GoogleSheets.Loader behaviour for reading given spreadsheets in csv format from a directory</p>
-</td>
+    <div class="summary-synopsis"><p>Implements GoogleSheets.Loader behaviour for reading given spreadsheets in csv format from a directory</p>
+</div>
   
-</tr>
-<tr>
-  <td class="summary_signature"><a href="GoogleSheets.Parser.html">GoogleSheets.Parser</a></td>
+</div>
+<div class="summary-row">
+  <div class="summary-signature"><a href="GoogleSheets.Parser.html">GoogleSheets.Parser</a></div>
   
-    <td class="summary_synopsis"><p>Behaviour for parsing and transforming loaded CSV data into application specific format before it's stored into ETS table</p>
-</td>
+    <div class="summary-synopsis"><p>Behaviour for parsing and transforming loaded CSV data into application specific format before it's stored into ETS table</p>
+</div>
   
-</tr>
-<tr>
-  <td class="summary_signature"><a href="GoogleSheets.Supervisor.html">GoogleSheets.Supervisor</a></td>
+</div>
+<div class="summary-row">
+  <div class="summary-signature"><a href="GoogleSheets.Supervisor.html">GoogleSheets.Supervisor</a></div>
   
-    <td class="summary_synopsis"><p>Supervisor for the application. Creates ETS table for storage and launches a process for each spreadsheet configured for polling</p>
-</td>
+    <div class="summary-synopsis"><p>Supervisor for the application. Creates ETS table for storage and launches a process for each spreadsheet configured for polling</p>
+</div>
   
-</tr>
-<tr>
-  <td class="summary_signature"><a href="GoogleSheets.Updater.html">GoogleSheets.Updater</a></td>
+</div>
+<div class="summary-row">
+  <div class="summary-signature"><a href="GoogleSheets.Updater.html">GoogleSheets.Updater</a></div>
   
-    <td class="summary_synopsis"><p>GenServer for updating and polling a spreadsheet</p>
-</td>
+    <div class="summary-synopsis"><p>GenServer for updating and polling a spreadsheet</p>
+</div>
   
-</tr>
-<tr>
-  <td class="summary_signature"><a href="GoogleSheets.Utils.html">GoogleSheets.Utils</a></td>
+</div>
+<div class="summary-row">
+  <div class="summary-signature"><a href="GoogleSheets.WorkSheet.html">GoogleSheets.WorkSheet</a></div>
   
-    <td class="summary_synopsis"><p>Helper functions used by other modules in this library</p>
-</td>
+    <div class="summary-synopsis"><p>Structure describing a worksheet</p>
+</div>
   
-</tr>
-<tr>
-  <td class="summary_signature"><a href="GoogleSheets.WorkSheet.html">GoogleSheets.WorkSheet</a></td>
+</div>
+<div class="summary-row">
+  <div class="summary-signature"><a href="Mix.Tasks.Gs.Fetch.html">Mix.Tasks.Gs.Fetch</a></div>
   
-    <td class="summary_synopsis"><p>Structure describing a worksheet</p>
-</td>
+    <div class="summary-synopsis"><p>Loads a Google spreadsheet and all worksheets in CSV format for the given document key</p>
+</div>
   
-</tr>
-<tr>
-  <td class="summary_signature"><a href="Mix.Tasks.Gs.Fetch.html">Mix.Tasks.Gs.Fetch</a></td>
-  
-    <td class="summary_synopsis"><p>Loads a Google spreadsheet and all worksheets in CSV format for the given document key</p>
-</td>
-  
-</tr>
+</div>
 
-        </table>
+        </div>
       
 
       
 
       
-    </section>
+        <footer class="footer">
+      <p>
+        Designed by
+        <a href="https://twitter.com/dignifiedquire" target="_blank" title="@dignifiedquire">Friedel Ziegelmayer</a>
+        and the
+        <a href="https://github.com/elixir-lang/ex_doc/graphs/contributors" target="_blank">ExDoc team</a>.
+        Built using
+        <a href="https://github.com/elixir-lang/ex_doc" title="ExDoc" rel="help" target="_blank">ExDoc</a> (v0.9.0).
+      </p>
+    </footer>
+  </div>
+</section>
+</div>
+    <script src="dist/app.js"></script>
   </body>
 </html>
+

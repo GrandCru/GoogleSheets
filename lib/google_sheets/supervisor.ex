@@ -1,4 +1,3 @@
-
 defmodule GoogleSheets.Supervisor do
 
   @moduledoc """

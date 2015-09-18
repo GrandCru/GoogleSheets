@@ -44,7 +44,7 @@ defmodule GoogleSheets.Loader.Docs do
     {:ok, %HTTPoison.Response{status_code: 200} = response} = HTTPoison.get url
 
     updated = response.body |> xpath(~x"//feed/updated/text()") |> List.to_string |> String.strip
-    version = :crypto.hash(:sha, url <> Enum.join(sheets) <> updated) |> GoogleSheets.Utils.hexstring
+    version = :crypto.hash(:sha, url <> Enum.join(sheets) <> updated) |> Base.encode16(case: :lower)
 
     if previous_version != nil and version == previous_version do
       throw {:ok, :unchanged}

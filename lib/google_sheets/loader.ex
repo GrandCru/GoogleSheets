@@ -24,10 +24,9 @@ defmodule GoogleSheets.Loader do
 
   Return values:
 
-  * {:ok, version, spreadsheet} - SpreadSheetData structure containing unparsed CSV data, version i
-  * {:ok, :unchanged}   - No changes since last load time in spreadsheet.
-  * {:error, reason}    - An handled error case during loading of data.
-
+  * {:ok, version, worksheets}  - List of WorkSheet structures for each CSV file loaded.
+  * {:ok, :unchanged}           - No changes since last load time in spreadsheet.
+  * {:error, reason}            - Known and handled error case, which can correct itself by another try. (Network errors etc.)
   """
   defcallback load(version :: String.t | nil, config :: Keyword.t) :: {:ok, version :: binary, [GoogleSheets.WorkSheet.t]} | :unchanged | {:error, reason :: String.t}
 end
