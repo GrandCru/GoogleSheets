@@ -98,11 +98,11 @@
         <section id="callbacks_details" class="details-list">
           <h1 class="section-heading">Callbacks</h1>
           <div class="detail">
-  <div class="detail-header" id="c:load/2">
-    <a href="#c:load/2" class="detail-link" title="Link to this callback">
+  <div class="detail-header" id="c:load/3">
+    <a href="#c:load/3" class="detail-link" title="Link to this callback">
       <i class="fa fa-link"></i>
     </a>
-    <span class="signature">load/2</span>
+    <span class="signature">load/3</span>
       
   </div>
   
@@ -110,7 +110,7 @@
       <h4 class="specs-title">Specs</h4>
       <div class="specs-list">
         
-          <pre><code class="elixir">load(version :: <a href="http://elixir-lang.org/docs/stable/elixir/String.html#t:t/0">String.t</a> | nil, config :: <a href="http://elixir-lang.org/docs/stable/elixir/Keyword.html#t:t/0">Keyword.t</a>) ::
+          <pre><code class="elixir">load(version :: <a href="http://elixir-lang.org/docs/stable/elixir/String.html#t:t/0">String.t</a> | nil, id :: atom, config :: <a href="http://elixir-lang.org/docs/stable/elixir/Keyword.html#t:t/0">Keyword.t</a>) ::
   {:ok, version :: binary, [<a href="GoogleSheets.WorkSheet.html#t:t/0">GoogleSheets.WorkSheet.t</a>]} |
   :unchanged |
   {:error, reason :: <a href="http://elixir-lang.org/docs/stable/elixir/String.html#t:t/0">String.t</a>}</code></pre>
@@ -122,9 +122,10 @@
     <p>The load callback can be called by and updater process or by any other process wishing to load data.</p>
 <p>Versioning:</p>
 <p>Each loader implementation can implement a method to short circuiting loading CSV data. For example, the docs.ex loader calculates a hash from the atom feed url, it's last update entry and given list of sheet names. If the data read from the atom feed matches, it can return {:ok, unchanged} without loading CSV data for all sheets.</p>
-<p>The parameters:</p>
+<p>Arguments:</p>
 <ul>
 <li>version - Version value returned by a previous call to a loader.</li>
+<li>id - ID of the spreadsheet to be loaded</li>
 <li>config - Loader specific configuration.</li>
 </ul>
 <p>Return values:</p>

@@ -43,12 +43,12 @@ defmodule Mix.Tasks.Gs.Fetch do
     path = Path.expand dir
 
     Mix.shell.info "Loading spreadsheet from url #{inspect url} and saving to #{path}"
-    {:ok, _version, worksheets} = Docs.load nil, config
+    {:ok, _version, worksheets} = Docs.load nil, :id, config
 
     Enum.map worksheets, fn ws ->
       filename = Path.join path, ws.name <> ".csv"
-      Mix.shell.info "Writing file #{filename}"
-      File.write! filename, ws.csv
+      # Write in raw mode so that we are not changing newlines etc
+      File.write! filename, ws.csv, [:raw]
     end
 
     fetch_spreadsheets rest

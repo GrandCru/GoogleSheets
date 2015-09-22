@@ -10,7 +10,7 @@ defmodule GoogleSheets.Loader.FileSystem do
   @doc """
   Reads CSV files from config[:dir] directory.
   """
-  def load(previous_version, config) when is_list(config) do
+  def load(previous_version, _id, config) when is_list(config) do
     try do
       dir = Keyword.fetch! config, :dir
       sheets = Keyword.get config, :sheets, []

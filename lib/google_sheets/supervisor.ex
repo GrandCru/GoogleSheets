@@ -6,6 +6,7 @@ defmodule GoogleSheets.Supervisor do
 
   use Supervisor
   require Keyword
+  require Logger
 
   @doc false
   def start_link do
@@ -25,9 +26,9 @@ defmodule GoogleSheets.Supervisor do
 
   # Create a children for each configured spreadsheet
   defp create_children([], children), do: children
-  defp create_children([spreadsheet | rest], children) do
-    id = Keyword.fetch! spreadsheet, :id
-    create_children rest, [worker(GoogleSheets.Updater, [spreadsheet], [id: id, restart: :permanent]) | children]
+  defp create_children([{id, config} | rest], children) do
+    Logger.debug "#{id} : #{inspect config}"
+    create_children rest, [worker(GoogleSheets.Updater, [id, config], [id: id, restart: :permanent]) | children]
   end
 
 end

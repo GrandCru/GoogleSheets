@@ -7,7 +7,16 @@ defmodule GoogleSheets.Updater do
   use GenServer
   require Logger
 
+  defmodule State do
+    defstruct id: nil, config: nil, version: nil
+  end
+
   @default_poll_delay 5 * 60
+
+  @doc false
+  def start_link(id, config) when is_atom(id) and is_list(config) do
+    GenServer.start_link(__MODULE__, %State{id: id, config: config}, [name: id])
+  end
 
   @doc false
   def update(spreadsheet_id, timeout) when is_atom(spreadsheet_id) do
@@ -15,65 +24,79 @@ defmodule GoogleSheets.Updater do
   end
 
   @doc false
-  def start_link(config) when is_list(config) do
-    id = Keyword.fetch! config, :id
-    GenServer.start_link(__MODULE__, config, [name: id])
-  end
-
-  @doc false
-  def init(config) when is_list(config) do
-    Logger.info "Starting updater process for spreadsheet #{inspect config[:id]}"
+  def init(%State{} = state) do
+    Logger.info "Starting updater process for spreadsheet #{state.id} with config #{inspect state.config}"
 
     # Don't load data from local filesystem if the updater process was restarted
-    if not GoogleSheets.has_version? config[:id] do
-      Logger.info "Loading initial data for spreadsheet #{inspect config[:id]} from #{inspect config[:dir]}"
-      {:ok, loader_version, worksheets} = do_load GoogleSheets.Loader.FileSystem, config
-      {:ok, parser_version, data} = do_parse parser_impl(config), config[:id], worksheets
-      update_ets_entry config[:id], loader_version, parser_version, data
+    if not GoogleSheets.has_version? state.id do
+      state = load_initial_version state
     end
 
-    schedule_next_update config, Keyword.get(config, :poll_delay_seconds, @default_poll_delay)
+    schedule_next_update state.id, Keyword.get(state.config, :poll_delay_seconds, @default_poll_delay)
 
-    {:ok, config}
+    {:ok, state}
+  end
+
+  defp load_initial_version(%State{} = state) do
+    Logger.info "Loading initial data for spreadsheet #{state.id} from filesystem directory: #{state.config[:dir]}"
+
+    {:ok, loader_version, worksheets} = do_load GoogleSheets.Loader.FileSystem, state
+    {:ok, parser_version, data} = do_parse parser_impl(state), state.id, worksheets
+    update_ets_entry state.id, loader_version, parser_version, data
+
+    Logger.info "Initial data for spreadsheet #{state.id} loaded, version is now #{parser_version}"
+
+    %State{state | version: parser_version}
   end
 
   @doc false
-  def handle_call(:manual_update, _from, config) do
+  def handle_call(:manual_update, _from, %State{} = state) do
+    Logger.info "Doing requested manual update for spreadsheet #{state.id}"
     try do
-      version = do_update config
-      {:reply, {:ok, "Configuration updated succesfully, version is #{version}"}, config}
+      version = do_update state
+      {:reply, {:ok, "Configuration updated succesfully, version is #{version}"}, %State{state | version: version}}
     catch
       {:ok, :unchanged} ->
-        {:reply, {:ok, "No changes in configuration detected, configuration up-to-date."}, config}
+        {:reply, {:ok, "No changes in configuration detected, configuration up-to-date."}, state}
       {:error, reason} ->
-        {:reply, {:error, reason}, config}
+        {:reply, {:error, reason}, state}
     rescue
       exception ->
         stacktrace = System.stacktrace
-        {:reply, {:error, "Exception while updating configuration.\n\nExcption:\n#{inspect exception}\n\nStacktrace\n#{inspect stacktrace}"}, config}
+        {:reply, {:error, "Exception while updating configuration.\n\nExcption:\n#{inspect exception}\n\nStacktrace\n#{inspect stacktrace}"}, state}
     end
   end
 
   @doc false
-  def handle_info(:update, config) do
+  def handle_info(:update, %State{} = state) do
     try do
-      do_update config
+      version = do_update state
+      Logger.debug "Spreadsheet #{state.id} updated, latest version is now #{version}"
+      state = %State{state | version: version}
     catch
-      {:ok, :unchanged} -> {:ok, :unchanged}
-      {:error, reason} ->  {:error, reason}
+      {:ok, :unchanged} ->
+        :ok
+      {:error, reason} ->
+        Logger.error "Error updating spreadsheet #{state.id} #{inspect reason}"
     end
-    schedule_next_update config, Keyword.get(config, :poll_delay_seconds, @default_poll_delay)
-    {:noreply, config}
+    schedule_next_update state.id, Keyword.get(state.config, :poll_delay_seconds, @default_poll_delay)
+    {:noreply, state}
   end
 
-  defp do_update(config) do
-    {:ok, loader_version, worksheets} = do_load loader_impl(config), config
-    {:ok, parser_version, data} = do_parse parser_impl(config), config[:id], worksheets
-    update_ets_entry config[:id], loader_version, parser_version, data
+  defp do_update(%State{} = state) do
+    {:ok, loader_version, worksheets} = do_load loader_impl(state), state
+    {:ok, parser_version, parsed_spreadsheet} = do_parse parser_impl(state), state.id, worksheets
+
+    if parser_version == state.version do
+      throw {:ok, :unchanged}
+    end
+
+    update_ets_entry state.id, loader_version, parser_version, parsed_spreadsheet
+    parser_version
   end
 
-  defp do_load(impl, config) do
-    case impl.load latest_loader_version(config[:id]), config do
+  defp do_load(impl, %State{} = state) do
+    case impl.load latest_loader_version(state.id), state.id, state.config do
       {:ok, version, worksheets} ->
         {:ok, version, worksheets}
       result ->
@@ -84,6 +107,7 @@ defmodule GoogleSheets.Updater do
   # If no parser is configured and raw CSV data is stored into ETS, calculate md5 hash,
   # otherwise call the module implementing parser behaviour
   defp do_parse(nil, _id, worksheets) when is_list(worksheets) do
+    worksheets = Enum.sort worksheets, fn %GoogleSheets.WorkSheet{} = a, %GoogleSheets.WorkSheet{} = b -> a.name < b.name end
     {:ok, calculate_hash(worksheets), worksheets}
   end
   defp do_parse(impl, id, worksheets) when is_list(worksheets) do
@@ -98,15 +122,14 @@ defmodule GoogleSheets.Updater do
   end
 
   # Write a new entry into ETS table and make the {:id, :latest} tuple point to new version
-  defp update_ets_entry(id, loader_version, parser_version, data) do
-    :ets.insert :google_sheets, {parser_version, loader_version, data, id}
+  defp update_ets_entry(id, loader_version, parser_version, parsed_spreadsheet) do
+    :ets.insert :google_sheets, {parser_version, loader_version, parsed_spreadsheet, id}
     :ets.insert :google_sheets, {{id, :latest}, parser_version}
-    parser_version
   end
 
   # If update_delay has been configured to 0, no updates will be done
-  defp schedule_next_update(config, 0), do: Logger.info("Stopping scheduled updates for #{config[:id]}")
-  defp schedule_next_update(_config, delay_seconds), do: Process.send_after(self, :update, delay_seconds * 1000)
+  defp schedule_next_update(id, 0), do: Logger.info("Stopping updates for #{id}")
+  defp schedule_next_update(_id, delay_seconds), do: Process.send_after(self, :update, delay_seconds * 1000)
 
   # Calculate md5 hash from any data, by converting to binary first if needed
   defp calculate_hash(binary) when is_binary(binary) do
@@ -116,13 +139,13 @@ defmodule GoogleSheets.Updater do
     calculate_hash :erlang.term_to_binary(data)
   end
 
-  # Return the module implementing parser, if configured or nil
-  defp parser_impl(config) do
+  # Returns the module implementing parser or nil if not configured
+  defp parser_impl(%State{config: config}) do
     Keyword.get config, :parser
   end
 
-  # Return the module implementing polling loader, default to GoogleSheets.Loader.Docs
-  defp loader_impl(config) do
+  # Returns the module implementing polling loader
+  defp loader_impl(%State{config: config}) do
     Keyword.fetch! config, :loader
   end
 

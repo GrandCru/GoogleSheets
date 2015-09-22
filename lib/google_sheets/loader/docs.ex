@@ -23,13 +23,15 @@ defmodule GoogleSheets.Loader.Docs do
   loader in code which is not crash resistant, do handle the exceptions.
   """
   import SweetXml
+  require Logger
 
   @behaviour GoogleSheets.Loader
+  @request_timeout 60_000
 
   @doc """
   Load spreadsheet from Google sheets using the URL specified in config[:url] key.
   """
-  def load(previous_version, config) when is_list(config) do
+  def load(previous_version, _id, config) when is_list(config) do
     try do
       url = Keyword.fetch! config, :url
       sheets = Keyword.get config, :sheets, []
@@ -41,7 +43,7 @@ defmodule GoogleSheets.Loader.Docs do
 
   # Fetch Atom feed describing feed and request individual sheets if not modified.
   defp load_spreadsheet(previous_version, url, sheets) do
-    {:ok, %HTTPoison.Response{status_code: 200} = response} = HTTPoison.get url
+    {:ok, %HTTPoison.Response{status_code: 200} = response} = HTTPoison.get url, [], [timeout: @request_timeout]
 
     updated = response.body |> xpath(~x"//feed/updated/text()") |> List.to_string |> String.strip
     version = :crypto.hash(:sha, url <> Enum.join(sheets) <> updated) |> Base.encode16(case: :lower)
