@@ -1,51 +1,51 @@
 defmodule FileSystemTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   require Logger
 
   alias GoogleSheets.Loader.FileSystem
 
-  test "Loadd sheets using Application.app_dir" do
+  test "Load sheets using Application.app_dir" do
     config = [dir: {:google_sheets, "priv/data"}]
-    assert {:ok, version, worksheets} = FileSystem.load nil, config
-    assert version == "aebc5cd5aae29114bf28150d3d5609e19b2481c8"
+    assert {:ok, version, worksheets} = FileSystem.load nil, :spreadsheet_id, config
+    assert version == "0ae38b918ed5e4bd76e7c65febb7bbc1ce28b70b"
     assert length(worksheets) == 4
   end
 
   test "Load all sheets" do
     config = [dir: "priv/data"]
-    assert {:ok, version, worksheets} = FileSystem.load nil, config
+    assert {:ok, version, worksheets} = FileSystem.load nil, :spreadsheet_id, config
 
-    assert version == "aebc5cd5aae29114bf28150d3d5609e19b2481c8"
+    assert version == "0ae38b918ed5e4bd76e7c65febb7bbc1ce28b70b"
     assert length(worksheets) == 4
     assert Enum.any?(worksheets, fn(x) -> x.name == "KeyValue" end)
     assert Enum.any?(worksheets, fn(x) -> x.name == "KeyTable" end)
     assert Enum.any?(worksheets, fn(x) -> x.name == "KeyIndexTable" end)
     assert Enum.any?(worksheets, fn(x) -> x.name == "Ignored" end)
 
-    assert {:ok, :unchanged} = FileSystem.load version, config
+    assert {:ok, :unchanged} = FileSystem.load version, :spreadsheet_id, config
   end
 
   test "Load specified sheets" do
     config = [dir: "priv/data", sheets: ["KeyValue", "KeyTable"]]
 
-    assert {:ok, version, worksheets} = FileSystem.load nil, config
-    assert version == "c0f5fc899f4e0f31528090b56aca30c4e4fd058f"
+    assert {:ok, version, worksheets} = FileSystem.load nil, :spreadsheet_id, config
+    assert version == "1a714b244a64501fd2c51f95f38f495b0e4f111f"
     assert length(worksheets) == 2
     assert Enum.any?(worksheets, fn(x) -> x.name == "KeyValue" end)
     assert Enum.any?(worksheets, fn(x) -> x.name == "KeyTable" end)
     refute Enum.any?(worksheets, fn(x) -> x.name == "KeyIndexTable" end)
     refute Enum.any?(worksheets, fn(x) -> x.name == "Ignored" end)
 
-    assert {:ok, :unchanged} = FileSystem.load version, config
+    assert {:ok, :unchanged} = FileSystem.load version, :spreadsheet_id, config
   end
 
   test "Test nonexistent sheets" do
-    assert {:error, _reason} = FileSystem.load nil, [dir: "priv/data", sheets: ["KeyValue", "NonExistingSheet"]]
+    assert {:error, _reason} = FileSystem.load nil, :spreadsheet_id, [dir: "priv/data", sheets: ["KeyValue", "NonExistingSheet"]]
   end
 
   test "Test invalid path" do
-    assert {:error, _reason} = FileSystem.load nil, [dir: "this/path/doesnt/exist", sheets: ["KeyValue"]]
+    assert {:error, _reason} = FileSystem.load nil, :spreadsheet_id, [dir: "this/path/doesnt/exist", sheets: ["KeyValue"]]
   end
 
 end

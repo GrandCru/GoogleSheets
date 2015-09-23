@@ -7,15 +7,16 @@ defmodule UpdaterTestMockParser do
 end
 
 defmodule UpdaterTest do
+  use ExUnit.Case, async: true
 
-  use ExUnit.Case
   require Logger
+
+  @timeout 120_000
 
   test "Test updater process" do
     Process.register self, :updater_test_process
 
     cfg1 = [
-      id: :sheet1,
       sheets: ["KeyValue"],
       parser: UpdaterTestMockParser,
       loader: GoogleSheets.Loader.Docs,
@@ -23,8 +24,8 @@ defmodule UpdaterTest do
       dir: "priv/data",
       url: "https://spreadsheets.google.com/feeds/worksheets/1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs/public/basic"
     ]
+
     cfg2 = [
-      id: :sheet2,
       sheets: ["KeyTable"],
       parser: UpdaterTestMockParser,
       loader: GoogleSheets.Loader.Docs,
@@ -36,14 +37,14 @@ defmodule UpdaterTest do
     # Assert data has been loaded,
     # first by file system loader in the init phase of updater process
     # and immediately after by configure loader module.
-    {:ok, _pid1} = GoogleSheets.Updater.start_link cfg1
-    assert_receive {:parsed, :sheet1}, 120_000
-    assert_receive {:parsed, :sheet1}, 120_000
+    {:ok, _pid1} = GoogleSheets.Updater.start_link :sheet1, cfg1
+    assert_receive {:parsed, :sheet1}, @timeout
+    assert_receive {:parsed, :sheet1}, @timeout
 
     # Do the same for the second spreadsheet
-    {:ok, _pid2} = GoogleSheets.Updater.start_link cfg2
-    assert_receive {:parsed, :sheet2}, 120_000
-    assert_receive {:parsed, :sheet2}, 120_000
+    {:ok, _pid2} = GoogleSheets.Updater.start_link :sheet2, cfg2
+    assert_receive {:parsed, :sheet2}, @timeout
+    assert_receive {:parsed, :sheet2}, @timeout
 
     # Test API
     assert true == GoogleSheets.has_version? :sheet1
@@ -71,8 +72,8 @@ defmodule UpdaterTest do
     # Check the ETS entries
     ets_entries = :ets.tab2list :google_sheets
 
-    assert 1 == Enum.count ets_entries, fn {key, _value} -> key == sheet1_version end
-    assert 1 == Enum.count ets_entries, fn {key, _value} -> key == sheet2_version end
+    assert 1 == Enum.count ets_entries, fn entry -> elem(entry, 0) == sheet1_version end
+    assert 1 == Enum.count ets_entries, fn entry -> elem(entry, 0) == sheet2_version end
 
     # Verify that the updater can shortcircuit when there are no changes
     assert {:ok, "No changes in configuration detected, configuration up-to-date."} = GoogleSheets.update :sheet1
