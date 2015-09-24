@@ -38,7 +38,7 @@ defmodule GoogleSheets do
   def fetch(version) do
     case :ets.lookup :google_sheets, version do
       [] -> :not_found
-      [{^version, _loader_version, data, _id}] -> {:ok, data}
+      [{^version, %{data: data}}] -> {:ok, data}
     end
   end
 
@@ -70,9 +70,9 @@ defmodule GoogleSheets do
   """
   @spec has_version?(atom) :: boolean
   def has_version?(spreadsheet_id) when is_atom(spreadsheet_id) do
-    case :ets.lookup :google_sheets, {spreadsheet_id, :latest} do
+    case :ets.lookup :google_sheets, spreadsheet_id do
       [] -> false
-       _ -> true
+      [{^spreadsheet_id, %{}}] -> true
     end
   end
 
@@ -83,11 +83,14 @@ defmodule GoogleSheets do
   @spec latest(atom) :: {:ok, term, term} | :not_found
   def latest(spreadsheet_id) when is_atom(spreadsheet_id) do
     case latest_version spreadsheet_id do
-      :not_found -> :not_found
+      :not_found ->
+        :not_found
       {:ok, version} ->
-        case fetch version do
-          :not_found -> :not_found
-          {:ok, data} -> {:ok, version, data}
+        case :ets.lookup :google_sheets, version do
+          [] ->
+            :not_found
+          [{^version, %{data: data}}] ->
+            {:ok, version, data}
         end
     end
   end
@@ -110,10 +113,10 @@ defmodule GoogleSheets do
   """
   @spec latest_version(atom) :: {:ok, term} | :not_found
   def latest_version(spreadsheet_id) when is_atom(spreadsheet_id) do
-    case :ets.lookup :google_sheets, {spreadsheet_id, :latest} do
+    case :ets.lookup :google_sheets, spreadsheet_id do
       [] ->
         :not_found
-      [{{^spreadsheet_id, :latest}, version}] ->
+      [{^spreadsheet_id, %{version: version}}] ->
         {:ok, version}
     end
   end

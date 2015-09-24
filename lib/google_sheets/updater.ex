@@ -8,7 +8,7 @@ defmodule GoogleSheets.Updater do
   require Logger
 
   defmodule State do
-    defstruct id: nil, config: nil, version: nil
+    defstruct id: nil, config: nil
   end
 
   @default_poll_delay 5 * 60
@@ -29,7 +29,7 @@ defmodule GoogleSheets.Updater do
 
     # Don't load data from local filesystem if the updater process was restarted
     if not GoogleSheets.has_version? state.id do
-      state = load_initial_version state
+      load_initial_version state
     end
 
     schedule_next_update state.id, Keyword.get(state.config, :poll_delay_seconds, @default_poll_delay)
@@ -41,12 +41,10 @@ defmodule GoogleSheets.Updater do
     Logger.info "Loading initial data for spreadsheet #{state.id} from filesystem directory: #{state.config[:dir]}"
 
     {:ok, loader_version, worksheets} = do_load GoogleSheets.Loader.FileSystem, state
-    {:ok, parser_version, data} = do_parse parser_impl(state), state.id, worksheets
-    update_ets_entry state.id, loader_version, parser_version, data
+    {:ok, version, data} = do_parse parser_impl(state), state.id, worksheets
+    update_ets_entry state.id, version, loader_version, data
 
-    Logger.info "Initial data for spreadsheet #{state.id} loaded, version is now #{parser_version}"
-
-    %State{state | version: parser_version}
+    Logger.info "Initial data for spreadsheet #{state.id} loaded, version is now #{version}"
   end
 
   @doc false
@@ -54,10 +52,10 @@ defmodule GoogleSheets.Updater do
     Logger.info "Doing requested manual update for spreadsheet #{state.id}"
     try do
       version = do_update state
-      {:reply, {:ok, "Configuration updated succesfully, version is #{version}"}, %State{state | version: version}}
+      {:reply, {:ok, :updated, version}, state}
     catch
       {:ok, :unchanged} ->
-        {:reply, {:ok, "No changes in configuration detected, configuration up-to-date."}, state}
+        {:reply, {:ok, :unchanged}, state}
       {:error, reason} ->
         {:reply, {:error, reason}, state}
     rescue
@@ -70,9 +68,7 @@ defmodule GoogleSheets.Updater do
   @doc false
   def handle_info(:update, %State{} = state) do
     try do
-      version = do_update state
-      Logger.debug "Spreadsheet #{state.id} updated, latest version is now #{version}"
-      state = %State{state | version: version}
+      do_update state
     catch
       {:ok, :unchanged} ->
         :ok
@@ -84,15 +80,15 @@ defmodule GoogleSheets.Updater do
   end
 
   defp do_update(%State{} = state) do
+    {:ok, previous_version} = GoogleSheets.latest_version state.id
     {:ok, loader_version, worksheets} = do_load loader_impl(state), state
-    {:ok, parser_version, parsed_spreadsheet} = do_parse parser_impl(state), state.id, worksheets
+    {:ok, version, data} = do_parse parser_impl(state), state.id, worksheets
 
-    if parser_version == state.version do
+    if previous_version != version do
       throw {:ok, :unchanged}
     end
 
-    update_ets_entry state.id, loader_version, parser_version, parsed_spreadsheet
-    parser_version
+    update_ets_entry state.id, version, loader_version, data
   end
 
   defp do_load(impl, %State{} = state) do
@@ -122,9 +118,10 @@ defmodule GoogleSheets.Updater do
   end
 
   # Write a new entry into ETS table and make the {:id, :latest} tuple point to new version
-  defp update_ets_entry(id, loader_version, parser_version, parsed_spreadsheet) do
-    :ets.insert :google_sheets, {parser_version, loader_version, parsed_spreadsheet, id}
-    :ets.insert :google_sheets, {{id, :latest}, parser_version}
+  defp update_ets_entry(id, version, loader_version, data) do
+    :ets.insert :google_sheets, {version, %{id: id, version: version, loader_version: loader_version, data: data}}
+    :ets.insert :google_sheets, {id, %{version: version}}
+    version
   end
 
   # If update_delay has been configured to 0, no updates will be done
@@ -154,7 +151,7 @@ defmodule GoogleSheets.Updater do
       :not_found ->
         nil
       {:ok, version} ->
-        [{^version, loader_version, _data, _id}] = :ets.lookup :google_sheets, version
+        [{^version, %{loader_version: loader_version}}] = :ets.lookup :google_sheets, version
         loader_version
     end
   end
