@@ -9,7 +9,7 @@ deps:
 compile:
 	mix compile
 
-run: docs
+run:
 	iex -S mix run
 
 test:
@@ -19,9 +19,9 @@ clean:
 	rm -rf $(MAKEFILE_DIR)/mix.lock
 	rm -rf $(MAKEFILE_DIR)/_build/*
 	rm -rf $(MAKEFILE_DIR)/deps/*
-	rm -rf $(MAKEFILE_DIR)/doc/*
 
 docs:
+	rm -rf $(MAKEFILE_DIR)/doc/*
 	mix docs
 
 fetch:

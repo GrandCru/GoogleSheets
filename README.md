@@ -3,7 +3,11 @@
 [![Build Status](https://travis-ci.org/GrandCru/GoogleSheets.svg?branch=master)](https://travis-ci.org/GrandCru/GoogleSheets)
 [![Hex.pm Version](http://img.shields.io/hexpm/v/google_sheets.svg?style=flat)](https://hex.pm/packages/google_sheets)
 
-`Google Sheets` is an Elixir library for fetching Google spreadsheet in `CSV` format. It can be used as a command line tool to save loaded CSV files into a local directory, but the main application is to monitor changes in a spreadsheet and store them into ETS table, where the host application can access it.
+`Google Sheets` is an OTP application for fetching Google spreadsheet in CSV format, transforming raw CSV data into application specific format and storing different versions into ETS table, where they can be later accessed by the host application. 
+
+Main use case for the library is a game server, where game configuration is edited with Google spreadsheet. By polling changes and using the latest version for each new client connection, it is possible to rapidly tweak game configuration without needing to restart server.
+
+The library can also be used as a command line tool to fetch Spreadsheet data in CSV format and storing it into local directory. 
 
 ## Quick start
 

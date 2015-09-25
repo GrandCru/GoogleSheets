@@ -3,7 +3,7 @@
 use Mix.Config
 
 config :google_sheets, spreadsheets: [
-  keyvalue: [
+  config: [
     sheets: ["KeyValue"],
     parser: nil,
     loader: GoogleSheets.Loader.Docs,

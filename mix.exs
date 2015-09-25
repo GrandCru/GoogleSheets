@@ -5,7 +5,7 @@ defmodule GoogleSheets.Mixfile do
     [
       app: :google_sheets,
       version: "1.1.0",
-      elixir: "~> 1.1",
+      elixir: "~> 1.0",
       description: description,
       package: package,
       deps: deps,
@@ -22,7 +22,7 @@ defmodule GoogleSheets.Mixfile do
 
   defp description do
     """
-    Elixir library for fetching and polling Google spreadsheet data in CSV format.
+    OTP application for fetching and polling Google spreadsheet data in CSV format.
     """
   end
 
@@ -40,7 +40,7 @@ defmodule GoogleSheets.Mixfile do
       {:hackney, "~> 1.3"},
       {:httpoison, "~> 0.7"},
       {:sweet_xml, "~> 0.4"},
-      {:ex_doc, "~> 0.10", only: :dev}
+      {:ex_doc, "~> 0.10"}
     ]
   end
 
