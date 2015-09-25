@@ -58,10 +58,10 @@ defmodule UpdaterTest do
     # Check the ETS entries
     ets_entries = :ets.tab2list :google_sheets
 
-    assert 1 == Enum.count ets_entries, fn {key, entry} -> key == :sheet1 end
-    assert 1 == Enum.count ets_entries, fn {key, entry} -> key == sheet1_version end
-    assert 1 == Enum.count ets_entries, fn {key, entry} -> key == :sheet2 end
-    assert 1 == Enum.count ets_entries, fn {key, entry} -> key == sheet1_version end
+    assert 1 == Enum.count ets_entries, fn {key, %{}} -> key == :sheet1 end
+    assert 1 == Enum.count ets_entries, fn {key, %{}} -> key == sheet1_version end
+    assert 1 == Enum.count ets_entries, fn {key, %{}} -> key == :sheet2 end
+    assert 1 == Enum.count ets_entries, fn {key, %{}} -> key == sheet1_version end
   end
 
 end

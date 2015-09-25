@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>README – GoogleSheets v1.1.0</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="ExDoc v0.10.0">
+    <link rel="stylesheet" href="dist/app.css" />
+    <script src="dist/sidebar_items.js"></script>
+  </head>
+  <body data-type="extras">
+
+<div class="main">
+<button class="sidebar-toggle">
+  <i class="icon-menu"></i>
+</button>
+<section class="sidebar">
+  <button class="sidebar-toggle">
+    <i class="icon-menu"></i>
+  </button>
+
+  
+  <a href="extra-readme.html" class="sidebar-projectLink">
+    <div class="sidebar-projectDetails">
+      <h1 class="sidebar-projectName">
+        GoogleSheets
+      </h1>
+      <h2 class="sidebar-projectVersion">
+        v1.1.0
+      </h2>
+    </div>
+    
+  </a>
+
+  <div class="sidebar-search">
+    <i class="icon-search"></i>
+    <input type="text" class="sidebar-searchInput" placeholder="search" autocomplete="off" />
+  </div>
+
+  <ul class="sidebar-listNav">
+    <li><a id="extras-list" href="#full-list">Pages</a></li>
+
+    
+      <li><a id="modules-list" href="#full-list">Modules</a></li>
+    
+
+    
+
+    
+  </ul>
+
+  <ul id="full-list" class="sidebar-fullList"></ul>
+  <div class="sidebar-noResults"></div>
+</section>
+
+<section class="content">
+  <div id="content" class="content-inner">
+
+
+<h1 id="google-sheets">Google Sheets</h1>
+<p><a href="https://travis-ci.org/GrandCru/GoogleSheets"><img src="https://travis-ci.org/GrandCru/GoogleSheets.svg?branch=master" alt="Build Status" /></a> <a href="https://hex.pm/packages/google_sheets"><img src="http://img.shields.io/hexpm/v/google_sheets.svg?style=flat" alt="Hex.pm Version" /></a></p>
+<p><code>Google Sheets</code> is an Elixir library for fetching Google spreadsheet in <code>CSV</code> format. It can be used as a command line tool to save loaded CSV files into a local directory, but the main application is to monitor changes in a spreadsheet and store them into ETS table, where the host application can access it.</p>
+<h2 id="Quick-start">
+Quick start
+</h2>
+<pre><code class="elixir">
+# Make sure you have published spreadsheet to be accessible without 
+# authorization, see Publishing Google spreadsheet chapter for instructions.
+
+# In your mix.exs file
+defp deps do
+  [ {:google_sheets, &quot;~&gt; 1.1&quot;} ]
+end
+def application do
+  [applications: [:logger, :google_sheets]]
+end
+
+# In your `config/config.exs` file:
+config :google_sheets,
+  spreadsheets:
+  [
+    [    
+      id: :config,
+      parser: MyConfigParser, # Or nil, if not implementing parser
+      dir: &quot;priv/data&quot;,
+      url: &quot;https://spreadsheets.google.com/feeds/worksheets/&quot; &lt;&gt;
+           &quot;19HcQV5Z-uTXaVxjm2jVJNGNFv0pzA_cgdBTWMe4a77Y/public/basic&quot;
+    ]
+  ]
+
+# Optionally write a module implementing GoogleSheets.Parser behaviour.
+# The purpose of this is to allow converting raw CSV data into application
+# specific data format.
+defmodule MyConfigParser do
+  @behaviour GoogleSheets.Parser
+  def parse(_id, worksheets) do
+    data = convert_raw_csv_to_structs worksheets
+    {:ok, data}
+  end
+
+  defp convert_raw_csv_to_structs(worksheets), do: ....
+end
+
+# In your application code
+defmodule MyApp do
+  def func do
+    # Get the latest version and data for :config spreadsheet
+    {:ok, version, data} = GoogleSheets.latest :config
+    {version, data} = GoogleSheets.latest! :config
+
+    # Get just the data for latest :config spreadsheet
+    {:ok, data} = GoogleSheets.latest_data :config
+    data = GoogleSheets.latest_data! :config
+
+    # Get just the version for latest :config spreadsheet 
+    {:ok, version} = GoogleSheets.latest_version :config
+    version = GoogleSheets.latest_version! :config
+
+    # Use fetch to get specific version
+    {:ok, data} = GoogleSheets.fetch version
+    data = GoogleSheets.fetch! version
+  end
+end
+
+# Before running your application you must first load initial data
+# into local directory. This is required, so that the application always
+# has a known good configuration before trying to load data directly from
+# google.
+
+mix gs.fetch -u https://spreadsheets.google.com/feeds/worksheets/1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs/public/basic -d priv/data
+</code></pre>
+<h2 id="How-it-works">
+How it works
+</h2>
+<p>When application starts, the <a href="lib/google_sheets/supervisor.ex">supervisor</a> creates an <code>ETS</code> table named <code>:google_sheets</code> and starts an <a href="lib/google_sheets/updater.ex">updater process</a> for each configured spreadsheet. Each updater process monitors one spreadsheet for changes by polling it. If changes are noticed, it will load the new data, pass it into parser and store updated data into ETS table.</p>
+<p>During the init phase data is CSV data is loaded from files in local filesystem. Therefore you must fetch data using the gs.fetch mix task to preload data. This requirement means that application can always succesfully start - even if Google services are down!</p>
+<h3 id="using-the-library">Using the library</h3>
+<p>After the application has started, you can query loaded data using the public API defined in <a href="doc/GoogleSheets.html">GoogleSheets module</a>.</p>
+<h3 id="configuration">Configuration</h3>
+<ul>
+<li><strong>:spreadsheets</strong> - A list of configurations for each spreadsheet to monitor.</li>
+</ul>
+<p>Each <strong>:spreadsheets</strong> list entry is a keyword list:</p>
+<ul>
+<li><strong>:id</strong> - Atom used as the name of the updater process and as part of key when saving data into ETS table.</li>
+<li><strong>:sheets</strong> - List of worksheet names to load. If empty, all worksheets in spreadsheet are loaded.</li>
+<li><strong>:poll_delay_seconds</strong> - Delay between updates. If 0, only the init phase loading is done. Default is 30 seconds.</li>
+<li><strong>:parser</strong> - Module implementing GoogleSheets.Parser behaviour or nil. If specified, the parse/2 method of the module is called after CSV data has been loaded, but before a new entry is stored into ETS table.</li>
+<li><strong>:loader</strong> - Module implementing <a href="lib/google_sheets/loader.ex">GoogleSheets.Loader</a> behaviour. Default is <a href="lib/google_sheets/loader/docs.ex">GoogleSheets.Loader.Docs</a> which loads data form a google spreadsheet.</li>
+<li><strong>:url</strong> - URL of the Google spreadsheet to load.</li>
+<li><strong>:dir</strong> - Local directory relative to application root where CSV files fetched before are located.</li>
+</ul>
+<h2 id="Publishing-Google-Spreadsheet">
+Publishing Google Spreadsheet
+</h2>
+<p>The default way to share a spreadsheet using Google Sheets API is to use <code>OAuth</code>, but afaik there is no way to get a permanent <code>OAuth</code> token to use with a server. Therefore we must make the spreadsheet public to allow access from a server.</p>
+<p>To make things worse, you must both publish the worksheet to web (this allows fetching the worksheet feed and find individual sheet URLs) and share the worksheet (this allows us to fetch the actual CSV content).</p>
+<p>Sharing link is on the top right corner of the worksheet document and it opens following dialog:</p>
+<div class="figure">
+<img src="https://raw.githubusercontent.com/GrandCru/GoogleSheets/master/docs/share_link.png" alt="Sharing dialog" />
+<p class="caption">Sharing dialog</p>
+</div>
+<p>Publish to web is found in the File menu and it opens a dialog shown below:</p>
+<div class="figure">
+<img src="https://raw.githubusercontent.com/GrandCru/GoogleSheets/master/docs/publish_to_web.png" alt="Publish to Web" />
+<p class="caption">Publish to Web</p>
+</div>
+<h2 id="Mix-gs-fetch-task">
+Mix gs.fetch task
+</h2>
+<p>The mix task <a href="lib/mix/task/gs.fetch.ex">gs.fetch</a> loads a Google spreadsheet and saves worksheets in specified directory. If no parameters are given, it fetches all spreadsheets specified in the applications :google_sheets configuration and writes data into corresponding directory. You can also provide <code>-u</code> and <code>-d</code> params to explicitly load a spreadsheet.</p>
+<pre><code class="elixir">mix gs.fetch \
+-u https://spreadsheets.google.com/feeds/worksheets/1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs/public/basic \
+-d priv/data</code></pre>
+<h2 id="More-information">
+More information
+</h2>
+<ul>
+<li><a href="https://developers.google.com/google-apps/spreadsheets/">Google Sheets API documentation</a> - More information about the structure of atom feed and about the public vs private visibility.</li>
+</ul>
+<h2 id="Credits">
+Credits
+</h2>
+<p>Credits for the original C# implementation goes to Harri Hätinen https://github.com/hhatinen and to Teemu Harju https://github.com/tsharju for the original Elixir implementation.</p>
+
+    <footer class="footer">
+      <p>
+        <span class="line">
+          Built using
+          <a href="https://github.com/elixir-lang/ex_doc" title="ExDoc" rel="help" target="_blank">ExDoc</a> (v0.10.0),
+        </span>
+        <span class="line">
+          designed by
+          <a href="https://twitter.com/dignifiedquire" target="_blank" title="@dignifiedquire">Friedel Ziegelmayer</a>.
+          </span>
+      </p>
+    </footer>
+  </div>
+</section>
+</div>
+    <script src="dist/app.js"></script>
+  </body>
+</html>
+

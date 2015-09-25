@@ -5,12 +5,14 @@ defmodule GoogleSheets.Mixfile do
     [
       app: :google_sheets,
       version: "1.1.0",
-      elixir: "~> 1.0",
+      elixir: "~> 1.1",
       description: description,
       package: package,
       deps: deps,
       name: "GoogleSheets",
-      docs: [ main: "GoogleSheets", readme: "README.md"]
+      source_url: "https://github.com/GrandCru/GoogleSheets",
+      homepage_url: "https://github.com/GrandCru/GoogleSheets",
+      docs: [ main: "extra-readme", extras: ["README.md"]]
     ]
   end
 
@@ -38,7 +40,7 @@ defmodule GoogleSheets.Mixfile do
       {:hackney, "~> 1.3"},
       {:httpoison, "~> 0.7"},
       {:sweet_xml, "~> 0.4"},
-      {:ex_doc, "~> 0.9", only: :dev}
+      {:ex_doc, "~> 0.10", only: :dev}
     ]
   end
 

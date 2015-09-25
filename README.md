@@ -108,19 +108,19 @@ To make things worse, you must both publish the worksheet to web (this allows fe
 
 Sharing link is on the top right corner of the worksheet document and it opens following dialog:
 
-![Sharing dialog](/docs/share_link.png)
+![Sharing dialog](https://raw.githubusercontent.com/GrandCru/GoogleSheets/master/docs/share_link.png)
 
 Publish to web is found in the File menu and it opens a dialog shown below:
 
-![Publish to Web](/docs/publish_to_web.png)
+![Publish to Web](https://raw.githubusercontent.com/GrandCru/GoogleSheets/master/docs/publish_to_web.png)
 
 ## Mix gs.fetch task
 
 The mix task [gs.fetch](lib/mix/task/gs.fetch.ex) loads a Google spreadsheet and saves worksheets in specified directory. If no parameters are given, it fetches all spreadsheets specified in the applications :google_sheets configuration and writes data into corresponding directory. You can also provide `-u` and `-d` params to explicitly load a spreadsheet.
 
 ```
-mix gs.fetch
--u https://spreadsheets.google.com/feeds/worksheets/1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs/public/basic 
+mix gs.fetch \
+-u https://spreadsheets.google.com/feeds/worksheets/1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs/public/basic \
 -d priv/data
 ```
 
