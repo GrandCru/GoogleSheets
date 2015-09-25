@@ -21,4 +21,6 @@ config :google_sheets, spreadsheets: [
   ]
 ]
 
-config :ex_doc, :markdown_processor, ExDoc.Markdown.Pandoc
+if Mix.env == :dev do
+  config :ex_doc, :markdown_processor, ExDoc.Markdown.Pandoc
+end
