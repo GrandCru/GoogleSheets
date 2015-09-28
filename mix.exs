@@ -4,7 +4,7 @@ defmodule GoogleSheets.Mixfile do
   def project do
     [
       app: :google_sheets,
-      version: "1.1.0",
+      version: "2.0.0",
       elixir: "~> 1.0",
       description: description,
       package: package,
@@ -12,7 +12,7 @@ defmodule GoogleSheets.Mixfile do
       name: "GoogleSheets",
       source_url: "https://github.com/GrandCru/GoogleSheets",
       homepage_url: "https://github.com/GrandCru/GoogleSheets",
-      docs: [ main: "extra-readme", extras: ["README.md"]]
+      docs: [ main: "GoogleSheets", extras: ["README.md"]]
     ]
   end
 
