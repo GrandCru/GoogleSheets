@@ -30,14 +30,14 @@ defmodule Mix.Tasks.Gs.Fetch do
       {:ok, options} = Application.fetch_env :google_sheets, :spreadsheets
     else
       # Make a list of lists from parsed options
-      options = [options]
+      options = [{:id, options}]
     end
 
     fetch_spreadsheets options
   end
 
   defp fetch_spreadsheets([]), do: :ok
-  defp fetch_spreadsheets([config | rest]) do
+  defp fetch_spreadsheets([{_id, config} | rest]) do
     url = Keyword.fetch! config, :url
     dir = Keyword.fetch! config, :dir
     path = Path.expand dir
