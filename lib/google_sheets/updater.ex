@@ -143,7 +143,7 @@ defmodule GoogleSheets.Updater do
 
   # Returns the module implementing polling loader
   defp loader_impl(%State{config: config}) do
-    Keyword.fetch! config, :loader
+    Keyword.get config, :loader, GoogleSheets.Loader.Docs
   end
 
   defp latest_loader_version(id) when is_atom(id) do
