@@ -70,7 +70,7 @@ During genserver init callback CSV data is loaded from local file system. Theref
 
 ### Using the library
 
-After the application has started, you can query loaded data using the public API defined in [GoogleSheets module](lib/google_sheets.ex).
+After the application has started, you can query loaded data using the public API defined in [GoogleSheets module](lib/google_sheets.ex). For the full documentation see [http://hexdocs.pm/google_sheets/index.html](http://hexdocs.pm/google_sheets/index.html)
 
 ### Configuration
 
@@ -103,7 +103,7 @@ Sharing link is on the top right corner of the worksheet document and it opens f
 
 ## Mix gs.fetch task
 
-The mix task [gs.fetch](lib/mix/task/gs.fetch.ex) loads a Google spreadsheet and saves worksheets in specified directory. If no parameters are given, it fetches all spreadsheets specified in the applications :google_sheets configuration and writes data into corresponding directory. You can also provide `-u` and `-d` arguments to manually specify parameters.
+The mix task [gs.fetch](lib/mix/tasks/gs.fetch.ex) loads a Google spreadsheet and saves worksheets in specified directory. If no parameters are given, it fetches all spreadsheets specified in the applications :google_sheets configuration and writes data into corresponding directory. You can also provide `-u` and `-d` arguments to manually specify parameters.
 
 ```
 mix gs.fetch \
