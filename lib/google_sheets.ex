@@ -4,9 +4,8 @@ defmodule GoogleSheets do
   require Logger
 
   @moduledoc """
-  Main starting point of the application and provides functions defining the public client API for the library.
-
-  More
+  Main starting point of the application and public API for library.
+  For introduction on how to configure and use the library, see [README](extra-readme.html).
   """
 
   @doc false
@@ -19,7 +18,7 @@ defmodule GoogleSheets do
   #
 
   @doc ~S"""
-  Fetches previosly loaded spreadsheet data from ETS matching the given version and returns it as a {:ok, data} tuple.
+  Fetches previously loaded spreadsheet data from ETS matching the given version and returns it as a {:ok, data} tuple.
 
   ## Examples
 
@@ -43,7 +42,7 @@ defmodule GoogleSheets do
   end
 
   @doc ~S"""
-  Fetches previosly loaded spreadsheet data from ETS matching the given version. KeyError is raised if no
+  Fetches previously loaded spreadsheet data from ETS matching the given version. KeyError is raised if no
   spreadsheet data is found with the given version.
 
   ## Examples
@@ -55,7 +54,7 @@ defmodule GoogleSheets do
       ]
 
       iex> GoogleSheets.fetch! "not_a_valid_version"
-      ** (KeyError) key "invalid_version" not found
+      ** (KeyError) key "not_a_valid_version" not found
   """
   @spec fetch!(term) :: term | no_return
   def fetch!(version) do
@@ -77,7 +76,7 @@ defmodule GoogleSheets do
   end
 
   @doc ~S"""
-  Returns {:ok, version, data} tuple for the latest stored version for the spreadsheet identifieed
+  Returns {:ok, version, data} tuple for the latest stored version for the spreadsheet identified
   by spreadsheet_id argument. If there is no version available, :not_found is returned.
   """
   @spec latest(atom) :: {:ok, term, term} | :not_found
@@ -108,6 +107,30 @@ defmodule GoogleSheets do
   end
 
   @doc ~S"""
+  Returns {:ok, data} tuple for the latest stored entry for the spreadsheet identified by
+  spreadsheet_id argument. If no entry is found, :not_found is returned.
+  """
+  @spec latest_data(atom) :: {:ok, term} | :not_found
+  def latest_data(spreadsheet_id) when is_atom(spreadsheet_id) do
+    case latest spreadsheet_id do
+      :not_found -> :not_found
+      {:ok, _version, data} -> {:ok, data}
+    end
+  end
+
+  @doc ~S"""
+  Returns the latest stored entry for the spreadsheet identified by spreadsheet_id argument. If
+  no entry is found, KeyError exception is raised.
+  """
+  @spec latest_data!(atom) :: term | no_return
+  def latest_data!(spreadsheet_id) when is_atom(spreadsheet_id) do
+    case latest_data(spreadsheet_id) do
+      {:ok, data} -> data
+      :not_found -> raise KeyError, key: spreadsheet_id
+    end
+  end
+
+  @doc ~S"""
   Returns {:ok, version} tuple or the latest stored version for the spreadsheet identified by
   spreadsheet_id argument. If no version is found, :not_found is returned.
   """
@@ -134,37 +157,13 @@ defmodule GoogleSheets do
   end
 
   @doc ~S"""
-  Returns {:ok, data} tuple for the latest stored entry for the spreadsheet identified by
-  spreadsheet_id argument. If no entry is found, :not_found is returned.
-  """
-  @spec latest_data(atom) :: {:ok, term} | :not_found
-  def latest_data(spreadsheet_id) when is_atom(spreadsheet_id) do
-    case latest spreadsheet_id do
-      :not_found -> :not_found
-      {:ok, _version, data} -> {:ok, data}
-    end
-  end
-
-  @doc ~S"""
-  Returns the latest stored entry for the spreadsheet identified by spreadsheet_id argument. If
-  no entry is found, KeyError exception is raised.
-  """
-  @spec latest_data!(atom) :: term | no_return
-  def latest_data!(spreadsheet_id) when is_atom(spreadsheet_id) do
-    case latest_data(spreadsheet_id) do
-      {:ok, data} -> data
-      :not_found -> raise KeyError, key: spreadsheet_id
-    end
-  end
-
-  @doc ~S"""
   Manually triggers an update for fetching new data for the given spreadsheet_id argument.
 
   Return values:
 
-  {:updated, version} - Spreadsheet was updated and stored with the version
-  :unchanged              - Spreadsheet contents haven't been changed since last update.
-  {:error, reason}        - The update failed because of reason.
+  * {:updated, version}   - Spreadsheet was updated and stored with the version
+  * :unchanged            - Spreadsheet contents haven't been changed since last update.
+  * {:error, reason}      - The update failed because of reason.
   """
   @spec update(atom, integer) :: {:updated, term} | :unchanged | {:error, term} | no_return
   def update(spreadsheet_id, timeout \\ 60_000) do

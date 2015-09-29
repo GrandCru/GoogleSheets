@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>GoogleSheets – GoogleSheets v1.1.0</title>
+    <title>GoogleSheets – GoogleSheets v2.0.0</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.10.0">
     <link rel="stylesheet" href="dist/app.css" />
@@ -22,13 +22,13 @@
   </button>
 
   
-  <a href="extra-readme.html" class="sidebar-projectLink">
+  <a href="GoogleSheets.html" class="sidebar-projectLink">
     <div class="sidebar-projectDetails">
       <h1 class="sidebar-projectName">
         GoogleSheets
       </h1>
       <h2 class="sidebar-projectVersion">
-        v1.1.0
+        v2.0.0
       </h2>
     </div>
     
@@ -71,8 +71,7 @@
 
       
         <section id="moduledoc" class="docstring">
-          <p>Main starting point of the application and provides functions defining the public client API for the library.</p>
-<p>More</p>
+          <p>Main starting point of the application and public API for library. For introduction on how to configure and use the library, see <a href="extra-readme.html">README</a>.</p>
 
         </section>
       
@@ -97,7 +96,7 @@
     <a href="#fetch/1">fetch(version)</a>
   </div>
   
-    <div class="summary-synopsis"><p>Fetches previosly loaded spreadsheet data from ETS matching the given version and returns it as a {:ok, data} tuple</p>
+    <div class="summary-synopsis"><p>Fetches previously loaded spreadsheet data from ETS matching the given version and returns it as a {:ok, data} tuple</p>
 </div>
   
 </div>
@@ -106,7 +105,7 @@
     <a href="#fetch!/1">fetch!(version)</a>
   </div>
   
-    <div class="summary-synopsis"><p>Fetches previosly loaded spreadsheet data from ETS matching the given version. KeyError is raised if no spreadsheet data is found with the given version</p>
+    <div class="summary-synopsis"><p>Fetches previously loaded spreadsheet data from ETS matching the given version. KeyError is raised if no spreadsheet data is found with the given version</p>
 </div>
   
 </div>
@@ -124,7 +123,7 @@
     <a href="#latest/1">latest(spreadsheet_id)</a>
   </div>
   
-    <div class="summary-synopsis"><p>Returns {:ok, version, data} tuple for the latest stored version for the spreadsheet identifieed by spreadsheet_id argument. If there is no version available, :not_found is returned</p>
+    <div class="summary-synopsis"><p>Returns {:ok, version, data} tuple for the latest stored version for the spreadsheet identified by spreadsheet_id argument. If there is no version available, :not_found is returned</p>
 </div>
   
 </div>
@@ -210,7 +209,7 @@
     </a>
     <span class="signature">fetch(version)</span>
       
-      <a href="https://github.com/GrandCru/GoogleSheets/blob/master/lib/google_sheets.ex#L38" class="view-source" rel="help" title="View Source">
+      <a href="https://github.com/GrandCru/GoogleSheets/blob/master/lib/google_sheets.ex#L37" class="view-source" rel="help" title="View Source">
        <i class="icon-code"></i>
      </a>
     
@@ -226,7 +225,7 @@
     </div>
   
   <section class="docstring">
-    <p>Fetches previosly loaded spreadsheet data from ETS matching the given version and returns it as a {:ok, data} tuple.</p>
+    <p>Fetches previously loaded spreadsheet data from ETS matching the given version and returns it as a {:ok, data} tuple.</p>
 <h2 id="examples">Examples</h2>
 <pre><code class="iex elixir">iex&gt; GoogleSheets.fetch &quot;fccb56afd7d7f1cdf457e8b9b841ec75&quot;
 {:ok, [
@@ -248,7 +247,7 @@ iex&gt; GoogleSheets.fetch &quot;not_a_valid_version&quot;
     </a>
     <span class="signature">fetch!(version)</span>
       
-      <a href="https://github.com/GrandCru/GoogleSheets/blob/master/lib/google_sheets.ex#L61" class="view-source" rel="help" title="View Source">
+      <a href="https://github.com/GrandCru/GoogleSheets/blob/master/lib/google_sheets.ex#L60" class="view-source" rel="help" title="View Source">
        <i class="icon-code"></i>
      </a>
     
@@ -264,7 +263,7 @@ iex&gt; GoogleSheets.fetch &quot;not_a_valid_version&quot;
     </div>
   
   <section class="docstring">
-    <p>Fetches previosly loaded spreadsheet data from ETS matching the given version. KeyError is raised if no spreadsheet data is found with the given version.</p>
+    <p>Fetches previously loaded spreadsheet data from ETS matching the given version. KeyError is raised if no spreadsheet data is found with the given version.</p>
 <h2 id="examples">Examples</h2>
 <pre><code class="iex elixir">iex&gt; GoogleSheets.fetch! &quot;fccb56afd7d7f1cdf457e8b9b841ec75&quot;
 [%GoogleSheets.WorkSheet{
@@ -273,7 +272,7 @@ iex&gt; GoogleSheets.fetch &quot;not_a_valid_version&quot;
 ]
 
 iex&gt; GoogleSheets.fetch! &quot;not_a_valid_version&quot;
-** (KeyError) key &quot;invalid_version&quot; not found</code></pre>
+** (KeyError) key &quot;not_a_valid_version&quot; not found</code></pre>
 
   </section>
 </div>
@@ -284,7 +283,7 @@ iex&gt; GoogleSheets.fetch! &quot;not_a_valid_version&quot;
     </a>
     <span class="signature">has_version?(spreadsheet_id)</span>
       
-      <a href="https://github.com/GrandCru/GoogleSheets/blob/master/lib/google_sheets.ex#L72" class="view-source" rel="help" title="View Source">
+      <a href="https://github.com/GrandCru/GoogleSheets/blob/master/lib/google_sheets.ex#L71" class="view-source" rel="help" title="View Source">
        <i class="icon-code"></i>
      </a>
     
@@ -311,7 +310,7 @@ iex&gt; GoogleSheets.fetch! &quot;not_a_valid_version&quot;
     </a>
     <span class="signature">latest(spreadsheet_id)</span>
       
-      <a href="https://github.com/GrandCru/GoogleSheets/blob/master/lib/google_sheets.ex#L84" class="view-source" rel="help" title="View Source">
+      <a href="https://github.com/GrandCru/GoogleSheets/blob/master/lib/google_sheets.ex#L83" class="view-source" rel="help" title="View Source">
        <i class="icon-code"></i>
      </a>
     
@@ -327,7 +326,7 @@ iex&gt; GoogleSheets.fetch! &quot;not_a_valid_version&quot;
     </div>
   
   <section class="docstring">
-    <p>Returns {:ok, version, data} tuple for the latest stored version for the spreadsheet identifieed by spreadsheet_id argument. If there is no version available, :not_found is returned.</p>
+    <p>Returns {:ok, version, data} tuple for the latest stored version for the spreadsheet identified by spreadsheet_id argument. If there is no version available, :not_found is returned.</p>
 
   </section>
 </div>
@@ -338,7 +337,7 @@ iex&gt; GoogleSheets.fetch! &quot;not_a_valid_version&quot;
     </a>
     <span class="signature">latest!(spreadsheet_id)</span>
       
-      <a href="https://github.com/GrandCru/GoogleSheets/blob/master/lib/google_sheets.ex#L103" class="view-source" rel="help" title="View Source">
+      <a href="https://github.com/GrandCru/GoogleSheets/blob/master/lib/google_sheets.ex#L102" class="view-source" rel="help" title="View Source">
        <i class="icon-code"></i>
      </a>
     
@@ -365,7 +364,7 @@ iex&gt; GoogleSheets.fetch! &quot;not_a_valid_version&quot;
     </a>
     <span class="signature">latest_data(spreadsheet_id)</span>
       
-      <a href="https://github.com/GrandCru/GoogleSheets/blob/master/lib/google_sheets.ex#L141" class="view-source" rel="help" title="View Source">
+      <a href="https://github.com/GrandCru/GoogleSheets/blob/master/lib/google_sheets.ex#L114" class="view-source" rel="help" title="View Source">
        <i class="icon-code"></i>
      </a>
     
@@ -392,7 +391,7 @@ iex&gt; GoogleSheets.fetch! &quot;not_a_valid_version&quot;
     </a>
     <span class="signature">latest_data!(spreadsheet_id)</span>
       
-      <a href="https://github.com/GrandCru/GoogleSheets/blob/master/lib/google_sheets.ex#L153" class="view-source" rel="help" title="View Source">
+      <a href="https://github.com/GrandCru/GoogleSheets/blob/master/lib/google_sheets.ex#L126" class="view-source" rel="help" title="View Source">
        <i class="icon-code"></i>
      </a>
     
@@ -419,7 +418,7 @@ iex&gt; GoogleSheets.fetch! &quot;not_a_valid_version&quot;
     </a>
     <span class="signature">latest_version(spreadsheet_id)</span>
       
-      <a href="https://github.com/GrandCru/GoogleSheets/blob/master/lib/google_sheets.ex#L115" class="view-source" rel="help" title="View Source">
+      <a href="https://github.com/GrandCru/GoogleSheets/blob/master/lib/google_sheets.ex#L138" class="view-source" rel="help" title="View Source">
        <i class="icon-code"></i>
      </a>
     
@@ -446,7 +445,7 @@ iex&gt; GoogleSheets.fetch! &quot;not_a_valid_version&quot;
     </a>
     <span class="signature">latest_version!(spreadsheet_id)</span>
       
-      <a href="https://github.com/GrandCru/GoogleSheets/blob/master/lib/google_sheets.ex#L129" class="view-source" rel="help" title="View Source">
+      <a href="https://github.com/GrandCru/GoogleSheets/blob/master/lib/google_sheets.ex#L152" class="view-source" rel="help" title="View Source">
        <i class="icon-code"></i>
      </a>
     
@@ -473,7 +472,7 @@ iex&gt; GoogleSheets.fetch! &quot;not_a_valid_version&quot;
     </a>
     <span class="signature">update(spreadsheet_id, timeout \\ 60000)</span>
       
-      <a href="https://github.com/GrandCru/GoogleSheets/blob/master/lib/google_sheets.ex#L170" class="view-source" rel="help" title="View Source">
+      <a href="https://github.com/GrandCru/GoogleSheets/blob/master/lib/google_sheets.ex#L169" class="view-source" rel="help" title="View Source">
        <i class="icon-code"></i>
      </a>
     
@@ -495,7 +494,11 @@ iex&gt; GoogleSheets.fetch! &quot;not_a_valid_version&quot;
   <section class="docstring">
     <p>Manually triggers an update for fetching new data for the given spreadsheet_id argument.</p>
 <p>Return values:</p>
-<p>{:updated, version} - Spreadsheet was updated and stored with the version :unchanged - Spreadsheet contents haven't been changed since last update. {:error, reason} - The update failed because of reason.</p>
+<ul>
+<li>{:updated, version} - Spreadsheet was updated and stored with the version</li>
+<li>:unchanged - Spreadsheet contents haven't been changed since last update.</li>
+<li>{:error, reason} - The update failed because of reason.</li>
+</ul>
 
   </section>
 </div>

@@ -2,24 +2,23 @@ defmodule GoogleSheets.Loader.Docs do
 
 
   @moduledoc """
-  Implemnts GoogleSheets.Loader behaviour by fetching a Spreadsheet with Google spreadsheet API.
+  Implements GoogleSheets.Loader behavior by fetching a Spreadsheet through Google spreadsheet API.
 
-  The only loader specific configuration value is :url, which should point to the Atom feed describing
-  the worksheet. See README.md for more detailed information about how to publish a spreadsheet and
-  find the URL.
+  The only configuration value required is :url, which should point to the Atom feed of the spreadsheet.
+  See [README](extra-readme.html) how to publish a spreadsheet and find the URL.
 
   The loader first requests the Atom feed and parses URLs pointing to CSV data for each individual
-  worksheet and the last_udpdated timestamp for spreadsheet.
+  worksheet and the last_udpdated time stamp for spreadsheet.
 
   If the last_updated field is equal to the one passes as previous_version, the loader stops and returns :unchanged
 
-  If not, it will filter the found CSV urls and leave only those that exist in the sheets argument. If the sheets argument
+  If not, it will filter the found CSV URLs and leave only those that exist in the sheets argument. If the sheets argument
   is nil, it will load all worksheets.
 
-  After requesting all urls and parsing the responses, the loader checks that each invidivual spreadsheet given as sheets
+  After requesting all URLs and parsing the responses, the loader checks that each individual spreadsheet given as sheets
   parameter exist and returns an SpreadSheetData.t structure.
 
-  If there are any errors during http requests and/or parsing, it will most likely raise an expection. If you use this
+  If there are any errors during HTTP requests and/or parsing, it will most likely raise an exception. If you use this
   loader in code which is not crash resistant, do handle the exceptions.
   """
   import SweetXml

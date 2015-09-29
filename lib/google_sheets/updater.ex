@@ -27,7 +27,7 @@ defmodule GoogleSheets.Updater do
   def init(%State{} = state) do
     Logger.info "Starting updater process for spreadsheet #{state.id} with config #{inspect state.config}"
 
-    # Don't load data from local filesystem if the updater process was restarted
+    # Don't load data from local file system if the updater process was restarted
     if not GoogleSheets.has_version? state.id do
       load_initial_version state
     end
@@ -100,8 +100,8 @@ defmodule GoogleSheets.Updater do
     end
   end
 
-  # If no parser is configured and raw CSV data is stored into ETS, calculate md5 hash,
-  # otherwise call the module implementing parser behaviour
+  # If no parser is configured and raw CSV data is stored into ETS, calculate MD5 hash,
+  # otherwise call the module implementing parser behavior
   defp do_parse(nil, _id, worksheets) when is_list(worksheets) do
     worksheets = Enum.sort worksheets, fn %GoogleSheets.WorkSheet{} = a, %GoogleSheets.WorkSheet{} = b -> a.name < b.name end
     {:ok, calculate_hash(worksheets), worksheets}
@@ -128,7 +128,7 @@ defmodule GoogleSheets.Updater do
   defp schedule_next_update(id, 0), do: Logger.info("Stopping updates for #{id}")
   defp schedule_next_update(_id, delay_seconds), do: Process.send_after(self, :update, delay_seconds * 1000)
 
-  # Calculate md5 hash from any data, by converting to binary first if needed
+  # Calculate MD5 hash from any data, by converting to binary first if needed
   defp calculate_hash(binary) when is_binary(binary) do
     :crypto.hash(:md5, binary) |> Base.encode16(case: :lower)
   end

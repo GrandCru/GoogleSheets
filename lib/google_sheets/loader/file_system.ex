@@ -1,7 +1,7 @@
 defmodule GoogleSheets.Loader.FileSystem do
 
   @moduledoc """
-  Implements GoogleSheets.Loader behaviour for reading given spreadsheets in csv format
+  Implements GoogleSheets.Loader behavior for reading given spreadsheets in CSV format
   from a directory.
   """
 
@@ -46,7 +46,7 @@ defmodule GoogleSheets.Loader.FileSystem do
     {:ok, version, worksheets}
   end
 
-  # Load csv files and filter if only specific sheets should be loaded
+  # Load CSV files and filter if only specific sheets should be loaded
   defp load_files([], _sheets, worksheets), do: worksheets
   defp load_files([filename | rest], sheets, worksheets) do
     sheetname = Path.basename filename, ".csv"

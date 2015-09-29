@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>GoogleSheets.Parser – GoogleSheets v1.1.0</title>
+    <title>GoogleSheets.Parser – GoogleSheets v2.0.0</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.10.0">
     <link rel="stylesheet" href="dist/app.css" />
@@ -22,13 +22,13 @@
   </button>
 
   
-  <a href="extra-readme.html" class="sidebar-projectLink">
+  <a href="GoogleSheets.html" class="sidebar-projectLink">
     <div class="sidebar-projectDetails">
       <h1 class="sidebar-projectName">
         GoogleSheets
       </h1>
       <h2 class="sidebar-projectVersion">
-        v1.1.0
+        v2.0.0
       </h2>
     </div>
     
@@ -73,7 +73,7 @@
 
       
         <section id="moduledoc" class="docstring">
-          <p>Behaviour for parsing and transforming loaded CSV data into application specific format before it's stored into ETS table.</p>
+          <p>Behavior for parsing and transforming loaded CSV data into application specific format before it's stored into ETS table.</p>
 
         </section>
       
@@ -102,7 +102,7 @@
     <a href="#c:parse/2">parse(spreadsheet_id, worksheets)</a>
   </div>
   
-    <div class="summary-synopsis"><p>After udpater process has loaded CSV data, but before data is stored into ETS table an application can parse the raw data by writing a module implementing this behaviour</p>
+    <div class="summary-synopsis"><p>After updater process has loaded CSV data, but before data is stored into ETS table an application can parse the raw data by writing a module implementing this behavior</p>
 </div>
   
 </div>
@@ -153,7 +153,7 @@
     </div>
   
   <section class="docstring">
-    <p>After udpater process has loaded CSV data, but before data is stored into ETS table an application can parse the raw data by writing a module implementing this behaviour.</p>
+    <p>After updater process has loaded CSV data, but before data is stored into ETS table an application can parse the raw data by writing a module implementing this behavior.</p>
 <p>To configure this method, use the :parser configure setting for a spreadsheet. If no :parser is configured or it is set to nil, the updater process will store the list of Worksheet entires into ETS table.</p>
 <p>Parameters:</p>
 <ul>
@@ -162,8 +162,8 @@
 </ul>
 <p>Return values:</p>
 <ul>
-<li>{:ok, version, data} - Parsed CSV data is retuned as data, version is a key uniquely identifieng data.</li>
-<li>{:ok, data} - Parsed CSV data is retuned as data. The key used to store data is a hash of the data returned.</li>
+<li>{:ok, version, data} - Parsed CSV data is returned as data, version is a key uniquely identifying data.</li>
+<li>{:ok, data} - Parsed CSV data is returned as data. The key used to store data is a hash of the data returned.</li>
 <li>{:error, reason} - If parsing failed for a known reason.</li>
 </ul>
 

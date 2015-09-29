@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>README – GoogleSheets v1.1.0</title>
+    <title>README – GoogleSheets v2.0.0</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.10.0">
     <link rel="stylesheet" href="dist/app.css" />
@@ -22,13 +22,13 @@
   </button>
 
   
-  <a href="extra-readme.html" class="sidebar-projectLink">
+  <a href="GoogleSheets.html" class="sidebar-projectLink">
     <div class="sidebar-projectDetails">
       <h1 class="sidebar-projectName">
         GoogleSheets
       </h1>
       <h2 class="sidebar-projectVersion">
-        v1.1.0
+        v2.0.0
       </h2>
     </div>
     
@@ -61,49 +61,32 @@
 
 <h1 id="google-sheets">Google Sheets</h1>
 <p><a href="https://travis-ci.org/GrandCru/GoogleSheets"><img src="https://travis-ci.org/GrandCru/GoogleSheets.svg?branch=master" alt="Build Status" /></a> <a href="https://hex.pm/packages/google_sheets"><img src="http://img.shields.io/hexpm/v/google_sheets.svg?style=flat" alt="Hex.pm Version" /></a></p>
-<p><code>Google Sheets</code> is an OTP application for fetching Google spreadsheet in CSV format, transforming raw CSV data into application specific format and storing different versions into ETS table, where they can be later accessed by the host application.</p>
-<p>Main use case for the library is a game server, where game configuration is edited with Google spreadsheet. By polling changes and using the latest version for each new client connection, it is possible to rapidly tweak game configuration without needing to restart server.</p>
-<p>The library can also be used as a command line tool to fetch Spreadsheet data in CSV format and storing it into local directory.</p>
+<p><code>Google Sheets</code> is an OTP application for fetching Google spreadsheet in CSV format, optionally parsing and converting into application specific data structures and storing each loaded version into ETS table with unique key. The host application can query latest or specific version of stored data using provided API.</p>
+<p>Main use case for the library is a game server, where game configuration is edited in a Google spreadsheet. By polling changes and using the latest version for each new client connection, it is possible to rapidly tweak configuration without needing to deploy or restart server.</p>
+<p>The library can also be used as a command line tool to fetch spreadsheet data and save it into local directory.</p>
 <h2 id="Quick-start">
 Quick start
 </h2>
 <pre><code class="elixir">
 # Make sure you have published spreadsheet to be accessible without 
-# authorization, see Publishing Google spreadsheet chapter for instructions.
+# authorization, see Publishing Google spreadsheet for instructions.
 
 # In your mix.exs file
 defp deps do
-  [ {:google_sheets, &quot;~&gt; 1.1&quot;} ]
+  [ {:google_sheets, &quot;~&gt; 2.0&quot;} ]
 end
 def application do
   [applications: [:logger, :google_sheets]]
 end
 
 # In your `config/config.exs` file:
-config :google_sheets,
-  spreadsheets:
-  [
-    [    
-      id: :config,
-      parser: MyConfigParser, # Or nil, if not implementing parser
-      dir: &quot;priv/data&quot;,
-      url: &quot;https://spreadsheets.google.com/feeds/worksheets/&quot; &lt;&gt;
-           &quot;19HcQV5Z-uTXaVxjm2jVJNGNFv0pzA_cgdBTWMe4a77Y/public/basic&quot;
-    ]
+config :google_sheets, spreadsheets: [
+  config: [
+    dir: &quot;priv/data&quot;,
+    url: &quot;https://spreadsheets.google.com/feeds/worksheets/&quot; &lt;&gt;
+          &quot;19HcQV5Z-uTXaVxjm2jVJNGNFv0pzA_cgdBTWMe4a77Y/public/basic&quot;
   ]
-
-# Optionally write a module implementing GoogleSheets.Parser behaviour.
-# The purpose of this is to allow converting raw CSV data into application
-# specific data format.
-defmodule MyConfigParser do
-  @behaviour GoogleSheets.Parser
-  def parse(_id, worksheets) do
-    data = convert_raw_csv_to_structs worksheets
-    {:ok, data}
-  end
-
-  defp convert_raw_csv_to_structs(worksheets), do: ....
-end
+]
 
 # In your application code
 defmodule MyApp do
@@ -126,53 +109,51 @@ defmodule MyApp do
   end
 end
 
-# Before running your application you must first load initial data
-# into local directory. This is required, so that the application always
-# has a known good configuration before trying to load data directly from
-# google.
-
+# The library expects that initial data is loaded from a local directory.
+# Therefore before starting your application, use the mix gs.fetch task
+# to save data into local directory.
 mix gs.fetch -u https://spreadsheets.google.com/feeds/worksheets/1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs/public/basic -d priv/data
 </code></pre>
 <h2 id="How-it-works">
 How it works
 </h2>
-<p>When application starts, the <a href="lib/google_sheets/supervisor.ex">supervisor</a> creates an <code>ETS</code> table named <code>:google_sheets</code> and starts an <a href="lib/google_sheets/updater.ex">updater process</a> for each configured spreadsheet. Each updater process monitors one spreadsheet for changes by polling it. If changes are noticed, it will load the new data, pass it into parser and store updated data into ETS table.</p>
-<p>During the init phase data is CSV data is loaded from files in local filesystem. Therefore you must fetch data using the gs.fetch mix task to preload data. This requirement means that application can always succesfully start - even if Google services are down!</p>
+<p>When the application starts, the <a href="lib/google_sheets/supervisor.ex">supervisor</a> creates an <code>ETS</code> table named <code>:google_sheets</code> and starts an <a href="lib/google_sheets/updater.ex">updater process</a> for each configured spreadsheet. Each updater process monitors one spreadsheet and if changes are noticed, it will load the new data, pass it into parser and store updated data into ETS table.</p>
+<p>During genserver init callback CSV data is loaded from local file system. Therefore you must fetch data using the gs.fetch mix task to fetch data before starting application. This requirement means that application can always successfully start - even if Google services are down!</p>
 <h3 id="using-the-library">Using the library</h3>
-<p>After the application has started, you can query loaded data using the public API defined in <a href="doc/GoogleSheets.html">GoogleSheets module</a>.</p>
+<p>After the application has started, you can query loaded data using the public API defined in <a href="lib/google_sheets.ex">GoogleSheets module</a>.</p>
 <h3 id="configuration">Configuration</h3>
 <ul>
-<li><strong>:spreadsheets</strong> - A list of configurations for each spreadsheet to monitor.</li>
+<li><strong>:spreadsheets</strong> - A keyword list of spreadsheet configurations. The key is an atom uniquely identifying a spreadsheet.</li>
 </ul>
 <p>Each <strong>:spreadsheets</strong> list entry is a keyword list:</p>
 <ul>
-<li><strong>:id</strong> - Atom used as the name of the updater process and as part of key when saving data into ETS table.</li>
 <li><strong>:sheets</strong> - List of worksheet names to load. If empty, all worksheets in spreadsheet are loaded.</li>
-<li><strong>:poll_delay_seconds</strong> - Delay between updates. If 0, only the init phase loading is done. Default is 30 seconds.</li>
-<li><strong>:parser</strong> - Module implementing GoogleSheets.Parser behaviour or nil. If specified, the parse/2 method of the module is called after CSV data has been loaded, but before a new entry is stored into ETS table.</li>
-<li><strong>:loader</strong> - Module implementing <a href="lib/google_sheets/loader.ex">GoogleSheets.Loader</a> behaviour. Default is <a href="lib/google_sheets/loader/docs.ex">GoogleSheets.Loader.Docs</a> which loads data form a google spreadsheet.</li>
+<li><strong>:poll_delay_seconds</strong> - How often changes the monitored spreadsheet are polled. If 0, no polling is done. If not defined, the default is 30 seconds.</li>
+<li><strong>:loader</strong> - Module implementing <a href="lib/google_sheets/loader.ex">GoogleSheets.Loader</a> behavior. If nil, the default is to use <a href="lib/google_sheets/loader/docs.ex">GoogleSheets.Loader.Docs</a> which loads data form a google spreadsheet. In this case the :url parameter must be specified.</li>
+<li><strong>:parser</strong> - Module implementing <a href="lib/google_sheets/parser.ex">GoogleSheets.Parser</a> behavior. If nil, the raw CSV data is stored into ETS table.</li>
 <li><strong>:url</strong> - URL of the Google spreadsheet to load.</li>
-<li><strong>:dir</strong> - Local directory relative to application root where CSV files fetched before are located.</li>
+<li><strong>:dir</strong> - Local directory relative to application root where CSV files fetched before are located. For example priv/data</li>
 </ul>
+<p>For a complete example configuration, see <a href="config/config.exs">config.exs</a>.</p>
 <h2 id="Publishing-Google-Spreadsheet">
 Publishing Google Spreadsheet
 </h2>
-<p>The default way to share a spreadsheet using Google Sheets API is to use <code>OAuth</code>, but afaik there is no way to get a permanent <code>OAuth</code> token to use with a server. Therefore we must make the spreadsheet public to allow access from a server.</p>
-<p>To make things worse, you must both publish the worksheet to web (this allows fetching the worksheet feed and find individual sheet URLs) and share the worksheet (this allows us to fetch the actual CSV content).</p>
-<p>Sharing link is on the top right corner of the worksheet document and it opens following dialog:</p>
-<div class="figure">
-<img src="https://raw.githubusercontent.com/GrandCru/GoogleSheets/master/docs/share_link.png" alt="Sharing dialog" />
-<p class="caption">Sharing dialog</p>
-</div>
+<p>The default way to share a spreadsheet using Google Sheets API is to use <code>OAuth</code>. It might be possible to use <a href="https://developers.google.com/identity/protocols/OAuth2ServiceAccount">two legged OAuth</a> to support serverside authentication, but no effort has been spent investigating whether this works or not. Therefore it is required that the spreadsheet has been publicly published.</p>
+<p>For the library to work correctly, spreadsheet must published to web and shared. Publishing allows fetching worksheet feed containing URLs to individual worksheets and sharing allows us to access the actual CSV content.</p>
 <p>Publish to web is found in the File menu and it opens a dialog shown below:</p>
 <div class="figure">
 <img src="https://raw.githubusercontent.com/GrandCru/GoogleSheets/master/docs/publish_to_web.png" alt="Publish to Web" />
 <p class="caption">Publish to Web</p>
 </div>
+<p>Sharing link is on the top right corner of the worksheet document and it opens following dialog:</p>
+<div class="figure">
+<img src="https://raw.githubusercontent.com/GrandCru/GoogleSheets/master/docs/share_link.png" alt="Sharing dialog" />
+<p class="caption">Sharing dialog</p>
+</div>
 <h2 id="Mix-gs-fetch-task">
 Mix gs.fetch task
 </h2>
-<p>The mix task <a href="lib/mix/task/gs.fetch.ex">gs.fetch</a> loads a Google spreadsheet and saves worksheets in specified directory. If no parameters are given, it fetches all spreadsheets specified in the applications :google_sheets configuration and writes data into corresponding directory. You can also provide <code>-u</code> and <code>-d</code> params to explicitly load a spreadsheet.</p>
+<p>The mix task <a href="lib/mix/task/gs.fetch.ex">gs.fetch</a> loads a Google spreadsheet and saves worksheets in specified directory. If no parameters are given, it fetches all spreadsheets specified in the applications :google_sheets configuration and writes data into corresponding directory. You can also provide <code>-u</code> and <code>-d</code> arguments to manually specify parameters.</p>
 <pre><code class="elixir">mix gs.fetch \
 -u https://spreadsheets.google.com/feeds/worksheets/1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs/public/basic \
 -d priv/data</code></pre>

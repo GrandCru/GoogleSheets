@@ -23,6 +23,7 @@ clean:
 docs:
 	rm -rf $(MAKEFILE_DIR)/doc/*
 	mix docs
+	open doc/index.html
 
 fetch:
 	mix gs.fetch -u https://spreadsheets.google.com/feeds/worksheets/1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs/public/basic -d priv/data
