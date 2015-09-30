@@ -29,7 +29,7 @@ defmodule GoogleSheets.Mixfile do
   defp package do
     [
       files: ["lib", "mix.exs", "README.md", "LICENSE"],
-      contributors: ["Janne Kaistinen"],
+      maintainers: ["Janne Kaistinen"],
       licenses: ["MIT"],
       links: %{"GitHub" => "https://github.com/GrandCru/GoogleSheets"}
     ]
