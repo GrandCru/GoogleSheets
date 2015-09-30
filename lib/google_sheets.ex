@@ -170,4 +170,34 @@ defmodule GoogleSheets do
     GoogleSheets.Updater.update spreadsheet_id, timeout
   end
 
+  @doc ~S"""
+  To support storing custom version into ETS table. Required use case for this is to support
+  validation of parsed configuration before it's stored when using APIs which expect a version to
+  be passed as parameter.
+
+  ## Examples
+
+      iex> GoogleSheets.version_add :config, "add-test-configuration", %{data: "test-data"}
+      iex> GoogleSheets.fetch "add-test-configuration"
+      {:ok, %{data: "test-data"}}
+  """
+  @spec version_add(atom, term, term) :: :ok
+  def version_add(id, version, data) do
+    :ets.insert :google_sheets, {version, %{id: id, version: version, loader_version: nil, data: data}}
+  end
+
+  @doc ~S"""
+  To remove a spcific version from ETS table.
+
+  ## Examples
+
+      iex> GoogleSheets.version_add :config, "remove-test-configuration", %{data: "test-data"}
+      iex> GoogleSheets.version_remove "remove-test-configuration"
+      true
+  """
+  @spec version_remove(term) :: :ok
+  def version_remove(version) do
+    :ets.delete :google_sheets, version
+  end
+
 end
