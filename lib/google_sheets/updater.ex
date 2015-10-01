@@ -80,11 +80,10 @@ defmodule GoogleSheets.Updater do
   end
 
   defp do_update(%State{} = state) do
-    {:ok, previous_version} = GoogleSheets.latest_version state.id
     {:ok, loader_version, worksheets} = do_load loader_impl(state), state
     {:ok, version, data} = do_parse parser_impl(state), state.id, worksheets
 
-    if previous_version != version do
+    if version == GoogleSheets.latest_version state.id do
       throw {:ok, :unchanged}
     end
 
@@ -92,7 +91,8 @@ defmodule GoogleSheets.Updater do
   end
 
   defp do_load(impl, %State{} = state) do
-    case impl.load latest_loader_version(state.id), state.id, state.config do
+    previous_version = latest_loader_version state.id
+    case impl.load previous_version, state.id, state.config do
       {:ok, version, worksheets} ->
         {:ok, version, worksheets}
       result ->
@@ -119,9 +119,9 @@ defmodule GoogleSheets.Updater do
 
   # Write a new entry into ETS table and make the {:id, :latest} tuple point to new version
   defp update_ets_entry(id, version, loader_version, data) do
+    Logger.info "Updating ETS entry for spreadsheet #{id} version #{inspect version} loader_version #{inspect loader_version}"
     :ets.insert :google_sheets, {version, %{id: id, version: version, loader_version: loader_version, data: data}}
     :ets.insert :google_sheets, {id, %{version: version}}
-    version
   end
 
   # If update_delay has been configured to 0, no updates will be done
