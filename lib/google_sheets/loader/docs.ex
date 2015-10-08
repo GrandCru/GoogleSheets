@@ -25,7 +25,8 @@ defmodule GoogleSheets.Loader.Docs do
   require Logger
 
   @behaviour GoogleSheets.Loader
-  @request_timeout 60_000
+  @connect_timeout 2_000
+  @receive_timeout 120_000
 
   @doc """
   Load spreadsheet from Google sheets using the URL specified in config[:url] key.
@@ -42,7 +43,7 @@ defmodule GoogleSheets.Loader.Docs do
 
   # Fetch Atom feed describing feed and request individual sheets if not modified.
   defp load_spreadsheet(previous_version, url, sheets) do
-    {:ok, %HTTPoison.Response{status_code: 200} = response} = HTTPoison.get url, [], [timeout: @request_timeout]
+    {:ok, %HTTPoison.Response{status_code: 200} = response} = HTTPoison.get url, [], [timeout: @connect_timeout, recv_timeout: @receive_timeout]
 
     updated = response.body |> xpath(~x"//feed/updated/text()") |> List.to_string |> String.strip
     version = :crypto.hash(:sha, url <> Enum.join(sheets) <> updated) |> Base.encode16(case: :lower)
@@ -86,7 +87,7 @@ defmodule GoogleSheets.Loader.Docs do
   # Request worksheets and create WorkSheet.t entries
   defp load_worksheets([], worksheets), do: worksheets
   defp load_worksheets([{title, url} | rest], worksheets) do
-    {:ok, %HTTPoison.Response{status_code: 200} = response} = HTTPoison.get url
+    {:ok, %HTTPoison.Response{status_code: 200} = response} = HTTPoison.get url, [], [timeout: @connect_timeout, recv_timeout: @receive_timeout]
     load_worksheets rest, [%GoogleSheets.WorkSheet{name: title, csv: response.body} | worksheets]
   end
 
