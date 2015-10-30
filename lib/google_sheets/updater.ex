@@ -38,7 +38,7 @@ defmodule GoogleSheets.Updater do
   end
 
   defp load_initial_version(%State{} = state) do
-    Logger.info "Loading initial data for spreadsheet #{state.id} from filesystem directory: #{state.config[:dir]}"
+    Logger.info "Loading initial data for spreadsheet #{state.id} from filesystem directory: #{inspect state.config[:dir]}"
 
     {:ok, loader_version, worksheets} = do_load GoogleSheets.Loader.FileSystem, state
     {:ok, version, data} = do_parse parser_impl(state), state.id, worksheets
