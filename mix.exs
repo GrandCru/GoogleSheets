@@ -39,7 +39,7 @@ defmodule GoogleSheets.Mixfile do
     [
       {:hackney, "~> 1.3"},
       {:httpoison, "~> 0.7"},
-      {:sweet_xml, "~> 0.4"},
+      {:sweet_xml, "~> 0.5"},
       {:ex_doc, "~> 0.10", only: [:dev]}
     ]
   end

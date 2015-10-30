@@ -3,4 +3,4 @@
   "httpoison": {:hex, :httpoison, "0.7.4"},
   "idna": {:hex, :idna, "1.0.2"},
   "ssl_verify_hostname": {:hex, :ssl_verify_hostname, "1.0.5"},
-  "sweet_xml": {:hex, :sweet_xml, "0.4.0"}}
+  "sweet_xml": {:hex, :sweet_xml, "0.5.0"}}
