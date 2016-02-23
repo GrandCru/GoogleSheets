@@ -4,8 +4,8 @@ defmodule GoogleSheets.Mixfile do
   def project do
     [
       app: :google_sheets,
-      version: "2.0.3",
-      elixir: "~> 1.0",
+      version: "2.0.4",
+      elixir: "~> 1.2",
       description: description,
       package: package,
       deps: deps,
@@ -37,9 +37,9 @@ defmodule GoogleSheets.Mixfile do
 
   defp deps do
     [
-      {:hackney, "~> 1.3"},
-      {:httpoison, "~> 0.7"},
-      {:sweet_xml, "~> 0.5"},
+      {:hackney, "~> 1.4"},
+      {:httpoison, "~> 0.8"},
+      {:sweet_xml, "~> 0.6"},
       {:ex_doc, "~> 0.10", only: [:dev]}
     ]
   end
