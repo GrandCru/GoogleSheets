@@ -181,7 +181,7 @@ defmodule GoogleSheets do
       iex> GoogleSheets.fetch "add-test-configuration"
       {:ok, %{data: "test-data"}}
   """
-  @spec version_add(atom, term, term) :: :ok
+  @spec version_add(atom, term, term) :: true
   def version_add(id, version, data) do
     :ets.insert :google_sheets, {version, %{id: id, version: version, loader_version: nil, data: data}}
   end
@@ -195,7 +195,7 @@ defmodule GoogleSheets do
       iex> GoogleSheets.version_remove "remove-test-configuration"
       true
   """
-  @spec version_remove(term) :: :ok
+  @spec version_remove(term) :: true
   def version_remove(version) do
     :ets.delete :google_sheets, version
   end

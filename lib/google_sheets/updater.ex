@@ -26,24 +26,20 @@ defmodule GoogleSheets.Updater do
   @doc false
   def init(%State{} = state) do
     Logger.info "Starting updater process for spreadsheet #{state.id} with config #{inspect state.config}"
-
-    # Don't load data from local file system if the updater process was restarted
-    if not GoogleSheets.has_version? state.id do
-      load_initial_version state
-    end
-
+    load_initial_version state, GoogleSheets.has_version?(state.id)
     schedule_next_update state.id, Keyword.get(state.config, :poll_delay_seconds, @default_poll_delay)
-
     {:ok, state}
   end
 
-  defp load_initial_version(%State{} = state) do
+  defp load_initial_version(%State{}, true) do
+    :ok
+  end
+  defp load_initial_version(%State{} = state, false) do
     Logger.info "Loading initial data for spreadsheet #{state.id} from filesystem directory: #{inspect state.config[:dir]}"
 
     {:ok, loader_version, worksheets} = do_load GoogleSheets.Loader.FileSystem, state
     {:ok, version, data} = do_parse parser_impl(state), state.id, worksheets
     update_ets_entry state.id, version, loader_version, data
-
     Logger.info "Initial data for spreadsheet #{state.id} loaded, version is now #{version}"
   end
 

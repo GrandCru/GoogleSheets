@@ -12,7 +12,8 @@ defmodule GoogleSheets.Mixfile do
       name: "GoogleSheets",
       source_url: "https://github.com/GrandCru/GoogleSheets",
       homepage_url: "https://github.com/GrandCru/GoogleSheets",
-      docs: [ main: "GoogleSheets", extras: ["README.md"]]
+      docs: [ main: "GoogleSheets", extras: ["README.md"]],
+      dialyzer: [ flags: ["-Werror_handling","-Wrace_conditions", "-Wno_opaque"] ]
     ]
   end
 
@@ -40,7 +41,8 @@ defmodule GoogleSheets.Mixfile do
       {:hackney, "~> 1.4"},
       {:httpoison, "~> 0.8"},
       {:sweet_xml, "~> 0.6"},
-      {:ex_doc, "~> 0.10", only: [:dev]}
+      {:ex_doc, "~> 0.10", only: [:dev]},
+      {:dialyxir, "~> 0.3", only: [:dev]}
     ]
   end
 
