@@ -14,7 +14,7 @@ defmodule GoogleSheets.Loader.FileSystem do
     try do
       dir = Keyword.fetch! config, :dir
       sheets = Keyword.get config, :sheets, []
-      load_spreadsheet previous_version, dir, sheets
+      load_spreadsheet(previous_version, dir, sheets)
     catch
       result -> result
     end
@@ -31,14 +31,16 @@ defmodule GoogleSheets.Loader.FileSystem do
     end
 
     files = Path.wildcard(path <> "/*.csv")
-    worksheets = load_files files, sheets, []
+    worksheets = load_files(files, sheets, [])
 
     if not Enum.all?(sheets, fn sheetname -> Enum.any?(worksheets, fn ws -> ws.name == sheetname end) end) do
-      loaded = worksheets |> Enum.map(fn ws -> ws.name end) |> Enum.join(",")
+      loaded = worksheets
+      |> Enum.map(fn ws -> ws.name end)
+      |> Enum.join(",")
       throw {:error, "All requested worksheets were not found, expected to load #{inspect sheets} loaded: #{inspect loaded}"}
     end
 
-    version = calculate_version worksheets
+    version = calculate_version(worksheets)
     if version == previous_version do
       throw {:ok, :unchanged}
     end
@@ -50,11 +52,14 @@ defmodule GoogleSheets.Loader.FileSystem do
   defp load_files([], _sheets, worksheets), do: worksheets
   defp load_files([filename | rest], sheets, worksheets) do
     sheetname = Path.basename filename, ".csv"
+
     if sheets == [] or sheetname in sheets do
       csv = File.read! filename
       worksheets = [%GoogleSheets.WorkSheet{name: sheetname, csv: csv} | worksheets]
+      load_files(rest, sheets, worksheets)
+    else
+      load_files(rest, sheets, worksheets)
     end
-    load_files rest, sheets, worksheets
   end
 
   # Calculate version based on CSV data

@@ -35,7 +35,7 @@ defmodule GoogleSheets.Loader.Docs do
     try do
       url = Keyword.fetch! config, :url
       sheets = Keyword.get config, :sheets, []
-      load_spreadsheet previous_version, url, sheets
+      load_spreadsheet(previous_version, url, sheets)
     catch
       result -> result
     end
@@ -45,8 +45,13 @@ defmodule GoogleSheets.Loader.Docs do
   defp load_spreadsheet(previous_version, url, sheets) do
     {:ok, %HTTPoison.Response{status_code: 200} = response} = HTTPoison.get url, [], [timeout: @connect_timeout, recv_timeout: @receive_timeout]
 
-    updated = response.body |> xpath(~x"//feed/updated/text()") |> List.to_string |> String.strip
-    version = :crypto.hash(:sha, url <> Enum.join(sheets) <> updated) |> Base.encode16(case: :lower)
+    updated = response.body
+    |> xpath(~x"//feed/updated/text()")
+    |> List.to_string
+    |> String.strip
+
+    version = :crypto.hash(:sha, url <> Enum.join(sheets) <> updated)
+    |> Base.encode16(case: :lower)
 
     if previous_version != nil and version == previous_version do
       throw {:ok, :unchanged}
@@ -59,7 +64,9 @@ defmodule GoogleSheets.Loader.Docs do
     |> load_worksheets([])
 
     if not Enum.all?(sheets, fn sheetname -> Enum.any?(worksheets, fn ws -> sheetname == ws.name end) end) do
-      loaded = worksheets |> Enum.map(fn ws -> ws.name end) |> Enum.join(",")
+      loaded = worksheets
+      |> Enum.map(fn ws -> ws.name end)
+      |> Enum.join(",")
       throw {:error, "All requested sheets not loaded, expected: #{Enum.join(sheets, ",")} loaded: #{loaded}"}
     end
 
@@ -71,7 +78,7 @@ defmodule GoogleSheets.Loader.Docs do
   defp convert_entries([entry | rest], acc) do
     title = List.to_string entry[:title]
     url = List.to_string entry[:url]
-    convert_entries rest, [{title, url} | acc]
+    convert_entries(rest, [{title, url} | acc])
   end
 
   # Filter out entries not specified in sheets list, if empty sheets list, accept all
@@ -79,16 +86,17 @@ defmodule GoogleSheets.Loader.Docs do
   defp filter_entries([], _sheets, acc), do: acc
   defp filter_entries([{title, url} | rest], sheets, acc) do
     if title in sheets do
-      acc = [{title, url} | acc]
+      filter_entries(rest, sheets, [{title, url} | acc])
+    else
+      filter_entries(rest, sheets, acc)
     end
-    filter_entries rest, sheets, acc
   end
 
   # Request worksheets and create WorkSheet.t entries
   defp load_worksheets([], worksheets), do: worksheets
   defp load_worksheets([{title, url} | rest], worksheets) do
     {:ok, %HTTPoison.Response{status_code: 200} = response} = HTTPoison.get url, [], [timeout: @connect_timeout, recv_timeout: @receive_timeout]
-    load_worksheets rest, [%GoogleSheets.WorkSheet{name: title, csv: response.body} | worksheets]
+    load_worksheets(rest, [%GoogleSheets.WorkSheet{name: title, csv: response.body} | worksheets])
   end
 
 end

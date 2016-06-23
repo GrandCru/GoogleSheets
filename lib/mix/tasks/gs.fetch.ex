@@ -26,14 +26,15 @@ defmodule Mix.Tasks.Gs.Fetch do
     {options, _, _} = OptionParser.parse args, switches: [url: :string, dir: :string], aliases: [u: :url, d: :dir]
 
     # If no commandline options are given, we load all spreadsheets configured for the application
-    if options == [] do
-      {:ok, options} = Application.fetch_env :google_sheets, :spreadsheets
-    else
-      # Make a list of lists from parsed options
-      options = [{:id, options}]
+    options =
+      if options == [] do
+        Application.fetch_env! :google_sheets, :spreadsheets
+      else
+        # Make a list of lists from parsed options
+        [{:id, options}]
     end
 
-    fetch_spreadsheets options
+    fetch_spreadsheets(options)
   end
 
   defp fetch_spreadsheets([]), do: :ok
@@ -51,7 +52,7 @@ defmodule Mix.Tasks.Gs.Fetch do
       File.write! filename, ws.csv, [:raw]
     end
 
-    fetch_spreadsheets rest
+    fetch_spreadsheets(rest)
   end
 
 end
