@@ -4,16 +4,16 @@ defmodule GoogleSheets.Mixfile do
   def project do
     [
       app: :google_sheets,
-      version: "2.0.6",
+      version: "2.0.7",
       elixir: "~> 1.2",
-      description: description,
-      package: package,
-      deps: deps,
+      description: description(),
+      package: package(),
+      deps: deps(),
       name: "GoogleSheets",
       source_url: "https://github.com/GrandCru/GoogleSheets",
       homepage_url: "https://github.com/GrandCru/GoogleSheets",
       docs: [ main: "GoogleSheets", extras: ["README.md"]],
-      dialyzer: [ flags: ["-Werror_handling","-Wrace_conditions", "-Wno_opaque"] ]
+      dialyzer: dialyzer()
     ]
   end
 
@@ -43,6 +43,12 @@ defmodule GoogleSheets.Mixfile do
       {:sweet_xml, "~> 0.6"},
       {:ex_doc, "~> 0.10", only: [:dev]},
       {:dialyxir, "~> 0.3", only: [:dev]}
+    ]
+  end
+
+  defp dialyzer do
+    [
+      flags: ["-Werror_handling", "-Wrace_conditions", "-Wunderspecs", "-Wunknown"]
     ]
   end
 

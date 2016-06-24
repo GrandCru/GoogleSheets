@@ -161,11 +161,11 @@ defmodule GoogleSheets do
 
   Return values:
 
-  * {:updated, version}   - Spreadsheet was updated and stored with the version
-  * :unchanged            - Spreadsheet contents haven't been changed since last update.
-  * {:error, reason}      - The update failed because of reason.
+  * {:ok, :updated, version}    - Spreadsheet was updated and stored with the version
+  * {:ok, :unchanged}           - Spreadsheet contents haven't been changed since last update.
+  * {:error, reason}            - The update failed because of reason.
   """
-  @spec update(atom, integer) :: {:updated, term} | :unchanged | {:error, term} | no_return
+  @spec update(spreadseheet_id :: atom, timeout :: non_neg_integer) :: {:ok, :updated, String.t} | {:ok, :unchanged} | {:error, term}
   def update(spreadsheet_id, timeout \\ 60_000) do
     GoogleSheets.Updater.update spreadsheet_id, timeout
   end

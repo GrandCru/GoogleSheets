@@ -19,7 +19,8 @@ defmodule GoogleSheets.Updater do
   end
 
   @doc false
-  def update(spreadsheet_id, timeout) when is_atom(spreadsheet_id) do
+  @spec update(spreadsheet_id :: atom, timeout :: non_neg_integer) :: {:ok, :updated, String.t}  | {:ok, :unchanged} | {:error, term}
+  def update(spreadsheet_id, timeout) when is_atom(spreadsheet_id) and is_integer(timeout) and timeout >= 0 do
     GenServer.call spreadsheet_id, :manual_update, timeout
   end
 
