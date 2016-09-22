@@ -21,8 +21,8 @@ config :google_sheets, spreadsheets: [
   ]
 ]
 
-# Needed because OTP has bug with the SSL module and default protocol, see https://github.com/edgurgel/httpoison/issues/130
-config :ssl, protocol_version: :"tlsv1.2"
+# TSL/SSL protocol selection is now fixed in OTP-13753, see http://erlang.org/download/OTP-19.0.3.README
+# config :ssl, protocol_version: :"tlsv1.2"
 
 if Mix.env == :dev do
   config :ex_doc, :markdown_processor, ExDoc.Markdown.Pandoc
