@@ -16,7 +16,7 @@ defmodule UpdaterTest do
   @url "https://spreadsheets.google.com/feeds/worksheets/1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs/public/basic"
 
   test "Test updater process" do
-    Process.register self, :test_updater_process
+    Process.register self(), :test_updater_process
 
     cfg1 = [ sheets: ["KeyValue"], parser: UpdaterTestMockParser, loader: GoogleSheets.Loader.Docs, poll_delay_seconds: 1, dir: @dir, url: @url ]
     cfg2 = [ sheets: ["KeyValue", "KeyTable"], parser: UpdaterTestMockParser, loader: GoogleSheets.Loader.Docs, poll_delay_seconds: 1, dir: @dir, url: @url ]
