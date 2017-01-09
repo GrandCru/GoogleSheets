@@ -123,7 +123,7 @@ defmodule GoogleSheets.Updater do
 
   # If update_delay has been configured to 0, no updates will be done
   defp schedule_next_update(id, 0), do: Logger.info("Stopping updates for #{id}")
-  defp schedule_next_update(_id, delay_seconds), do: Process.send_after(self, :update, delay_seconds * 1000)
+  defp schedule_next_update(_id, delay_seconds), do: Process.send_after(self(), :update, delay_seconds * 1000)
 
   # Calculate MD5 hash from any data, by converting to binary first if needed
   defp calculate_hash(binary) when is_binary(binary) do
