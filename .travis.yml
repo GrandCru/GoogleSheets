@@ -3,7 +3,7 @@ language: elixir
 matrix:
   include:
     - otp_release: 19.2
-      elixir: 14
+      elixir: 1.4
 
 sudo: false
 
