@@ -40,8 +40,13 @@ defmodule Mix.Tasks.Gs.Fetch do
   defp fetch_spreadsheets([]), do: :ok
   defp fetch_spreadsheets([{_id, config} | rest]) do
     url = Keyword.fetch! config, :url
-    dir = Keyword.fetch! config, :dir
-    path = Path.expand dir
+    path =
+      case Keyword.fetch!(config, :dir) do
+        {app, dir} ->
+          Application.app_dir(app, dir)
+        dir ->
+          dir
+      end
 
     Mix.shell.info "Loading spreadsheet from url #{inspect url} and saving to #{path}"
     {:ok, _version, worksheets} = Docs.load nil, :id, config

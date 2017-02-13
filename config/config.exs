@@ -16,7 +16,7 @@ config :google_sheets, spreadsheets: [
     parser: nil,
     loader: GoogleSheets.Loader.Docs,
     poll_delay_seconds: 360,
-    dir: "priv/data",
+    dir: {:google_sheets, "priv/data"},
     url: "https://spreadsheets.google.com/feeds/worksheets/1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs/public/basic"
   ]
 ]
