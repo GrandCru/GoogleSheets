@@ -41,9 +41,16 @@ defmodule GoogleSheets.Loader.Docs do
     end
   end
 
+  defp load_spreadsheet_request(url) do
+    case HTTPoison.get(url, [], [timeout: @connect_timeout, recv_timeout: @receive_timeout]) do
+      {:ok, %HTTPoison.Response{status_code: 200} = response} -> {:ok, %HTTPoison.Response{status_code: 200} = response}
+      {:ok, %HTTPoison.Response{status_code: code} = response} -> throw {:error, "Error in request, status code #{code}, url: #{url}"}
+    end
+  end
+
   # Fetch Atom feed describing feed and request individual sheets if not modified.
   defp load_spreadsheet(previous_version, url, sheets) do
-    {:ok, %HTTPoison.Response{status_code: 200} = response} = HTTPoison.get url, [], [timeout: @connect_timeout, recv_timeout: @receive_timeout]
+    {:ok, %HTTPoison.Response{status_code: 200} = response} = load_spreadsheet_request(url)
 
     updated = response.body
     |> xpath(~x"//feed/updated/text()")
