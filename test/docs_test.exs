@@ -22,7 +22,7 @@ defmodule DocsTest do
   end
 
   test "Load specific sheets" do
-    config = [url: @url, sheets: ["KeyValue", "KeyTable"]]
+    config = [url: @url, sheets: ["KeyValue", "KeyTable", "Ignored"], ignored_sheets: ["Ignored"]]
     assert {:ok, version, worksheets} = Docs.load nil, :spreadsheet_id, config
 
     assert version == "eeb80c2fe8872b3e6b0ea13f7fa4125228c1da48"

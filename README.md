@@ -79,6 +79,7 @@ After the application has started, you can query loaded data using the public AP
 Each __:spreadsheets__ list entry is a keyword list:
 
 * __:sheets__ - List of worksheet names to load. If empty, all worksheets in spreadsheet are loaded.
+* __:ignored_sheets__ - List of sheet names to ignore from :sheets, can be used to filter sheets based on mix env.
 * __:poll_delay_seconds__ - How often changes the monitored spreadsheet are polled. If 0, no polling is done. If not defined, the default is 30 seconds.
 * __:loader__ - Module implementing [GoogleSheets.Loader](lib/google_sheets/loader.ex) behavior. If nil, the default is to use [GoogleSheets.Loader.Docs](lib/google_sheets/loader/docs.ex) which loads data form a google spreadsheet. In this case the :url parameter must be specified.
 * __:parser__ - Module implementing [GoogleSheets.Parser](lib/google_sheets/parser.ex) behavior. If nil, the raw CSV data is stored into ETS table.

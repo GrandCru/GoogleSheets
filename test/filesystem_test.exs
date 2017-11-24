@@ -27,7 +27,7 @@ defmodule FileSystemTest do
   end
 
   test "Load specified sheets" do
-    config = [dir: "priv/data", sheets: ["KeyValue", "KeyTable"]]
+    config = [dir: "priv/data", sheets: ["KeyValue", "KeyTable", "Ignored"], ignored_sheets: ["Ignored"]]
 
     assert {:ok, version, worksheets} = FileSystem.load nil, :spreadsheet_id, config
     assert version == "1a714b244a64501fd2c51f95f38f495b0e4f111f"

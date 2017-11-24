@@ -34,7 +34,11 @@ defmodule GoogleSheets.Loader.Docs do
   def load(previous_version, _id, config) when is_list(config) do
     try do
       url = Keyword.fetch! config, :url
-      sheets = Keyword.get config, :sheets, []
+      ignored_sheets = Keyword.get config, :ignored_sheets, []
+      sheets =
+        config
+        |> Keyword.get(:sheets, [])
+        |> Enum.reject(fn sheet -> sheet in ignored_sheets end)
       load_spreadsheet(previous_version, url, sheets)
     catch
       result -> result
@@ -48,7 +52,7 @@ defmodule GoogleSheets.Loader.Docs do
     updated = response.body
     |> xpath(~x"//feed/updated/text()")
     |> List.to_string
-    |> String.strip
+    |> String.trim()
 
     version = :crypto.hash(:sha, url <> Enum.join(sheets) <> updated)
     |> Base.encode16(case: :lower)

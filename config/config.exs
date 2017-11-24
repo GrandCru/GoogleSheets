@@ -5,6 +5,7 @@ use Mix.Config
 config :google_sheets, spreadsheets: [
   config: [
     sheets: ["KeyValue"],
+    ignored_sheets: [],
     parser: nil,
     loader: GoogleSheets.Loader.Docs,
     poll_delay_seconds: 360,
@@ -12,7 +13,8 @@ config :google_sheets, spreadsheets: [
     url: "https://spreadsheets.google.com/feeds/worksheets/1k-N20RmT62RyocEu4-MIJm11DZqlZrzV89fGIddDzIs/public/basic"
   ],
   multiple: [
-    sheets: ["KeyValue", "KeyTable"],
+    sheets: ["KeyValue", "KeyTable", "Ignored"],
+    ignored_sheets: ["Ignored"],
     parser: nil,
     loader: GoogleSheets.Loader.Docs,
     poll_delay_seconds: 360,
