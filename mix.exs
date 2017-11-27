@@ -41,8 +41,8 @@ defmodule GoogleSheets.Mixfile do
       {:hackney, "~> 1.4"},
       {:httpoison, "~> 0.8"},
       {:sweet_xml, "~> 0.6"},
-      {:ex_doc, "~> 0.10", only: [:dev]},
-      {:dialyxir, "~> 0.3", only: [:dev]}
+      {:ex_doc, "~> 0.10", only: :dev, runtime: false},
+      {:dialyxir, "~> 0.3", only: :dev}
     ]
   end
 

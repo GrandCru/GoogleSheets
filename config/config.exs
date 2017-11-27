@@ -26,10 +26,6 @@ config :google_sheets, spreadsheets: [
 # TSL/SSL protocol selection is now fixed in OTP-13753, see http://erlang.org/download/OTP-19.0.3.README
 # config :ssl, protocol_version: :"tlsv1.2"
 
-if Mix.env == :dev do
-  config :ex_doc, :markdown_processor, ExDoc.Markdown.Pandoc
-end
-
 # We can override specific variables depending on mix env since the configurations are deeply merged with later ones
 # overriding values. For example in prod environment we might wish to set the polling delay to 0, so that we never
 # load anything except the deployed configuration.
