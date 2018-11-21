@@ -99,7 +99,7 @@ defmodule GoogleSheets.Loader.Docs do
   # Request worksheets and create WorkSheet.t entries
   defp load_worksheets([], worksheets), do: worksheets
   defp load_worksheets([{title, url} | rest], worksheets) do
-    {:ok, %HTTPoison.Response{status_code: 200} = response} = HTTPoison.get url, [], [timeout: @connect_timeout, recv_timeout: @receive_timeout]
+    {:ok, %HTTPoison.Response{status_code: 200} = response} = HTTPoison.get url, [], [timeout: @connect_timeout, recv_timeout: @receive_timeout, follow_redirect: true, max_redirect: 5]
     load_worksheets(rest, [%GoogleSheets.WorkSheet{name: title, csv: response.body} | worksheets])
   end
 
