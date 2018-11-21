@@ -1,5 +1,4 @@
 defmodule GoogleSheets.Loader do
-
   @moduledoc """
   Modules implementing this behavior load CSV data from a source and return a list of WorkSheet structures containing
   raw CSV data for each worksheet given in config argument.
@@ -20,5 +19,8 @@ defmodule GoogleSheets.Loader do
   * {:ok, :unchanged} - No changes in spreadsheet data.
   * {:error, reason} - Known and handled error case, which can be potentially corrected. (Network errors etc.)
   """
-  @callback load(version :: String.t | nil, id :: atom, config :: Keyword.t) :: {:ok, version :: binary, [GoogleSheets.WorkSheet.t]} | :unchanged | {:error, reason :: String.t}
+  @callback load(version :: String.t() | nil, id :: atom, config :: Keyword.t()) ::
+              {:ok, version :: binary, [GoogleSheets.WorkSheet.t()]}
+              | :unchanged
+              | {:error, reason :: String.t()}
 end

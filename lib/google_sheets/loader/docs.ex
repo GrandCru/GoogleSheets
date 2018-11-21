@@ -1,6 +1,4 @@
 defmodule GoogleSheets.Loader.Docs do
-
-
   @moduledoc """
   Implements GoogleSheets.Loader behavior by fetching a Spreadsheet through Google spreadsheet API.
 
@@ -33,12 +31,14 @@ defmodule GoogleSheets.Loader.Docs do
   """
   def load(previous_version, _id, config) when is_list(config) do
     try do
-      url = Keyword.fetch! config, :url
-      ignored_sheets = Keyword.get config, :ignored_sheets, []
+      url = Keyword.fetch!(config, :url)
+      ignored_sheets = Keyword.get(config, :ignored_sheets, [])
+
       sheets =
         config
         |> Keyword.get(:sheets, [])
         |> Enum.reject(fn sheet -> sheet in ignored_sheets end)
+
       load_spreadsheet(previous_version, url, sheets)
     catch
       result -> result
@@ -47,31 +47,46 @@ defmodule GoogleSheets.Loader.Docs do
 
   # Fetch Atom feed describing feed and request individual sheets if not modified.
   defp load_spreadsheet(previous_version, url, sheets) do
-    {:ok, %HTTPoison.Response{status_code: 200} = response} = HTTPoison.get url, [], [timeout: @connect_timeout, recv_timeout: @receive_timeout]
+    {:ok, %HTTPoison.Response{status_code: 200} = response} =
+      HTTPoison.get(url, [], timeout: @connect_timeout, recv_timeout: @receive_timeout)
 
-    updated = response.body
-    |> xpath(~x"//feed/updated/text()")
-    |> List.to_string
-    |> String.trim()
+    updated =
+      response.body
+      |> xpath(~x"//feed/updated/text()")
+      |> List.to_string()
+      |> String.trim()
 
-    version = :crypto.hash(:sha, url <> Enum.join(sheets) <> updated)
-    |> Base.encode16(case: :lower)
+    version =
+      :crypto.hash(:sha, url <> Enum.join(sheets) <> updated)
+      |> Base.encode16(case: :lower)
 
     if previous_version != nil and version == previous_version do
-      throw {:ok, :unchanged}
+      throw({:ok, :unchanged})
     end
 
-    worksheets = response.body
-    |> xpath(~x"//feed/entry"l, title: ~x"./title/text()", url: ~x"./link[@type='text/csv']/@href")
-    |> convert_entries([])
-    |> filter_entries(sheets, [])
-    |> load_worksheets([])
+    worksheets =
+      response.body
+      |> xpath(
+        ~x"//feed/entry"l,
+        title: ~x"./title/text()",
+        url: ~x"./link[@type='text/csv']/@href"
+      )
+      |> convert_entries([])
+      |> filter_entries(sheets, [])
+      |> load_worksheets([])
 
-    if not Enum.all?(sheets, fn sheetname -> Enum.any?(worksheets, fn ws -> sheetname == ws.name end) end) do
-      loaded = worksheets
-      |> Enum.map(fn ws -> ws.name end)
-      |> Enum.join(",")
-      throw {:error, "All requested sheets not loaded, expected: #{Enum.join(sheets, ",")} loaded: #{loaded}"}
+    if not Enum.all?(sheets, fn sheetname ->
+         Enum.any?(worksheets, fn ws -> sheetname == ws.name end)
+       end) do
+      loaded =
+        worksheets
+        |> Enum.map(fn ws -> ws.name end)
+        |> Enum.join(",")
+
+      throw(
+        {:error,
+         "All requested sheets not loaded, expected: #{Enum.join(sheets, ",")} loaded: #{loaded}"}
+      )
     end
 
     {:ok, version, worksheets}
@@ -79,15 +94,17 @@ defmodule GoogleSheets.Loader.Docs do
 
   # Converts xpath entries to {title, url} with data converted to strings
   defp convert_entries([], acc), do: acc
+
   defp convert_entries([entry | rest], acc) do
-    title = List.to_string entry[:title]
-    url = List.to_string entry[:url]
+    title = List.to_string(entry[:title])
+    url = List.to_string(entry[:url])
     convert_entries(rest, [{title, url} | acc])
   end
 
   # Filter out entries not specified in sheets list, if empty sheets list, accept all
   defp filter_entries(entries, [], _acc), do: entries
   defp filter_entries([], _sheets, acc), do: acc
+
   defp filter_entries([{title, url} | rest], sheets, acc) do
     if title in sheets do
       filter_entries(rest, sheets, [{title, url} | acc])
@@ -98,9 +115,18 @@ defmodule GoogleSheets.Loader.Docs do
 
   # Request worksheets and create WorkSheet.t entries
   defp load_worksheets([], worksheets), do: worksheets
+
   defp load_worksheets([{title, url} | rest], worksheets) do
-    {:ok, %HTTPoison.Response{status_code: 200} = response} = HTTPoison.get url, [], [timeout: @connect_timeout, recv_timeout: @receive_timeout, follow_redirect: true, max_redirect: 5]
+    {:ok, %HTTPoison.Response{status_code: 200} = response} =
+      HTTPoison.get(
+        url,
+        [],
+        timeout: @connect_timeout,
+        recv_timeout: @receive_timeout,
+        follow_redirect: true,
+        max_redirect: 5
+      )
+
     load_worksheets(rest, [%GoogleSheets.WorkSheet{name: title, csv: response.body} | worksheets])
   end
-
 end

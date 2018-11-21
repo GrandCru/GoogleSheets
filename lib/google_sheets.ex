@@ -1,5 +1,4 @@
 defmodule GoogleSheets do
-
   use Application
   require Logger
 
@@ -10,7 +9,7 @@ defmodule GoogleSheets do
 
   @doc false
   def start(_type, _args) do
-    GoogleSheets.Supervisor.start_link
+    GoogleSheets.Supervisor.start_link()
   end
 
   #
@@ -35,7 +34,7 @@ defmodule GoogleSheets do
   """
   @spec fetch(term) :: {:ok, term} | :not_found
   def fetch(version) do
-    case :ets.lookup :google_sheets, version do
+    case :ets.lookup(:google_sheets, version) do
       [] -> :not_found
       [{^version, %{data: data}}] -> {:ok, data}
     end
@@ -58,7 +57,7 @@ defmodule GoogleSheets do
   """
   @spec fetch!(term) :: term | no_return
   def fetch!(version) do
-    case fetch version do
+    case fetch(version) do
       :not_found -> raise KeyError, key: version
       {:ok, data} -> data
     end
@@ -69,7 +68,7 @@ defmodule GoogleSheets do
   """
   @spec has_version?(atom) :: boolean
   def has_version?(spreadsheet_id) when is_atom(spreadsheet_id) do
-    case :ets.lookup :google_sheets, spreadsheet_id do
+    case :ets.lookup(:google_sheets, spreadsheet_id) do
       [] -> false
       [{^spreadsheet_id, %{}}] -> true
     end
@@ -81,13 +80,15 @@ defmodule GoogleSheets do
   """
   @spec latest(atom) :: {:ok, term, term} | :not_found
   def latest(spreadsheet_id) when is_atom(spreadsheet_id) do
-    case latest_version spreadsheet_id do
+    case latest_version(spreadsheet_id) do
       :not_found ->
         :not_found
+
       {:ok, version} ->
-        case :ets.lookup :google_sheets, version do
+        case :ets.lookup(:google_sheets, version) do
           [] ->
             :not_found
+
           [{^version, %{data: data}}] ->
             {:ok, version, data}
         end
@@ -100,7 +101,7 @@ defmodule GoogleSheets do
   """
   @spec latest!(atom) :: {term, term} | no_return
   def latest!(spreadsheet_id) when is_atom(spreadsheet_id) do
-    case latest spreadsheet_id do
+    case latest(spreadsheet_id) do
       :not_found -> raise KeyError, key: spreadsheet_id
       {:ok, version, data} -> {version, data}
     end
@@ -112,7 +113,7 @@ defmodule GoogleSheets do
   """
   @spec latest_data(atom) :: {:ok, term} | :not_found
   def latest_data(spreadsheet_id) when is_atom(spreadsheet_id) do
-    case latest spreadsheet_id do
+    case latest(spreadsheet_id) do
       :not_found -> :not_found
       {:ok, _version, data} -> {:ok, data}
     end
@@ -136,9 +137,10 @@ defmodule GoogleSheets do
   """
   @spec latest_version(atom) :: {:ok, term} | :not_found
   def latest_version(spreadsheet_id) when is_atom(spreadsheet_id) do
-    case :ets.lookup :google_sheets, spreadsheet_id do
+    case :ets.lookup(:google_sheets, spreadsheet_id) do
       [] ->
         :not_found
+
       [{^spreadsheet_id, %{version: version}}] ->
         {:ok, version}
     end
@@ -150,7 +152,7 @@ defmodule GoogleSheets do
   """
   @spec latest_version!(atom) :: term | no_return
   def latest_version!(spreadsheet_id) when is_atom(spreadsheet_id) do
-    case latest_version spreadsheet_id do
+    case latest_version(spreadsheet_id) do
       :not_found -> raise KeyError, key: spreadsheet_id
       {:ok, version} -> version
     end
@@ -165,9 +167,10 @@ defmodule GoogleSheets do
   * {:ok, :unchanged}           - Spreadsheet contents haven't been changed since last update.
   * {:error, reason}            - The update failed because of reason.
   """
-  @spec update(spreadseheet_id :: atom, timeout :: non_neg_integer) :: {:ok, :updated, String.t} | {:ok, :unchanged} | {:error, term}
+  @spec update(spreadseheet_id :: atom, timeout :: non_neg_integer) ::
+          {:ok, :updated, String.t()} | {:ok, :unchanged} | {:error, term}
   def update(spreadsheet_id, timeout \\ 60_000) do
-    GoogleSheets.Updater.update spreadsheet_id, timeout
+    GoogleSheets.Updater.update(spreadsheet_id, timeout)
   end
 
   @doc ~S"""
@@ -183,7 +186,10 @@ defmodule GoogleSheets do
   """
   @spec version_add(atom, term, term) :: true
   def version_add(id, version, data) do
-    :ets.insert :google_sheets, {version, %{id: id, version: version, loader_version: nil, data: data}}
+    :ets.insert(
+      :google_sheets,
+      {version, %{id: id, version: version, loader_version: nil, data: data}}
+    )
   end
 
   @doc ~S"""
@@ -197,7 +203,6 @@ defmodule GoogleSheets do
   """
   @spec version_remove(term) :: true
   def version_remove(version) do
-    :ets.delete :google_sheets, version
+    :ets.delete(:google_sheets, version)
   end
-
 end

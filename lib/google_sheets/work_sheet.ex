@@ -6,8 +6,6 @@ defmodule GoogleSheets.WorkSheet do
   * :csv    - CSV data split into lines.
   """
 
-  @type t :: %GoogleSheets.WorkSheet{name: String.t, csv: [String.t]}
+  @type t :: %GoogleSheets.WorkSheet{name: String.t(), csv: [String.t()]}
   defstruct name: nil, csv: nil
-
 end
-
