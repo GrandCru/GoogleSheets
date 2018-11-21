@@ -123,8 +123,7 @@ defmodule GoogleSheets.Loader.Docs do
         [],
         timeout: @connect_timeout,
         recv_timeout: @receive_timeout,
-        follow_redirect: true,
-        max_redirect: 5
+        follow_redirect: false
       )
 
     load_worksheets(rest, [%GoogleSheets.WorkSheet{name: title, csv: response.body} | worksheets])

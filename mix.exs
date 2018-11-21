@@ -4,7 +4,7 @@ defmodule GoogleSheets.Mixfile do
   def project do
     [
       app: :google_sheets,
-      version: "2.0.13",
+      version: "2.0.14",
       elixir: "~> 1.2",
       description: description(),
       package: package(),
